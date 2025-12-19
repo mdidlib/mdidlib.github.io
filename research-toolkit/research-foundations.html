@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Foundations - Research Toolkit</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #faf9f7; }
+        .font-serif { font-family: 'Instrument Serif', Georgia, serif; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+        .animate-slideIn { animation: slideIn 0.3s ease-out; }
+        .progress-bar { transition: width 0.5s ease-out; }
+        .option-btn { transition: all 0.2s ease; }
+        .option-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Icons
+        const ChevronRight = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>;
+        const ChevronLeft = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>;
+        const CheckCircle = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+        const XCircle = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 9l-6 6M9 9l6 6" /></svg>;
+        const BookOpen = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>;
+        const RefreshCw = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>;
+        const Lightbulb = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>;
+        const Search = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>;
+        const Target = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={2} /><circle cx="12" cy="12" r="6" strokeWidth={2} /><circle cx="12" cy="12" r="2" strokeWidth={2} /></svg>;
+        const HelpCircle = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+
+        const ResearchFoundationsModule = () => {
+            const [screen, setScreen] = useState('welcome');
+            const [currentStep, setCurrentStep] = useState(0);
+            const [score, setScore] = useState(0);
+            const [selectedAnswer, setSelectedAnswer] = useState(null);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [isCorrect, setIsCorrect] = useState(false);
+            const [attempts, setAttempts] = useState(0);
+            const [showHint, setShowHint] = useState(false);
+            const [triedAnswers, setTriedAnswers] = useState([]);
+            const [completedSteps, setCompletedSteps] = useState([]);
+
+            const totalPoints = 150;
+
+            // All module steps
+            const steps = [
+                // SECTION 1: TOPIC EXPLORATION
+                {
+                    id: 'intro-1',
+                    section: 'Topic Exploration',
+                    type: 'content',
+                    title: 'Where Great Research Begins',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Every strong research project starts with <span className="font-semibold text-emerald-700">genuine curiosity</span>. 
+                                Your IB research project is an opportunity to explore something that fascinates you — but turning 
+                                that curiosity into a focused, researchable topic takes skill.
+                            </p>
+                            <div className="bg-emerald-50 border-l-4 border-emerald-500 p-5 rounded-r-lg">
+                                <p className="font-semibold text-emerald-800 mb-2">🔬 The Research Funnel</p>
+                                <p className="text-emerald-700">
+                                    Think of topic development as a funnel: you start <strong>broad</strong> (general interest), 
+                                    then <strong>narrow</strong> down to a specific, manageable focus.
+                                </p>
+                            </div>
+                            <div className="flex justify-center py-6">
+                                <div className="text-center">
+                                    <div className="relative">
+                                        <div className="w-56 h-10 bg-gradient-to-b from-gray-200 to-gray-300 rounded-t-full mx-auto flex items-center justify-center">
+                                            <span className="text-xs text-gray-600 font-medium">Broad Interest Area</span>
+                                        </div>
+                                        <div className="w-40 h-10 bg-gradient-to-b from-gray-300 to-gray-400 mx-auto flex items-center justify-center">
+                                            <span className="text-xs text-gray-700 font-medium">Narrowed Topic</span>
+                                        </div>
+                                        <div className="w-24 h-10 bg-gradient-to-b from-gray-400 to-emerald-400 mx-auto flex items-center justify-center">
+                                            <span className="text-xs text-white font-medium">Focused</span>
+                                        </div>
+                                        <div className="w-12 h-10 bg-emerald-500 rounded-b-lg mx-auto flex items-center justify-center">
+                                            <span className="text-xs text-white font-bold">RQ</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-gray-500 mt-4">From broad interest → Research Question (RQ)</p>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'intro-2',
+                    section: 'Topic Exploration',
+                    type: 'content',
+                    title: 'Background Research: Your Secret Weapon',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Before diving deep, spend time on <span className="font-semibold text-emerald-700">background research</span>. 
+                                This helps you understand what you're getting into:
+                            </p>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="text-2xl mb-2">🗺️</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">Map the territory</h4>
+                                    <p className="text-gray-600 text-sm">Understand what's already known about your topic</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="text-2xl mb-2">🔍</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">Find the gaps</h4>
+                                    <p className="text-gray-600 text-sm">Identify questions that haven't been fully answered</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="text-2xl mb-2">📚</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">Learn the vocabulary</h4>
+                                    <p className="text-gray-600 text-sm">Discover key terms that experts use in this field</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="text-2xl mb-2">⚖️</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">Test feasibility</h4>
+                                    <p className="text-gray-600 text-sm">Check if enough sources exist for your topic</p>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <p className="text-amber-800">
+                                    <strong>💡 Good starting points:</strong> Encyclopedia articles, Wikipedia (yes, really — for background!), 
+                                    subject-specific databases, and review articles that summarize research in a field.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-1',
+                    section: 'Topic Exploration',
+                    type: 'quiz',
+                    title: 'Check Your Understanding',
+                    question: 'A student is interested in "climate change." Which represents the BEST progression from broad to narrow?',
+                    options: [
+                        { id: 'a', text: 'Climate change → Weather → Temperature' },
+                        { id: 'b', text: 'Climate change → Effects on ecosystems → Coral reef bleaching in the Great Barrier Reef since 2015' },
+                        { id: 'c', text: 'Climate change → Global warming → Carbon' },
+                        { id: 'd', text: 'Climate change → Climate change impacts → Climate change effects' }
+                    ],
+                    correct: 'b',
+                    explanation: 'Option B narrows effectively: from a broad topic (climate change) to a specific area (effects on ecosystems) to a focused, researchable topic with a specific location and time frame. The other options either shift to different topics or just rephrase without truly narrowing.',
+                    wrongFeedback: 'The correct option narrows effectively: from a broad topic to a specific area to a focused, researchable topic with a specific location and time frame. The other options either shift to different topics or just rephrase without truly narrowing.',
+                    hint: 'Look for the option that gets more specific at each level AND stays connected to the original topic.',
+                    points: 15
+                },
+                {
+                    id: 'intro-3',
+                    section: 'Topic Exploration',
+                    type: 'content',
+                    title: 'The 5 W\'s: Your Focusing Questions',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Use these focusing questions to narrow any broad topic:
+                            </p>
+                            <div className="space-y-3">
+                                {[
+                                    { letter: 'W', title: 'Who?', desc: 'A specific population, group, or individual', example: 'teenagers, first-generation immigrants, urban residents' },
+                                    { letter: 'W', title: 'What?', desc: 'A specific aspect, problem, or phenomenon', example: 'mental health effects, economic impact, symbolism' },
+                                    { letter: 'W', title: 'When?', desc: 'A specific time period or era', example: 'during the pandemic, 1960-1980, post-colonial period' },
+                                    { letter: 'W', title: 'Where?', desc: 'A specific location or context', example: 'in Taiwan, in rural communities, in Shakespeare\'s tragedies' },
+                                    { letter: 'W', title: 'Why/How?', desc: 'A specific angle or approach', example: 'causes of, effects of, comparison between' }
+                                ].map((item, i) => (
+                                    <div key={i} className="flex items-start gap-4 p-4 bg-white border border-gray-200 rounded-lg hover:border-emerald-300 transition-colors">
+                                        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <span className="text-emerald-700 font-bold">{item.letter}</span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="font-semibold text-gray-900">{item.title}</p>
+                                            <p className="text-gray-600 text-sm">{item.desc}</p>
+                                            <p className="text-emerald-600 text-sm italic mt-1">e.g., {item.example}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-2',
+                    section: 'Topic Exploration',
+                    type: 'quiz',
+                    title: 'Apply the Focusing Questions',
+                    question: 'A student wants to research "social media." Using the focusing questions, which narrowed topic would be MOST appropriate for an IB research project?',
+                    options: [
+                        { id: 'a', text: 'Social media and society' },
+                        { id: 'b', text: 'How Instagram use affects body image perception among teenage girls in urban Taiwan' },
+                        { id: 'c', text: 'The effects of social media' },
+                        { id: 'd', text: 'Social media platforms and their many users around the world' }
+                    ],
+                    correct: 'b',
+                    explanation: 'Option B applies multiple focusing questions: WHO (teenage girls), WHAT (body image perception), WHERE (urban Taiwan), and specifies the platform (Instagram). This creates a focused, researchable topic that can be addressed in 4,000 words.',
+                    wrongFeedback: 'The correct option applies multiple focusing questions (WHO, WHAT, WHERE) and specifies enough detail to create a focused, researchable topic that can be addressed in 4,000 words. Look for the most specific option.',
+                    hint: 'Count how many of the 5 W\'s each option addresses. More specific = better!',
+                    points: 15
+                },
+                // SECTION 2: RESEARCH QUESTIONS
+                {
+                    id: 'rq-1',
+                    section: 'Research Questions',
+                    type: 'content',
+                    title: 'The Heart of Your Research',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Your <span className="font-semibold text-blue-700">research question (RQ)</span> is the single most 
+                                important element of your project. It guides everything: what sources you find, how you organize 
+                                your writing, and what conclusions you draw.
+                            </p>
+                            <div className="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-r-lg">
+                                <p className="font-semibold text-blue-800 mb-3">✨ A strong research question is:</p>
+                                <ul className="space-y-2 text-blue-700">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-500" />
+                                        <span><strong>Focused</strong> — narrow enough to address thoroughly</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-500" />
+                                        <span><strong>Clear</strong> — someone can understand exactly what you're investigating</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-500" />
+                                        <span><strong>Arguable</strong> — allows for analysis, not just description</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-500" />
+                                        <span><strong>Researchable</strong> — sources exist to help you answer it</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'rq-2',
+                    section: 'Research Questions',
+                    type: 'content',
+                    title: 'Question Types That Work',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                The way you phrase your question shapes the kind of analysis you'll do:
+                            </p>
+                            <div className="space-y-4">
+                                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                                    <div className="bg-gray-100 px-5 py-3 border-b border-gray-200">
+                                        <span className="font-semibold text-gray-700">WHAT / WHO questions</span>
+                                        <span className="text-gray-500 text-sm ml-2">→ Descriptive (use carefully)</span>
+                                    </div>
+                                    <div className="p-5 bg-white">
+                                        <p className="text-gray-600 text-sm mb-2">Identify or describe something — can be a starting point but rarely sufficient alone</p>
+                                        <p className="text-gray-800 italic">"What symbols does Frida Kahlo use in her self-portraits?"</p>
+                                    </div>
+                                </div>
+                                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                                    <div className="bg-purple-100 px-5 py-3 border-b border-gray-200">
+                                        <span className="font-semibold text-purple-700">HOW questions</span>
+                                        <span className="text-purple-500 text-sm ml-2">→ Process / Method (good!)</span>
+                                    </div>
+                                    <div className="p-5 bg-white">
+                                        <p className="text-gray-600 text-sm mb-2">Explore processes, techniques, or mechanisms</p>
+                                        <p className="text-gray-800 italic">"How does Shakespeare use dramatic irony to create tension in Othello?"</p>
+                                    </div>
+                                </div>
+                                <div className="border border-emerald-200 rounded-xl overflow-hidden ring-2 ring-emerald-300">
+                                    <div className="bg-emerald-100 px-5 py-3 border-b border-emerald-200">
+                                        <span className="font-semibold text-emerald-700">TO WHAT EXTENT / WHY questions</span>
+                                        <span className="text-emerald-600 text-sm ml-2">→ Analytical (best for IB!)</span>
+                                    </div>
+                                    <div className="p-5 bg-white">
+                                        <p className="text-gray-600 text-sm mb-2">Require evaluation, judgment, and argumentation</p>
+                                        <p className="text-gray-800 italic">"To what extent did economic factors contribute to the French Revolution?"</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <p className="text-amber-800">
+                                    <strong>💡 Pro tip:</strong> "To what extent" and "How effectively" questions often work best 
+                                    because they require you to <em>evaluate evidence and make an argument</em>.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-3',
+                    section: 'Research Questions',
+                    type: 'quiz',
+                    title: 'Identify Strong Questions',
+                    question: 'Which research question is MOST likely to lead to a strong analytical essay?',
+                    options: [
+                        { id: 'a', text: 'What are the causes of the 2008 financial crisis?' },
+                        { id: 'b', text: 'To what extent was deregulation of the banking industry responsible for the 2008 financial crisis?' },
+                        { id: 'c', text: 'When did the 2008 financial crisis begin and end?' },
+                        { id: 'd', text: 'Who were the key figures involved in the 2008 financial crisis?' }
+                    ],
+                    correct: 'b',
+                    explanation: '"To what extent" questions require you to evaluate evidence, consider multiple perspectives, and make a supported argument. Option A might lead to a list rather than analysis. Options C and D are purely factual and wouldn\'t generate enough analytical depth.',
+                    wrongFeedback: 'Strong analytical questions require you to evaluate evidence, consider multiple perspectives, and make a supported argument. Look for a question that demands analysis, not just description or listing of facts.',
+                    hint: 'Which question requires the writer to ARGUE a position rather than just describe facts?',
+                    points: 15
+                },
+                {
+                    id: 'rq-3',
+                    section: 'Research Questions',
+                    type: 'content',
+                    title: 'Red Flags: Questions to Avoid',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Watch out for these common problems:
+                            </p>
+                            <div className="space-y-3">
+                                <div className="flex items-start gap-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                    <XCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-semibold text-red-800">Too Broad</p>
+                                        <p className="text-red-600 text-sm italic">"How does technology affect society?"</p>
+                                        <p className="text-gray-600 text-sm mt-1">Could fill entire libraries — impossible to address adequately</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                    <XCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-semibold text-red-800">Too Narrow</p>
+                                        <p className="text-red-600 text-sm italic">"What color was Napoleon's favorite horse?"</p>
+                                        <p className="text-gray-600 text-sm mt-1">Not enough material for meaningful research and analysis</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                    <XCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-semibold text-red-800">Yes/No Questions</p>
+                                        <p className="text-red-600 text-sm italic">"Did social media cause increased anxiety in teens?"</p>
+                                        <p className="text-gray-600 text-sm mt-1">Can be answered in one word — no room for nuanced analysis</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                    <XCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-0.5" />
+                                    <div>
+                                        <p className="font-semibold text-red-800">Pure Value Judgments</p>
+                                        <p className="text-red-600 text-sm italic">"Is democracy the best form of government?"</p>
+                                        <p className="text-gray-600 text-sm mt-1">"Best" is subjective — hard to analyze with evidence</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-4',
+                    section: 'Research Questions',
+                    type: 'quiz',
+                    title: 'Spot the Problem',
+                    question: 'What is the main problem with this research question: "What are all the effects of pollution on animals?"',
+                    options: [
+                        { id: 'a', text: 'It\'s a yes/no question' },
+                        { id: 'b', text: 'It\'s too broad — "all effects" on "all animals" is impossible to cover' },
+                        { id: 'c', text: 'It\'s too narrow' },
+                        { id: 'd', text: 'It contains a value judgment' }
+                    ],
+                    correct: 'b',
+                    explanation: 'The words "all effects" and "animals" (meaning all animals everywhere) make this impossibly broad. A better version: "How has plastic pollution affected sea turtle populations in the Mediterranean Sea since 2010?"',
+                    wrongFeedback: 'Consider the scope of the question. Could it realistically be answered in a 4,000-word essay? What makes a research question impossible to address thoroughly?',
+                    hint: 'Think about whether this question could reasonably be answered in a 4,000-word essay.',
+                    points: 15
+                },
+                // SECTION 3: SEARCH STRATEGIES
+                {
+                    id: 'search-1',
+                    section: 'Search Strategies',
+                    type: 'content',
+                    title: 'From Question to Keywords',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                You can't just type your research question into a database. You need to break it into 
+                                <span className="font-semibold text-purple-700"> searchable keywords</span>.
+                            </p>
+                            <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+                                <p className="font-semibold text-gray-800 mb-3">Example Research Question:</p>
+                                <p className="text-lg text-purple-700 italic mb-4">
+                                    "To what extent did social media influence voter turnout among young adults in the 2020 US election?"
+                                </p>
+                                <p className="font-semibold text-gray-800 mb-3">Key Concepts to Extract:</p>
+                                <div className="flex flex-wrap gap-2">
+                                    <span className="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-medium">social media</span>
+                                    <span className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">voter turnout</span>
+                                    <span className="bg-emerald-100 text-emerald-800 px-4 py-2 rounded-full text-sm font-medium">young adults</span>
+                                    <span className="bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-sm font-medium">2020 election</span>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <p className="text-amber-800">
+                                    <strong>⚠️ Notice:</strong> We don't search for "to what extent" or "influence" — those are 
+                                    structural words. Focus on the <strong>concepts</strong> that define your topic.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'search-2',
+                    section: 'Search Strategies',
+                    type: 'content',
+                    title: 'Synonyms: Your Search Superpower',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Different authors use different words for the same concept. Brainstorm 
+                                <span className="font-semibold text-purple-700"> synonyms and related terms</span> to find more sources:
+                            </p>
+                            <div className="overflow-x-auto">
+                                <table className="w-full border-collapse bg-white rounded-xl overflow-hidden shadow-sm">
+                                    <thead>
+                                        <tr className="bg-purple-50">
+                                            <th className="border border-gray-200 px-4 py-3 text-left text-purple-800 font-semibold">Your Term</th>
+                                            <th className="border border-gray-200 px-4 py-3 text-left text-purple-800 font-semibold">Synonyms & Related Terms</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">teenagers</td>
+                                            <td className="border border-gray-200 px-4 py-3 text-gray-600">adolescents, youth, young people, teens, high school students</td>
+                                        </tr>
+                                        <tr className="bg-gray-50">
+                                            <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">social media</td>
+                                            <td className="border border-gray-200 px-4 py-3 text-gray-600">Instagram, TikTok, Facebook, social networks, online platforms</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">effects</td>
+                                            <td className="border border-gray-200 px-4 py-3 text-gray-600">impact, influence, consequences, outcomes, results</td>
+                                        </tr>
+                                        <tr className="bg-gray-50">
+                                            <td className="border border-gray-200 px-4 py-3 font-medium text-gray-900">mental health</td>
+                                            <td className="border border-gray-200 px-4 py-3 text-gray-600">psychological wellbeing, anxiety, depression, emotional health</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-5',
+                    section: 'Search Strategies',
+                    type: 'quiz',
+                    title: 'Generate Synonyms',
+                    question: 'You\'re researching "mental health" among "college students." Which set of synonyms would help you find MORE relevant sources?',
+                    options: [
+                        { id: 'a', text: 'brain health, university people' },
+                        { id: 'b', text: 'psychological wellbeing, anxiety, depression, undergraduate students, university students' },
+                        { id: 'c', text: 'being healthy, students' },
+                        { id: 'd', text: 'mental, health, college, students (as separate words)' }
+                    ],
+                    correct: 'b',
+                    explanation: 'Option B includes proper synonyms ("psychological wellbeing," "undergraduate/university students") AND related specific terms ("anxiety," "depression") that researchers actually use. The other options use incorrect terminology or are too vague.',
+                    wrongFeedback: 'Effective synonyms should include terms that researchers actually use in academic papers. Look for proper academic terminology AND related specific terms, not casual or overly vague language.',
+                    hint: 'Think about what words a researcher or psychologist would actually use in an academic paper.',
+                    points: 15
+                },
+                {
+                    id: 'search-3',
+                    section: 'Search Strategies',
+                    type: 'content',
+                    title: 'Boolean Operators: Precision Tools',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                <span className="font-semibold text-purple-700">Boolean operators</span> (AND, OR, NOT) let you combine search terms with precision:
+                            </p>
+                            <div className="space-y-4">
+                                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                                    <div className="bg-blue-500 text-white px-5 py-3 font-bold flex items-center gap-2">
+                                        <span className="bg-blue-400 px-2 py-1 rounded text-sm">AND</span>
+                                        <span>Narrows your search</span>
+                                    </div>
+                                    <div className="p-5 bg-white">
+                                        <p className="text-gray-700 mb-3">Finds sources containing <strong>ALL</strong> your terms</p>
+                                        <div className="bg-gray-100 rounded-lg p-3 font-mono text-sm">
+                                            social media <span className="text-blue-600 font-bold">AND</span> teenagers <span className="text-blue-600 font-bold">AND</span> mental health
+                                        </div>
+                                        <p className="text-gray-500 text-sm mt-2">→ Results must include all three concepts</p>
+                                    </div>
+                                </div>
+                                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                                    <div className="bg-green-500 text-white px-5 py-3 font-bold flex items-center gap-2">
+                                        <span className="bg-green-400 px-2 py-1 rounded text-sm">OR</span>
+                                        <span>Broadens your search</span>
+                                    </div>
+                                    <div className="p-5 bg-white">
+                                        <p className="text-gray-700 mb-3">Finds sources containing <strong>ANY</strong> of your terms</p>
+                                        <div className="bg-gray-100 rounded-lg p-3 font-mono text-sm">
+                                            teenagers <span className="text-green-600 font-bold">OR</span> adolescents <span className="text-green-600 font-bold">OR</span> youth
+                                        </div>
+                                        <p className="text-gray-500 text-sm mt-2">→ Perfect for synonyms!</p>
+                                    </div>
+                                </div>
+                                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                                    <div className="bg-red-500 text-white px-5 py-3 font-bold flex items-center gap-2">
+                                        <span className="bg-red-400 px-2 py-1 rounded text-sm">NOT</span>
+                                        <span>Excludes terms</span>
+                                    </div>
+                                    <div className="p-5 bg-white">
+                                        <p className="text-gray-700 mb-3">Removes sources containing a term</p>
+                                        <div className="bg-gray-100 rounded-lg p-3 font-mono text-sm">
+                                            social media <span className="text-red-600 font-bold">NOT</span> marketing
+                                        </div>
+                                        <p className="text-gray-500 text-sm mt-2">→ Removes results about social media marketing</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'search-4',
+                    section: 'Search Strategies',
+                    type: 'content',
+                    title: 'Combining with Parentheses',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Use <span className="font-semibold text-purple-700">parentheses</span> to group terms and create powerful searches:
+                            </p>
+                            <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+                                <p className="font-semibold text-gray-800 mb-3">Power Search Example:</p>
+                                <div className="bg-white rounded-lg p-4 font-mono text-sm border border-gray-300 mb-4 overflow-x-auto">
+                                    (<span className="text-purple-600">teenagers</span> <span className="text-green-600 font-bold">OR</span> <span className="text-purple-600">adolescents</span>) <span className="text-blue-600 font-bold">AND</span> (<span className="text-orange-600">"social media"</span> <span className="text-green-600 font-bold">OR</span> <span className="text-orange-600">Instagram</span>) <span className="text-blue-600 font-bold">AND</span> <span className="text-pink-600">"mental health"</span>
+                                </div>
+                                <p className="text-gray-700 mb-2">This search finds sources that include:</p>
+                                <ul className="space-y-1 text-gray-600 text-sm">
+                                    <li>✓ Either "teenagers" OR "adolescents"</li>
+                                    <li>✓ AND either "social media" OR "Instagram"</li>
+                                    <li>✓ AND the exact phrase "mental health"</li>
+                                </ul>
+                            </div>
+                            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                                <p className="text-emerald-800">
+                                    <strong>💡 Pro tip:</strong> Use <strong>"quotation marks"</strong> around phrases to search 
+                                    for exact phrases instead of individual words.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-6',
+                    section: 'Search Strategies',
+                    type: 'quiz',
+                    title: 'Build the Search',
+                    question: 'You\'re researching how video games affect attention span in children. Which Boolean search would be MOST effective?',
+                    options: [
+                        { id: 'a', text: 'video games attention children' },
+                        { id: 'b', text: '("video games" OR gaming) AND ("attention span" OR concentration OR focus) AND (children OR kids)' },
+                        { id: 'c', text: 'video AND games AND attention AND span AND children' },
+                        { id: 'd', text: 'video games OR attention OR children' }
+                    ],
+                    correct: 'b',
+                    explanation: 'Option B uses OR to include synonyms for each concept, AND to require all concepts, and quotation marks for exact phrases. Option A has no operators (most databases will treat this as AND, but without synonyms). Option C is too restrictive. Option D would return results about ANY of those topics separately.',
+                    wrongFeedback: 'An effective Boolean search uses OR to include synonyms within each concept, AND to require all concepts to be present, and quotation marks for exact phrases. Consider how each operator affects your results.',
+                    hint: 'The best search uses OR for synonyms within each concept, and AND between different concepts.',
+                    points: 20
+                },
+                {
+                    id: 'search-5',
+                    section: 'Search Strategies',
+                    type: 'content',
+                    title: 'Your Search Strategy Workflow',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Here's your step-by-step process for effective searching:
+                            </p>
+                            <div className="space-y-4">
+                                {[
+                                    { num: 1, title: 'Identify key concepts', desc: 'Break your research question into 2-4 main ideas' },
+                                    { num: 2, title: 'Brainstorm synonyms', desc: 'List 2-3 alternative terms for each concept' },
+                                    { num: 3, title: 'Combine with Boolean', desc: 'Use OR for synonyms, AND between concepts' },
+                                    { num: 4, title: 'Test and refine', desc: 'Too many results? Add terms with AND. Too few? Add synonyms with OR.' }
+                                ].map((step) => (
+                                    <div key={step.num} className="flex items-start gap-4">
+                                        <div className="w-10 h-10 bg-purple-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                                            {step.num}
+                                        </div>
+                                        <div className="pt-1">
+                                            <p className="font-semibold text-gray-900">{step.title}</p>
+                                            <p className="text-gray-600 text-sm">{step.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mt-4">
+                                <p className="text-blue-800">
+                                    <strong>🔄 Remember:</strong> Searching is iterative. Your first search is rarely your best. 
+                                    Look at your results, learn new terminology from them, adjust your terms, and search again!
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-7',
+                    section: 'Search Strategies',
+                    type: 'quiz',
+                    title: 'Final Challenge',
+                    question: 'You searched for "renewable energy" AND "economic impact" but got too few results. What should you try FIRST?',
+                    options: [
+                        { id: 'a', text: 'Give up and choose a different topic' },
+                        { id: 'b', text: 'Remove all search terms and start over' },
+                        { id: 'c', text: 'Add synonyms using OR: ("renewable energy" OR "clean energy" OR "solar power") AND ("economic impact" OR "economic effects" OR costs)' },
+                        { id: 'd', text: 'Add more concepts with AND to be more specific' }
+                    ],
+                    correct: 'c',
+                    explanation: 'When you get too few results, broaden your search by adding synonyms with OR. This captures sources that use different terminology for the same concepts. Option D would narrow the search even more (fewer results). Never give up — adjust your strategy!',
+                    wrongFeedback: 'When you get too few results, you need to broaden your search. Think about which strategy would expand your results by capturing sources that use different terminology for the same concepts.',
+                    hint: 'Too few results means your search is too narrow. Which option would BROADEN it?',
+                    points: 20
+                }
+            ];
+
+            const currentStepData = steps[currentStep];
+            const totalSteps = steps.length;
+            const progressPercent = ((currentStep + 1) / totalSteps) * 100;
+
+            // Get current section for styling
+            const getSectionColor = () => {
+                if (!currentStepData) return 'emerald';
+                const section = currentStepData.section;
+                if (section === 'Topic Exploration') return 'emerald';
+                if (section === 'Research Questions') return 'blue';
+                if (section === 'Search Strategies') return 'purple';
+                return 'emerald';
+            };
+
+            const sectionColor = getSectionColor();
+
+            const resetQuiz = () => {
+                setSelectedAnswer(null);
+                setShowFeedback(false);
+                setIsCorrect(false);
+                setAttempts(0);
+                setShowHint(false);
+                setTriedAnswers([]);
+            };
+
+            const handleNext = () => {
+                if (currentStep < totalSteps - 1) {
+                    setCurrentStep(currentStep + 1);
+                    resetQuiz();
+                } else {
+                    setScreen('complete');
+                }
+            };
+
+            const handlePrev = () => {
+                if (currentStep > 0) {
+                    setCurrentStep(currentStep - 1);
+                    resetQuiz();
+                }
+            };
+
+            const handleAnswerSelect = (id) => {
+                if (showFeedback) return;
+                if (triedAnswers.includes(id)) return; // Can't select already-tried answers
+                setSelectedAnswer(id);
+            };
+
+            const checkAnswer = () => {
+                if (!selectedAnswer) return;
+                const correct = selectedAnswer === currentStepData.correct;
+                setIsCorrect(correct);
+                setShowFeedback(true);
+                
+                if (correct) {
+                    // Graduated scoring based on attempts
+                    let earnedPoints;
+                    if (attempts === 0) {
+                        earnedPoints = currentStepData.points; // Full points
+                    } else if (attempts === 1) {
+                        earnedPoints = Math.floor(currentStepData.points * 0.75); // 75%
+                    } else if (attempts === 2) {
+                        earnedPoints = Math.floor(currentStepData.points * 0.5); // 50%
+                    } else {
+                        earnedPoints = Math.floor(currentStepData.points * 0.25); // 25%
+                    }
+                    setScore(score + earnedPoints);
+                    setCompletedSteps([...completedSteps, currentStepData.id]);
+                } else {
+                    // Track this wrong answer
+                    setTriedAnswers([...triedAnswers, selectedAnswer]);
+                    setAttempts(attempts + 1);
+                }
+            };
+
+            const handleTryAgain = () => {
+                setShowFeedback(false);
+                setSelectedAnswer(null);
+                setShowHint(true);
+            };
+
+            const restart = () => {
+                setScreen('welcome');
+                setCurrentStep(0);
+                setScore(0);
+                setSelectedAnswer(null);
+                setShowFeedback(false);
+                setIsCorrect(false);
+                setAttempts(0);
+                setShowHint(false);
+                setTriedAnswers([]);
+                setCompletedSteps([]);
+            };
+
+            // WELCOME SCREEN
+            if (screen === 'welcome') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 lg:p-12 max-w-3xl w-full animate-fadeIn">
+                            <div className="text-center">
+                                <div className="w-20 h-20 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                                    <BookOpen className="w-10 h-10 text-emerald-600" />
+                                </div>
+                                <p className="text-sm font-semibold text-emerald-600 uppercase tracking-wider mb-2">Module 01</p>
+                                <h1 className="text-4xl lg:text-5xl font-serif text-gray-900 mb-4">Research Foundations</h1>
+                                <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+                                    Master the essential skills for starting any research project: exploring topics, 
+                                    crafting research questions, and building effective search strategies.
+                                </p>
+                                
+                                <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
+                                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                        <Target className="w-5 h-5 text-emerald-600" />
+                                        What you'll learn:
+                                    </h3>
+                                    <div className="grid md:grid-cols-3 gap-4">
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span className="text-emerald-700 font-bold text-sm">1</span>
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-900 text-sm">Topic Exploration</p>
+                                                <p className="text-gray-500 text-xs">Narrow broad interests into focused topics</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span className="text-blue-700 font-bold text-sm">2</span>
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-900 text-sm">Research Questions</p>
+                                                <p className="text-gray-500 text-xs">Craft strong, analytical questions</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span className="text-purple-700 font-bold text-sm">3</span>
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-900 text-sm">Search Strategies</p>
+                                                <p className="text-gray-500 text-xs">Use keywords & Boolean operators</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex items-center justify-center gap-6 text-sm text-gray-500 mb-8">
+                                    <span className="flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        ~50 minutes
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        7 interactive quizzes
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                        {totalPoints} points possible
+                                    </span>
+                                </div>
+                                
+                                <button
+                                    onClick={() => setScreen('learn')}
+                                    className="bg-emerald-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-emerald-700 transition-all transform hover:scale-105 shadow-lg inline-flex items-center gap-2"
+                                >
+                                    Start Learning
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // COMPLETION SCREEN
+            if (screen === 'complete') {
+                const percentage = Math.round((score / totalPoints) * 100);
+                let badge, emoji, message;
+                
+                if (percentage >= 90) {
+                    badge = "Research Expert"; emoji = "🏆"; message = "Outstanding! You've mastered research foundations.";
+                } else if (percentage >= 75) {
+                    badge = "Skilled Researcher"; emoji = "⭐"; message = "Great work! You have a solid grasp of the fundamentals.";
+                } else if (percentage >= 60) {
+                    badge = "Developing Researcher"; emoji = "📚"; message = "Good progress! Review any sections you found challenging.";
+                } else {
+                    badge = "Research Apprentice"; emoji = "🌱"; message = "You're building your skills. Consider reviewing this module.";
+                }
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 lg:p-12 max-w-2xl w-full animate-fadeIn">
+                            <div className="text-center">
+                                <div className="text-7xl mb-4">{emoji}</div>
+                                <p className="text-sm font-semibold text-emerald-600 uppercase tracking-wider mb-2">Module Complete!</p>
+                                <h1 className="text-4xl font-serif text-gray-900 mb-2">Research Foundations</h1>
+                                
+                                <div className="my-8">
+                                    <div className="text-6xl font-bold text-emerald-600">{score}<span className="text-2xl text-gray-400">/{totalPoints}</span></div>
+                                    <p className="text-gray-500 mt-1">{percentage}% Score</p>
+                                </div>
+                                
+                                <div className="bg-emerald-50 rounded-xl p-6 mb-6 inline-block">
+                                    <p className="text-emerald-800 font-semibold text-lg">{badge}</p>
+                                    <p className="text-emerald-600 text-sm mt-1">{message}</p>
+                                </div>
+
+                                <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
+                                    <h3 className="font-semibold text-gray-900 mb-4">🎓 What you learned:</h3>
+                                    <ul className="space-y-2 text-gray-700">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                                            <span>How to narrow broad topics using the 5 W's</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                                            <span>Characteristics of strong, analytical research questions</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
+                                            <span>Using keywords, synonyms, and Boolean operators (AND, OR, NOT)</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div className="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-8">
+                                    <p className="text-blue-800">
+                                        <strong>Next up:</strong> Module 2 covers finding sources, evaluating information, 
+                                        and using AI tools effectively in your research.
+                                    </p>
+                                </div>
+
+                                <div className="flex gap-4 justify-center flex-wrap">
+                                    <button onClick={restart} className="flex items-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                                        <RefreshCw className="w-5 h-5" />
+                                        Try Again
+                                    </button>
+                                    <a href="./" className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors">
+                                        Back to Modules
+                                        <ChevronRight className="w-5 h-5" />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // LEARNING SCREEN
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    {/* Header */}
+                    <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+                        <div className="max-w-4xl mx-auto px-4 py-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                    <a href="./" className="text-gray-400 hover:text-gray-600 transition-colors">
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </a>
+                                    <div>
+                                        <p className="text-xs text-gray-500 uppercase tracking-wider">Research Foundations</p>
+                                        <h1 className="font-semibold text-gray-900">{currentStepData?.section}</h1>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-sm font-semibold text-emerald-600">{score} pts</p>
+                                    <p className="text-xs text-gray-500">of {totalPoints}</p>
+                                </div>
+                            </div>
+                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div className={`h-full bg-${sectionColor}-500 progress-bar rounded-full`} style={{ width: `${progressPercent}%` }}></div>
+                            </div>
+                            <div className="flex justify-between mt-1">
+                                <span className="text-xs text-gray-500">Step {currentStep + 1} of {totalSteps}</span>
+                                <span className="text-xs text-gray-500">{Math.round(progressPercent)}% complete</span>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Content */}
+                    <main className="max-w-4xl mx-auto px-4 py-8">
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 lg:p-8 animate-fadeIn" key={currentStep}>
+                            {/* Step type badge */}
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                                    currentStepData?.type === 'quiz' 
+                                        ? 'bg-amber-100 text-amber-700' 
+                                        : `bg-${sectionColor}-100 text-${sectionColor}-700`
+                                }`}>
+                                    {currentStepData?.type === 'quiz' ? '✍️ Check Your Understanding' : '📖 Learn'}
+                                </span>
+                            </div>
+
+                            {/* Title */}
+                            <h2 className="text-2xl lg:text-3xl font-serif text-gray-900 mb-6">{currentStepData?.title}</h2>
+
+                            {/* Content or Quiz */}
+                            {currentStepData?.type === 'content' ? (
+                                <div>{currentStepData.content}</div>
+                            ) : (
+                                <div className="space-y-6">
+                                    <p className="text-lg text-gray-700">{currentStepData?.question}</p>
+                                    
+                                    {/* Hint */}
+                                    {showHint && currentStepData?.hint && (
+                                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3 animate-slideIn">
+                                            <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                                            <p className="text-amber-800 text-sm"><strong>Hint:</strong> {currentStepData.hint}</p>
+                                        </div>
+                                    )}
+                                    
+                                    {/* Options */}
+                                    <div className="space-y-3">
+                                        {currentStepData?.options?.map((option) => {
+                                            let btnClass = "w-full text-left p-4 rounded-xl border-2 transition-all option-btn ";
+                                            
+                                            const isTriedAnswer = triedAnswers.includes(option.id);
+                                            const isCurrentWrongAnswer = showFeedback && option.id === selectedAnswer && !isCorrect;
+                                            
+                                            if (isTriedAnswer && !showFeedback) {
+                                                // Previously tried wrong answer - show as disabled/crossed out
+                                                btnClass += "border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed";
+                                            } else if (isCurrentWrongAnswer) {
+                                                // Currently selected wrong answer during feedback
+                                                btnClass += "border-red-500 bg-red-50";
+                                            } else if (showFeedback && isCorrect && option.id === selectedAnswer) {
+                                                // Correct answer selected
+                                                btnClass += "border-emerald-500 bg-emerald-50";
+                                            } else if (showFeedback) {
+                                                // Other answers during feedback
+                                                btnClass += "border-gray-200 opacity-50";
+                                            } else if (selectedAnswer === option.id) {
+                                                btnClass += `border-${sectionColor}-500 bg-${sectionColor}-50`;
+                                            } else {
+                                                btnClass += "border-gray-200 hover:border-gray-300 hover:bg-gray-50";
+                                            }
+                                            
+                                            return (
+                                                <button
+                                                    key={option.id}
+                                                    onClick={() => handleAnswerSelect(option.id)}
+                                                    disabled={showFeedback || isTriedAnswer}
+                                                    className={btnClass}
+                                                >
+                                                    <div className="flex items-start gap-3">
+                                                        <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 text-sm font-semibold transition-colors ${
+                                                            isTriedAnswer && !showFeedback
+                                                                ? 'bg-gray-400 border-gray-400 text-white'
+                                                                : isCurrentWrongAnswer
+                                                                    ? 'bg-red-500 border-red-500 text-white'
+                                                                    : showFeedback && isCorrect && option.id === selectedAnswer
+                                                                        ? 'bg-emerald-500 border-emerald-500 text-white'
+                                                                        : selectedAnswer === option.id
+                                                                            ? `bg-${sectionColor}-500 border-${sectionColor}-500 text-white`
+                                                                            : 'border-gray-300 text-gray-500'
+                                                        }`}>
+                                                            {option.id.toUpperCase()}
+                                                        </span>
+                                                        <span className={`pt-0.5 ${isTriedAnswer && !showFeedback ? 'text-gray-400 line-through' : 'text-gray-700'}`}>{option.text}</span>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* Check Answer Button */}
+                                    {!showFeedback && selectedAnswer && (
+                                        <button
+                                            onClick={checkAnswer}
+                                            className={`bg-${sectionColor}-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-${sectionColor}-700 transition-colors`}
+                                        >
+                                            Check Answer
+                                        </button>
+                                    )}
+
+                                    {/* Feedback */}
+                                    {/* Feedback for correct answer */}
+                                    {showFeedback && isCorrect && (
+                                        <div className="p-5 rounded-xl animate-fadeIn bg-emerald-50 border border-emerald-200">
+                                            <div className="flex items-start gap-3">
+                                                <CheckCircle className="w-6 h-6 text-emerald-500 flex-shrink-0" />
+                                                <div>
+                                                    <p className="font-semibold text-emerald-800">Correct!</p>
+                                                    <p className="mt-1 text-sm text-emerald-700">
+                                                        {currentStepData.explanation}
+                                                    </p>
+                                                    <p className="mt-2 text-emerald-600 font-semibold text-sm">
+                                                        +{attempts === 0 ? currentStepData.points : 
+                                                          attempts === 1 ? Math.floor(currentStepData.points * 0.75) :
+                                                          attempts === 2 ? Math.floor(currentStepData.points * 0.5) :
+                                                          Math.floor(currentStepData.points * 0.25)} points
+                                                        {attempts === 1 && ' (2nd try)'}
+                                                        {attempts === 2 && ' (3rd try)'}
+                                                        {attempts >= 3 && ` (${attempts + 1}${attempts === 3 ? 'th' : 'th'} try)`}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Feedback for wrong answer - with Try Again button */}
+                                    {showFeedback && !isCorrect && (
+                                        <div className="p-5 rounded-xl animate-fadeIn bg-red-50 border border-red-200">
+                                            <div className="flex items-start gap-3">
+                                                <XCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
+                                                <div className="flex-1">
+                                                    <p className="font-semibold text-red-800">Not quite right</p>
+                                                    <p className="mt-1 text-sm text-red-700">
+                                                        {currentStepData.wrongFeedback}
+                                                    </p>
+                                                    <button
+                                                        onClick={handleTryAgain}
+                                                        className="mt-3 flex items-center gap-2 bg-red-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                                                    >
+                                                        <RefreshCw className="w-4 h-4" />
+                                                        Try Again
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Navigation */}
+                            <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
+                                <button
+                                    onClick={handlePrev}
+                                    disabled={currentStep === 0}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                                        currentStep === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    <ChevronLeft className="w-5 h-5" />
+                                    Previous
+                                </button>
+                                
+                                <button
+                                    onClick={handleNext}
+                                    disabled={currentStepData?.type === 'quiz' && !(showFeedback && isCorrect)}
+                                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+                                        currentStepData?.type === 'quiz' && !(showFeedback && isCorrect)
+                                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                            : `bg-${sectionColor}-600 text-white hover:bg-${sectionColor}-700`
+                                    }`}
+                                >
+                                    {currentStep === totalSteps - 1 ? 'Complete Module' : 'Continue'}
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<ResearchFoundationsModule />, document.getElementById('root'));
+    </script>
+</body>
+</html>

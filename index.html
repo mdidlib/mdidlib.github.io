@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDID Library - Wang Yangfeng Library</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-ink: #1a1a2e;
+            --color-paper: #faf9f7;
+            --color-accent-gold: #c9a227;
+            --color-accent-teal: #0d9488;
+            --color-accent-blue: #2563eb;
+            --color-muted: #6b7280;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-paper);
+        }
+        
+        .font-serif {
+            font-family: 'Instrument Serif', Georgia, serif;
+        }
+        
+        /* Subtle paper texture */
+        .texture-overlay {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .animate-fadeInUp {
+            animation: fadeInUp 0.7s ease-out forwards;
+        }
+        
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .delay-100 { animation-delay: 0.1s; opacity: 0; }
+        .delay-200 { animation-delay: 0.2s; opacity: 0; }
+        .delay-300 { animation-delay: 0.3s; opacity: 0; }
+        .delay-400 { animation-delay: 0.4s; opacity: 0; }
+        .delay-500 { animation-delay: 0.5s; opacity: 0; }
+        
+        /* Card styles */
+        .resource-card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .resource-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .resource-card:hover .card-icon {
+            transform: scale(1.1);
+        }
+        
+        .card-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        /* Hero gradient */
+        .hero-gradient {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d3748 50%, #1a365d 100%);
+        }
+        
+        /* Gold accent line */
+        .gold-line {
+            height: 3px;
+            background: linear-gradient(90deg, transparent, #c9a227, transparent);
+        }
+        
+        /* Feature badges */
+        .feature-badge {
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        /* Quick links hover effect */
+        .quick-link {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .quick-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--color-accent-gold);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .quick-link:hover::after {
+            transform: translateX(0);
+        }
+        
+        /* Chinese text styling */
+        .chinese-text {
+            font-family: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Subtle texture overlay -->
+    <div class="fixed inset-0 texture-overlay pointer-events-none"></div>
+    
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200 relative z-10">
+        <div class="max-w-6xl mx-auto px-6 py-5">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-serif text-gray-900">MDID Library</h1>
+                    <p class="text-sm text-gray-500 mt-0.5">
+                        <span class="chinese-text">汪楊豐圖書館</span> · Wang Yangfeng Library
+                    </p>
+                </div>
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm text-gray-500">Mingdao International Department</p>
+                    <a href="https://mdid.info/library" class="text-amber-700 hover:text-amber-800 text-sm font-medium transition-colors">
+                        Main Library Page →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden">
+        <div class="hero-gradient text-white py-16 lg:py-24">
+            <div class="max-w-6xl mx-auto px-6">
+                <div class="max-w-3xl animate-fadeInUp">
+                    <p class="feature-badge text-amber-400 mb-4">Online Learning Resources</p>
+                    <h2 class="text-4xl lg:text-5xl font-serif mb-6 leading-tight">
+                        Build Your Research & Digital Skills
+                    </h2>
+                    <p class="text-lg text-gray-300 leading-relaxed mb-8">
+                        Interactive modules to help you become a more effective researcher and responsible digital citizen. 
+                        Work at your own pace, from anywhere.
+                    </p>
+                    <div class="flex flex-wrap gap-6 text-sm text-gray-400">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                            </svg>
+                            <span>Self-paced learning</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>Instant feedback</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                            </svg>
+                            <span>Works on any device</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="gold-line"></div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-6 py-16">
+        <!-- Resource Cards -->
+        <div class="grid md:grid-cols-2 gap-8 mb-16">
+            
+            <!-- Research Toolkit Card -->
+            <a href="research-toolkit/" class="block animate-fadeInUp delay-100">
+                <div class="resource-card rounded-2xl overflow-hidden h-full">
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-8 text-white">
+                        <div class="card-icon w-16 h-16 bg-amber-400/20 rounded-2xl flex items-center justify-center mb-6">
+                            <svg class="w-8 h-8 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-serif mb-2">Research Toolkit</h3>
+                        <p class="text-gray-400 text-sm">IB Research Project Preparation</p>
+                    </div>
+                    <div class="p-8">
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            Three comprehensive modules covering research foundations, source evaluation, AI tools, and citations. 
+                            Essential preparation for the Personal Project and Extended Essay.
+                        </p>
+                        <div class="space-y-3 mb-6">
+                            <div class="flex items-center gap-3 text-sm text-gray-600">
+                                <span class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">1</span>
+                                Research Foundations
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-gray-600">
+                                <span class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">2</span>
+                                Sources, Evaluation & AI
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-gray-600">
+                                <span class="w-6 h-6 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-xs font-bold">3</span>
+                                Academic Integrity & Citations
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-500">~50 min per module</span>
+                            <span class="text-amber-700 font-semibold flex items-center gap-2">
+                                Start Learning
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- Digital Skills Card -->
+            <a href="digital-skills/" class="block animate-fadeInUp delay-200">
+                <div class="resource-card rounded-2xl overflow-hidden h-full">
+                    <div class="bg-gradient-to-br from-teal-500 via-blue-500 to-indigo-600 p-8 text-white">
+                        <div class="card-icon w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-serif mb-2">Digital Skills</h3>
+                        <p class="text-blue-100 text-sm">Interactive Learning Modules</p>
+                    </div>
+                    <div class="p-8">
+                        <p class="text-gray-600 mb-6 leading-relaxed">
+                            Fun, game-like challenges covering source evaluation, search strategies, digital citizenship, 
+                            privacy, and media literacy. Perfect for building essential 21st-century skills.
+                        </p>
+                        <div class="space-y-3 mb-6">
+                            <div class="flex items-center gap-3 text-sm text-gray-600">
+                                <span class="text-lg">🔍</span>
+                                Research & Source Evaluation
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-gray-600">
+                                <span class="text-lg">✏️</span>
+                                Academic Honesty Skills
+                            </div>
+                            <div class="flex items-center gap-3 text-sm text-gray-600">
+                                <span class="text-lg">🌐</span>
+                                Digital Citizenship
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm text-gray-500">15-40 min per module</span>
+                            <span class="text-teal-600 font-semibold flex items-center gap-2">
+                                Explore Modules
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Quick Links Section -->
+        <div class="animate-fadeInUp delay-300">
+            <div class="bg-white border border-gray-200 rounded-2xl p-8 lg:p-10">
+                <div class="text-center mb-10">
+                    <h3 class="text-2xl font-serif text-gray-900 mb-2">Quick Links</h3>
+                    <p class="text-gray-600">Additional library resources and tools</p>
+                </div>
+                
+                <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <a href="https://mdid.info/library" class="quick-link group p-4 rounded-xl hover:bg-gray-50 transition-colors">
+                        <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-amber-200 transition-colors">
+                            <svg class="w-5 h-5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-1">Library Home</h4>
+                        <p class="text-sm text-gray-500">Main library page on mdid.info</p>
+                    </a>
+                    
+                    <a href="https://mdid.info/library#catalog" class="quick-link group p-4 rounded-xl hover:bg-gray-50 transition-colors">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-blue-200 transition-colors">
+                            <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-1">Search Catalog</h4>
+                        <p class="text-sm text-gray-500">Find books and resources</p>
+                    </a>
+                    
+                    <a href="https://mdid.info/library#databases" class="quick-link group p-4 rounded-xl hover:bg-gray-50 transition-colors">
+                        <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-emerald-200 transition-colors">
+                            <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-1">Databases</h4>
+                        <p class="text-sm text-gray-500">Academic research databases</p>
+                    </a>
+                    
+                    <a href="mailto:mdidlib@ms.mingdao.edu.tw" class="quick-link group p-4 rounded-xl hover:bg-gray-50 transition-colors">
+                        <div class="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center mb-3 group-hover:bg-violet-200 transition-colors">
+                            <svg class="w-5 h-5 text-violet-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-gray-900 mb-1">Contact Us</h4>
+                        <p class="text-sm text-gray-500">Email the librarian</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="mt-12 animate-fadeInUp delay-400">
+            <div class="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-8 lg:p-10">
+                <div class="max-w-2xl mx-auto text-center">
+                    <div class="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-serif text-gray-900 mb-3">Need Help?</h3>
+                    <p class="text-gray-600 mb-6">
+                        Working on a research project? Have questions about citing sources or using AI tools responsibly? 
+                        The library is here to support your learning.
+                    </p>
+                    <p class="text-sm text-amber-800 font-medium">
+                        Visit us on the 2nd floor or email 
+                        <a href="mailto:mdidlib@ms.mingdao.edu.tw" class="underline hover:no-underline">library@ms.mingdao.edu.tw</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-200 bg-white">
+        <div class="max-w-6xl mx-auto px-6 py-8">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-center md:text-left">
+                    <p class="text-sm text-gray-600">© 2025 Mingdao International Department Library</p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <span class="chinese-text">汪楊豐圖書館</span> · Building skills for lifelong learning
+                    </p>
+                </div>
+                <div class="flex items-center gap-6">
+                    <a href="https://mdid.info" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">MDID Website</a>
+                    <a href="https://mdid.info/library" class="text-sm text-gray-500 hover:text-gray-700 transition-colors">Library Home</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

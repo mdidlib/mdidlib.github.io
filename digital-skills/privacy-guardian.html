@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Guardian - MDID Digital Skills</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .animate-pulse-subtle {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .animate-shake {
+            animation: shake 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        console.log("Privacy Guardian module starting...");
+
+        // Icon components
+        const Shield = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+        );
+
+        const Lock = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+        );
+
+        const Eye = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+        );
+
+        const EyeOff = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                <line x1="2" x2="22" y1="2" y2="22"/>
+            </svg>
+        );
+
+        const AlertTriangle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                <line x1="12" x2="12" y1="9" y2="13"/>
+                <line x1="12" x2="12.01" y1="17" y2="17"/>
+            </svg>
+        );
+
+        const CheckCircle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+        );
+
+        const XCircle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="m15 9-6 6"/>
+                <path d="m9 9 6 6"/>
+            </svg>
+        );
+
+        const Lightbulb = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+                <path d="M9 18h6"/>
+                <path d="M10 22h4"/>
+            </svg>
+        );
+
+        const RefreshCw = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                <path d="M8 16H3v5"/>
+            </svg>
+        );
+
+        const Mail = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2"/>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+            </svg>
+        );
+
+        const Settings = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+        );
+
+        const PrivacyGuardianModule = () => {
+            const [currentScreen, setCurrentScreen] = useState('welcome');
+            const [currentChallenge, setCurrentChallenge] = useState(0);
+            const [currentQuestion, setCurrentQuestion] = useState(0);
+            const [score, setScore] = useState(0);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [selectedAnswer, setSelectedAnswer] = useState(null);
+            const [showHint, setShowHint] = useState(false);
+            const [passwordStrength, setPasswordStrength] = useState(0);
+            const [passwordInput, setPasswordInput] = useState('');
+            const [showPassword, setShowPassword] = useState(false);
+            const [draggedItem, setDraggedItem] = useState(null);
+            const [sortedItems, setSortedItems] = useState([]);
+            const [phishingFlags, setPhishingFlags] = useState([]);
+            const passwordInputRef = useRef(null);
+
+            // Maintain focus on password input when typing
+            useEffect(() => {
+                if (currentScreen === 'activity' && currentChallenge === 0 && passwordInputRef.current && !showFeedback) {
+                    passwordInputRef.current.focus();
+                }
+            }, [passwordInput, currentScreen, currentChallenge, showFeedback]);
+
+            console.log("Module initialized, current screen:", currentScreen);
+
+            // Challenge 1: Password Strength Analyzer
+            const passwordChallenges = [
+                {
+                    id: 1,
+                    task: "Create a STRONG password (minimum 12 characters)",
+                    requirements: [
+                        { label: "At least 12 characters", check: (pw) => pw.length >= 12 },
+                        { label: "Contains uppercase letter", check: (pw) => /[A-Z]/.test(pw) },
+                        { label: "Contains lowercase letter", check: (pw) => /[a-z]/.test(pw) },
+                        { label: "Contains a number", check: (pw) => /[0-9]/.test(pw) },
+                        { label: "Contains a special character (!@#$%^&*)", check: (pw) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw) },
+                        { label: "No common words (password, 123456, qwerty)", check: (pw) => !/(password|123456|qwerty|letmein|welcome|admin)/i.test(pw) }
+                    ],
+                    tips: [
+                        "Use a passphrase like 'PurpleDinosaur$Eats42Tacos!'",
+                        "Never use personal info like birthdays or pet names",
+                        "Each account should have a unique password"
+                    ]
+                }
+            ];
+
+            // Challenge 2: Spot the Phishing Email
+            const phishingEmails = [
+                {
+                    id: 1,
+                    from: "security@amaz0n-support.net",
+                    subject: "URGENT: Your Account Will Be Suspended!!!",
+                    body: "Dear Valued Custumer,\n\nWe have detected unusual activity on your account. Your account will be SUSPENDED within 24 hours unless you verify your information immediately!\n\nClick here to verify: http://amaz0n-secure-login.tk/verify\n\nYou must act NOW or lose access forever!\n\nAmazon Security Team",
+                    isPhishing: true,
+                    redFlags: [
+                        { id: 1, text: "Suspicious sender email (amaz0n-support.net, not amazon.com)", location: "from" },
+                        { id: 2, text: "Spelling error: 'Custumer' instead of 'Customer'", location: "body" },
+                        { id: 3, text: "Urgency and threats ('SUSPENDED', 'act NOW')", location: "body" },
+                        { id: 4, text: "Suspicious link (.tk domain, not amazon.com)", location: "body" },
+                        { id: 5, text: "ALL CAPS and excessive punctuation (!!!)", location: "subject" }
+                    ]
+                },
+                {
+                    id: 2,
+                    from: "noreply@school.edu",
+                    subject: "Library Book Due Reminder",
+                    body: "Hello,\n\nThis is a reminder that the following item is due on December 15:\n\n'Introduction to Biology' - Due: Dec 15, 2024\n\nPlease return it to the library or renew online through your student portal.\n\nThank you,\nMDID Library",
+                    isPhishing: false,
+                    redFlags: []
+                },
+                {
+                    id: 3,
+                    from: "prize-winner@lottery-international.org",
+                    subject: "Congratulations! You've Won $1,000,000!",
+                    body: "CONGRATULATIONS!!!\n\nYou have been selected as the LUCKY WINNER of our International Email Lottery!\n\nPrize: $1,000,000 USD\n\nTo claim your prize, simply send us:\n- Your full name\n- Your bank account number\n- A processing fee of $500\n\nReply within 48 hours or forfeit your winnings!\n\nDr. James Wilson\nLottery Claims Department",
+                    isPhishing: true,
+                    redFlags: [
+                        { id: 1, text: "You can't win a lottery you didn't enter", location: "body" },
+                        { id: 2, text: "Asking for bank account information", location: "body" },
+                        { id: 3, text: "Requesting money to claim a 'prize'", location: "body" },
+                        { id: 4, text: "Pressure with deadline (48 hours)", location: "body" },
+                        { id: 5, text: "Too good to be true ($1,000,000)", location: "subject" }
+                    ]
+                }
+            ];
+
+            // Challenge 3: Privacy Settings Scenarios
+            const privacyScenarios = [
+                {
+                    id: 1,
+                    scenario: "You're creating a social media profile. What information should you AVOID sharing publicly?",
+                    options: [
+                        { id: 'a', text: "Your favorite music and movies", safe: true },
+                        { id: 'b', text: "Your home address and phone number", safe: false },
+                        { id: 'c', text: "Your school name and daily schedule", safe: false },
+                        { id: 'd', text: "Your hobbies and interests", safe: true }
+                    ],
+                    correctAnswer: ['b', 'c'],
+                    explanation: "Never share your home address, phone number, or daily schedule online. This information can be used by strangers to locate or track you. General interests and hobbies are safer to share.",
+                    multiSelect: true
+                },
+                {
+                    id: 2,
+                    scenario: "Someone you only know online asks to meet in person. What should you do?",
+                    options: [
+                        { id: 'a', text: "Meet them alone at a private location", safe: false },
+                        { id: 'b', text: "Tell a trusted adult before making any decisions", safe: true },
+                        { id: 'c', text: "Give them your address so they can pick you up", safe: false },
+                        { id: 'd', text: "If you decide to meet, do so in a public place with a parent/guardian", safe: true }
+                    ],
+                    correctAnswer: ['b', 'd'],
+                    explanation: "Always tell a trusted adult about online relationships. If you ever meet someone from online, it should be in a public place with a parent or guardian present. Never share your address or meet alone.",
+                    multiSelect: true
+                },
+                {
+                    id: 3,
+                    scenario: "A website asks for your personal information to enter a 'free' contest. What's the BEST approach?",
+                    options: [
+                        { id: 'a', text: "Enter all your real information to win", safe: false },
+                        { id: 'b', text: "Check if the website is legitimate first", safe: true },
+                        { id: 'c', text: "Ask a parent/guardian before sharing any info", safe: true },
+                        { id: 'd', text: "Use a parent's credit card 'just in case'", safe: false }
+                    ],
+                    correctAnswer: ['b', 'c'],
+                    explanation: "Always verify a website's legitimacy before sharing information, and ask a trusted adult. 'Free' contests that ask for personal or payment info are often scams.",
+                    multiSelect: true
+                },
+                {
+                    id: 4,
+                    scenario: "You receive a message from a 'friend' asking for your password because they got locked out of their account. What should you do?",
+                    options: [
+                        { id: 'a', text: "Send them your password to help out", safe: false },
+                        { id: 'b', text: "Never share your password with anyone", safe: true },
+                        { id: 'c', text: "Contact your friend through another method to verify", safe: true },
+                        { id: 'd', text: "Report the message as suspicious", safe: true }
+                    ],
+                    correctAnswer: ['b', 'c', 'd'],
+                    explanation: "Never share your password with anyone, even friends. Hackers often impersonate people you know. Verify through another method (like calling them) and report suspicious messages.",
+                    multiSelect: true
+                }
+            ];
+
+            // Challenge 4: Sort by Privacy Risk
+            const privacyRiskItems = [
+                { id: 1, text: "Your pet's name", risk: "low", explanation: "Generally safe, but avoid using as a password" },
+                { id: 2, text: "Your home address", risk: "high", explanation: "Never share - can be used to locate you" },
+                { id: 3, text: "Your favorite color", risk: "low", explanation: "Safe to share - not personally identifying" },
+                { id: 4, text: "Your school schedule", risk: "high", explanation: "Reveals when and where you'll be" },
+                { id: 5, text: "Your full birthdate", risk: "medium", explanation: "Often used for identity verification - share carefully" },
+                { id: 6, text: "Your password", risk: "high", explanation: "NEVER share - grants access to your accounts" },
+                { id: 7, text: "Your favorite movie", risk: "low", explanation: "Safe to share as general interest" },
+                { id: 8, text: "Your parent's workplace", risk: "medium", explanation: "Can be used to social engineer or locate family" }
+            ];
+
+            const challenges = [
+                { id: 1, name: "Password Power", icon: "🔐", description: "Create a super-strong password" },
+                { id: 2, name: "Phishing Detective", icon: "🎣", description: "Spot the fake emails" },
+                { id: 3, name: "Privacy Scenarios", icon: "🛡️", description: "Make safe choices online" },
+                { id: 4, name: "Risk Radar", icon: "📊", description: "Sort info by privacy risk" }
+            ];
+
+            const calculatePasswordStrength = (password) => {
+                let strength = 0;
+                passwordChallenges[0].requirements.forEach(req => {
+                    if (req.check(password)) strength++;
+                });
+                return strength;
+            };
+
+            const handlePasswordChange = (e) => {
+                const pw = e.target.value;
+                setPasswordInput(pw);
+                setPasswordStrength(calculatePasswordStrength(pw));
+            };
+
+            const handlePhishingFlagToggle = (flagId) => {
+                if (phishingFlags.includes(flagId)) {
+                    setPhishingFlags(phishingFlags.filter(id => id !== flagId));
+                } else {
+                    setPhishingFlags([...phishingFlags, flagId]);
+                }
+            };
+
+            const handleScenarioSelect = (optionId) => {
+                const scenario = privacyScenarios[currentQuestion];
+                if (scenario.multiSelect) {
+                    if (selectedAnswer && selectedAnswer.includes(optionId)) {
+                        setSelectedAnswer(selectedAnswer.filter(id => id !== optionId));
+                    } else {
+                        setSelectedAnswer([...(selectedAnswer || []), optionId]);
+                    }
+                } else {
+                    setSelectedAnswer([optionId]);
+                }
+            };
+
+            const checkScenarioAnswer = () => {
+                const scenario = privacyScenarios[currentQuestion];
+                const correct = scenario.correctAnswer;
+                const selected = selectedAnswer || [];
+                
+                const isCorrect = correct.length === selected.length && 
+                    correct.every(c => selected.includes(c));
+                
+                if (isCorrect) {
+                    setScore(score + 1);
+                }
+                setShowFeedback(true);
+            };
+
+            const nextQuestion = () => {
+                if (currentChallenge === 2) {
+                    if (currentQuestion < privacyScenarios.length - 1) {
+                        setCurrentQuestion(currentQuestion + 1);
+                        setSelectedAnswer(null);
+                        setShowFeedback(false);
+                        setShowHint(false);
+                    } else {
+                        setCurrentChallenge(3);
+                        setCurrentQuestion(0);
+                        setShowFeedback(false);
+                        setSelectedAnswer(null);
+                    }
+                } else if (currentChallenge === 1) {
+                    if (currentQuestion < phishingEmails.length - 1) {
+                        setCurrentQuestion(currentQuestion + 1);
+                        setPhishingFlags([]);
+                        setShowFeedback(false);
+                        setShowHint(false);
+                    } else {
+                        setCurrentChallenge(2);
+                        setCurrentQuestion(0);
+                        setShowFeedback(false);
+                        setPhishingFlags([]);
+                    }
+                }
+            };
+
+            const startChallenge = () => {
+                setCurrentScreen('activity');
+                setCurrentChallenge(0);
+            };
+
+            const completePasswordChallenge = () => {
+                if (passwordStrength >= 5) {
+                    setScore(score + 2);
+                } else if (passwordStrength >= 3) {
+                    setScore(score + 1);
+                }
+                setCurrentChallenge(1);
+                setCurrentQuestion(0);
+                setPasswordInput('');
+                setPasswordStrength(0);
+            };
+
+            const checkPhishingAnswer = () => {
+                const email = phishingEmails[currentQuestion];
+                if (email.isPhishing) {
+                    const correctFlags = email.redFlags.length;
+                    const foundFlags = phishingFlags.length;
+                    const accuracy = foundFlags / correctFlags;
+                    if (accuracy >= 0.6) {
+                        setScore(score + 1);
+                    }
+                } else {
+                    if (phishingFlags.length === 0) {
+                        setScore(score + 1);
+                    }
+                }
+                setShowFeedback(true);
+            };
+
+            const initializeRiskSort = () => {
+                const shuffled = [...privacyRiskItems].sort(() => Math.random() - 0.5);
+                setSortedItems(shuffled.map(item => ({ ...item, userRisk: null })));
+            };
+
+            const handleRiskAssignment = (itemId, risk) => {
+                setSortedItems(sortedItems.map(item => 
+                    item.id === itemId ? { ...item, userRisk: risk } : item
+                ));
+            };
+
+            const checkRiskSortAnswer = () => {
+                let correct = 0;
+                sortedItems.forEach(item => {
+                    if (item.userRisk === item.risk) correct++;
+                });
+                setScore(score + Math.floor(correct / 2));
+                setShowFeedback(true);
+            };
+
+            const finishModule = () => {
+                setCurrentScreen('completion');
+            };
+
+            const restart = () => {
+                setCurrentScreen('welcome');
+                setCurrentChallenge(0);
+                setCurrentQuestion(0);
+                setScore(0);
+                setShowFeedback(false);
+                setSelectedAnswer(null);
+                setShowHint(false);
+                setPasswordInput('');
+                setPasswordStrength(0);
+                setPhishingFlags([]);
+                setSortedItems([]);
+            };
+
+            // Welcome Screen
+            const WelcomeScreen = () => (
+                <div className="min-h-screen bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 flex items-center justify-center p-4 relative">
+                    <div className="absolute top-4 left-4">
+                        <a
+                            href="./"
+                            className="bg-white text-cyan-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md flex items-center gap-2"
+                        >
+                            ← Back to Modules
+                        </a>
+                    </div>
+                    
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full animate-fadeIn">
+                        <div className="text-center">
+                            <div className="text-8xl mb-4">🔒</div>
+                            <h1 className="text-5xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                                Privacy Guardian
+                            </h1>
+                            <p className="text-sm font-semibold text-orange-500 tracking-wider uppercase mb-4">
+                                MDID Digital Skills
+                            </p>
+                            <p className="text-xl text-gray-700 mb-6">
+                                Master the skills to protect your privacy and stay safe online!
+                            </p>
+                            
+                            <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-6 mb-6 text-left">
+                                <h3 className="font-bold text-cyan-800 mb-4 text-lg">🎯 Your Missions:</h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {challenges.map((challenge, index) => (
+                                        <div key={challenge.id} className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm">
+                                            <span className="text-2xl">{challenge.icon}</span>
+                                            <div>
+                                                <p className="font-semibold text-gray-800 text-sm">{challenge.name}</p>
+                                                <p className="text-xs text-gray-600">{challenge.description}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 text-left rounded">
+                                <p className="font-semibold text-yellow-800 mb-1">⏱️ Time: ~20 minutes</p>
+                                <p className="text-gray-700 text-sm">Learn to create strong passwords, spot scams, and make smart privacy choices!</p>
+                            </div>
+                            
+                            <button
+                                onClick={startChallenge}
+                                className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-10 py-4 rounded-xl text-xl font-bold hover:from-cyan-600 hover:to-blue-700 transform hover:scale-105 transition-all shadow-lg animate-pulse-subtle"
+                            >
+                                🛡️ Start Protecting!
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            // Password Challenge Screen
+            const PasswordChallengeScreen = () => {
+                const challenge = passwordChallenges[0];
+                const allPassed = passwordStrength === challenge.requirements.length;
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 p-4 relative">
+                        <div className="absolute top-4 left-4">
+                            <a href="./" className="bg-white text-cyan-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md flex items-center gap-2">
+                                ← Back to Modules
+                            </a>
+                        </div>
+
+                        <div className="max-w-2xl mx-auto pt-16">
+                            <div className="text-center mb-6">
+                                <span className="bg-white text-cyan-600 px-4 py-1 rounded-full text-sm font-bold">
+                                    Challenge 1 of 4: Password Power 🔐
+                                </span>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-xl p-6 animate-fadeIn">
+                                <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+                                    Create a Super-Strong Password!
+                                </h2>
+
+                                <div className="mb-6">
+                                    <div className="relative">
+                                        <input
+                                            ref={passwordInputRef}
+                                            type={showPassword ? "text" : "password"}
+                                            value={passwordInput}
+                                            onChange={handlePasswordChange}
+                                            placeholder="Type your password here..."
+                                            className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl text-lg focus:border-cyan-500 focus:outline-none pr-12"
+                                        />
+                                        <button
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                        >
+                                            {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
+                                        </button>
+                                    </div>
+
+                                    {/* Strength Bar */}
+                                    <div className="mt-3">
+                                        <div className="flex justify-between text-sm mb-1">
+                                            <span className="text-gray-600">Password Strength:</span>
+                                            <span className={`font-bold ${
+                                                passwordStrength <= 2 ? 'text-red-500' :
+                                                passwordStrength <= 4 ? 'text-yellow-500' : 'text-green-500'
+                                            }`}>
+                                                {passwordStrength <= 2 ? 'Weak 😟' :
+                                                 passwordStrength <= 4 ? 'Medium 😐' : 'Strong 💪'}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-3">
+                                            <div
+                                                className={`h-3 rounded-full transition-all duration-300 ${
+                                                    passwordStrength <= 2 ? 'bg-red-500' :
+                                                    passwordStrength <= 4 ? 'bg-yellow-500' : 'bg-green-500'
+                                                }`}
+                                                style={{ width: `${(passwordStrength / challenge.requirements.length) * 100}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Requirements Checklist */}
+                                <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                                    <h3 className="font-bold text-gray-700 mb-3">Requirements:</h3>
+                                    <div className="space-y-2">
+                                        {challenge.requirements.map((req, index) => {
+                                            const passed = req.check(passwordInput);
+                                            return (
+                                                <div key={index} className={`flex items-center gap-2 p-2 rounded-lg transition-all ${
+                                                    passed ? 'bg-green-100' : 'bg-white'
+                                                }`}>
+                                                    {passed ? (
+                                                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                                                    ) : (
+                                                        <div className="w-5 h-5 border-2 border-gray-300 rounded-full flex-shrink-0" />
+                                                    )}
+                                                    <span className={passed ? 'text-green-700' : 'text-gray-600'}>
+                                                        {req.label}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* Tips */}
+                                <div className="bg-cyan-50 border-l-4 border-cyan-500 p-4 rounded mb-6">
+                                    <p className="font-semibold text-cyan-800 mb-2">💡 Pro Tips:</p>
+                                    <ul className="text-sm text-gray-700 space-y-1">
+                                        {challenge.tips.map((tip, i) => (
+                                            <li key={i}>• {tip}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+
+                                <button
+                                    onClick={completePasswordChallenge}
+                                    disabled={passwordStrength < 3}
+                                    className={`w-full py-3 rounded-xl font-bold text-white transition-all ${
+                                        passwordStrength >= 3
+                                            ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 transform hover:scale-105'
+                                            : 'bg-gray-400 cursor-not-allowed'
+                                    }`}
+                                >
+                                    {allPassed ? '🏆 Perfect! Continue →' : 
+                                     passwordStrength >= 3 ? 'Good Enough! Continue →' : 
+                                     'Meet at least 3 requirements to continue'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Phishing Challenge Screen
+            const PhishingChallengeScreen = () => {
+                const email = phishingEmails[currentQuestion];
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 p-4 relative">
+                        <div className="absolute top-4 left-4">
+                            <a href="./" className="bg-white text-cyan-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md flex items-center gap-2">
+                                ← Back to Modules
+                            </a>
+                        </div>
+
+                        <div className="max-w-3xl mx-auto pt-16">
+                            <div className="text-center mb-6">
+                                <span className="bg-white text-cyan-600 px-4 py-1 rounded-full text-sm font-bold">
+                                    Challenge 2 of 4: Phishing Detective 🎣
+                                </span>
+                                <p className="text-white mt-2">Email {currentQuestion + 1} of {phishingEmails.length}</p>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-xl overflow-hidden animate-fadeIn">
+                                {/* Email Header */}
+                                <div className="bg-gray-100 p-4 border-b">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Mail className="w-5 h-5 text-gray-600" />
+                                        <span className="text-sm text-gray-600">From:</span>
+                                        <span className="font-mono text-sm">{email.from}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm text-gray-600">Subject:</span>
+                                        <span className="font-semibold">{email.subject}</span>
+                                    </div>
+                                </div>
+
+                                {/* Email Body */}
+                                <div className="p-6">
+                                    <pre className="whitespace-pre-wrap font-sans text-gray-800 mb-6">
+                                        {email.body}
+                                    </pre>
+
+                                    {!showFeedback ? (
+                                        <>
+                                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded mb-4">
+                                                <p className="font-semibold text-yellow-800">
+                                                    🔍 Is this email safe or a phishing attempt?
+                                                </p>
+                                                <p className="text-sm text-gray-600 mt-1">
+                                                    {email.isPhishing 
+                                                        ? "Click on the red flags you find, then submit your answer!"
+                                                        : "If you think it's safe, just click 'This Looks Safe'"}
+                                                </p>
+                                            </div>
+
+                                            {email.isPhishing && (
+                                                <div className="mb-4">
+                                                    <p className="font-semibold text-gray-700 mb-2">Red flags you've found ({phishingFlags.length}):</p>
+                                                    <div className="flex flex-wrap gap-2 min-h-[40px]">
+                                                        {email.redFlags.map(flag => (
+                                                            <button
+                                                                key={flag.id}
+                                                                onClick={() => handlePhishingFlagToggle(flag.id)}
+                                                                className={`px-3 py-2 rounded-lg text-sm transition-all text-left max-w-full ${
+                                                                    phishingFlags.includes(flag.id)
+                                                                        ? 'bg-red-500 text-white'
+                                                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                                }`}
+                                                                style={{ wordBreak: 'break-word' }}
+                                                            >
+                                                                {phishingFlags.includes(flag.id) ? '✓ ' : ''}{flag.text}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="flex gap-3">
+                                                <button
+                                                    onClick={checkPhishingAnswer}
+                                                    className="flex-1 bg-red-500 text-white py-3 rounded-xl font-bold hover:bg-red-600 transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <AlertTriangle className="w-5 h-5" />
+                                                    This is Phishing!
+                                                </button>
+                                                <button
+                                                    onClick={() => { setPhishingFlags([]); checkPhishingAnswer(); }}
+                                                    className="flex-1 bg-green-500 text-white py-3 rounded-xl font-bold hover:bg-green-600 transition-all flex items-center justify-center gap-2"
+                                                >
+                                                    <CheckCircle className="w-5 h-5" />
+                                                    This Looks Safe
+                                                </button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="animate-fadeIn">
+                                            {email.isPhishing ? (
+                                                <div className="bg-red-50 border-2 border-red-300 rounded-xl p-4 mb-4">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <AlertTriangle className="w-6 h-6 text-red-500" />
+                                                        <span className="font-bold text-red-700 text-lg">This is a PHISHING email!</span>
+                                                    </div>
+                                                    <p className="text-gray-700 mb-3">Here are all the red flags:</p>
+                                                    <ul className="space-y-2">
+                                                        {email.redFlags.map(flag => (
+                                                            <li key={flag.id} className="flex items-start gap-2">
+                                                                <span className="text-red-500">⚠️</span>
+                                                                <span className="text-gray-700">{flag.text}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            ) : (
+                                                <div className="bg-green-50 border-2 border-green-300 rounded-xl p-4 mb-4">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <CheckCircle className="w-6 h-6 text-green-500" />
+                                                        <span className="font-bold text-green-700 text-lg">This email is SAFE!</span>
+                                                    </div>
+                                                    <p className="text-gray-700">
+                                                        This is a legitimate email from your school library. It uses a proper .edu domain,
+                                                        has professional language, and doesn't ask for any sensitive information.
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            <button
+                                                onClick={nextQuestion}
+                                                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 rounded-xl font-bold hover:from-cyan-600 hover:to-blue-700 transition-all"
+                                            >
+                                                {currentQuestion < phishingEmails.length - 1 ? 'Next Email →' : 'Continue to Challenge 3 →'}
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Privacy Scenarios Screen
+            const PrivacyScenariosScreen = () => {
+                const scenario = privacyScenarios[currentQuestion];
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 p-4 relative">
+                        <div className="absolute top-4 left-4">
+                            <a href="./" className="bg-white text-cyan-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md flex items-center gap-2">
+                                ← Back to Modules
+                            </a>
+                        </div>
+
+                        <div className="max-w-2xl mx-auto pt-16">
+                            <div className="text-center mb-6">
+                                <span className="bg-white text-cyan-600 px-4 py-1 rounded-full text-sm font-bold">
+                                    Challenge 3 of 4: Privacy Scenarios 🛡️
+                                </span>
+                                <p className="text-white mt-2">Scenario {currentQuestion + 1} of {privacyScenarios.length}</p>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-xl p-6 animate-fadeIn">
+                                <div className="bg-cyan-50 rounded-xl p-4 mb-6">
+                                    <h2 className="text-xl font-bold text-gray-800 mb-2">
+                                        {scenario.scenario}
+                                    </h2>
+                                    <p className="text-sm text-cyan-700 font-medium">
+                                        Select ALL the safe options (multiple answers may be correct)
+                                    </p>
+                                </div>
+
+                                <div className="space-y-3 mb-6">
+                                    {scenario.options.map((option) => {
+                                        const isSelected = selectedAnswer && selectedAnswer.includes(option.id);
+                                        const showResult = showFeedback;
+                                        const isCorrect = scenario.correctAnswer.includes(option.id);
+
+                                        return (
+                                            <button
+                                                key={option.id}
+                                                onClick={() => !showFeedback && handleScenarioSelect(option.id)}
+                                                disabled={showFeedback}
+                                                className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+                                                    showResult
+                                                        ? isCorrect
+                                                            ? 'border-green-500 bg-green-50'
+                                                            : isSelected
+                                                                ? 'border-red-500 bg-red-50'
+                                                                : 'border-gray-200 bg-gray-50'
+                                                        : isSelected
+                                                            ? 'border-cyan-500 bg-cyan-50'
+                                                            : 'border-gray-200 hover:border-cyan-300 hover:bg-cyan-50'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                                                        showResult
+                                                            ? isCorrect
+                                                                ? 'border-green-500 bg-green-500'
+                                                                : isSelected
+                                                                    ? 'border-red-500 bg-red-500'
+                                                                    : 'border-gray-300'
+                                                            : isSelected
+                                                                ? 'border-cyan-500 bg-cyan-500'
+                                                                : 'border-gray-300'
+                                                    }`}>
+                                                        {(isSelected || (showResult && isCorrect)) && (
+                                                            <span className="text-white text-sm">✓</span>
+                                                        )}
+                                                    </div>
+                                                    <span className="text-gray-800">{option.text}</span>
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {!showFeedback ? (
+                                    <>
+                                        <button
+                                            onClick={() => setShowHint(!showHint)}
+                                            className="text-cyan-600 hover:text-cyan-700 font-medium flex items-center gap-2 mb-4"
+                                        >
+                                            <Lightbulb className="w-5 h-5" />
+                                            {showHint ? 'Hide Hint' : 'Need a Hint?'}
+                                        </button>
+
+                                        {showHint && (
+                                            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded mb-4 animate-slideIn">
+                                                <p className="text-gray-700">
+                                                    💡 Think about what information could be dangerous if a stranger saw it.
+                                                    What could someone use to find you, impersonate you, or access your accounts?
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        <button
+                                            onClick={checkScenarioAnswer}
+                                            disabled={!selectedAnswer || selectedAnswer.length === 0}
+                                            className={`w-full py-3 rounded-xl font-bold text-white transition-all ${
+                                                selectedAnswer && selectedAnswer.length > 0
+                                                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700'
+                                                    : 'bg-gray-400 cursor-not-allowed'
+                                            }`}
+                                        >
+                                            Check Answer
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div className="animate-fadeIn">
+                                        <div className="bg-gradient-to-r from-cyan-50 to-blue-50 border-l-4 border-cyan-500 p-4 rounded mb-4">
+                                            <p className="font-semibold text-cyan-800 mb-2">📚 Explanation:</p>
+                                            <p className="text-gray-700">{scenario.explanation}</p>
+                                        </div>
+
+                                        <button
+                                            onClick={nextQuestion}
+                                            className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 rounded-xl font-bold hover:from-cyan-600 hover:to-blue-700 transition-all"
+                                        >
+                                            {currentQuestion < privacyScenarios.length - 1 ? 'Next Scenario →' : 'Continue to Final Challenge →'}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Risk Radar Screen
+            const RiskRadarScreen = () => {
+                useEffect(() => {
+                    if (sortedItems.length === 0) {
+                        initializeRiskSort();
+                    }
+                }, []);
+
+                const allSorted = sortedItems.every(item => item.userRisk !== null);
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 p-4 relative">
+                        <div className="absolute top-4 left-4">
+                            <a href="./" className="bg-white text-cyan-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md flex items-center gap-2">
+                                ← Back to Modules
+                            </a>
+                        </div>
+
+                        <div className="max-w-3xl mx-auto pt-16">
+                            <div className="text-center mb-6">
+                                <span className="bg-white text-cyan-600 px-4 py-1 rounded-full text-sm font-bold">
+                                    Challenge 4 of 4: Risk Radar 📊
+                                </span>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-xl p-6 animate-fadeIn">
+                                <h2 className="text-2xl font-bold text-gray-800 mb-2 text-center">
+                                    Rate the Privacy Risk!
+                                </h2>
+                                <p className="text-gray-600 text-center mb-6">
+                                    For each type of information, decide if sharing it online is Low, Medium, or High risk.
+                                </p>
+
+                                {!showFeedback ? (
+                                    <>
+                                        <div className="space-y-3 mb-6">
+                                            {sortedItems.map((item) => (
+                                                <div key={item.id} className="bg-gray-50 rounded-xl p-4 flex items-center justify-between gap-4">
+                                                    <span className="text-gray-800 font-medium flex-1">{item.text}</span>
+                                                    <div className="flex gap-2">
+                                                        {['low', 'medium', 'high'].map((risk) => (
+                                                            <button
+                                                                key={risk}
+                                                                onClick={() => handleRiskAssignment(item.id, risk)}
+                                                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${
+                                                                    item.userRisk === risk
+                                                                        ? risk === 'low' ? 'bg-green-500 text-white' :
+                                                                          risk === 'medium' ? 'bg-yellow-500 text-white' :
+                                                                          'bg-red-500 text-white'
+                                                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                                }`}
+                                                            >
+                                                                {risk.charAt(0).toUpperCase() + risk.slice(1)}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <button
+                                            onClick={checkRiskSortAnswer}
+                                            disabled={!allSorted}
+                                            className={`w-full py-3 rounded-xl font-bold text-white transition-all ${
+                                                allSorted
+                                                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700'
+                                                    : 'bg-gray-400 cursor-not-allowed'
+                                            }`}
+                                        >
+                                            {allSorted ? 'Check My Answers' : 'Rate all items to continue'}
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div className="animate-fadeIn">
+                                        <div className="space-y-3 mb-6">
+                                            {sortedItems.map((item) => {
+                                                const isCorrect = item.userRisk === item.risk;
+                                                return (
+                                                    <div key={item.id} className={`rounded-xl p-4 border-2 ${
+                                                        isCorrect ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'
+                                                    }`}>
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className="font-medium text-gray-800">{item.text}</span>
+                                                            <div className="flex items-center gap-2">
+                                                                {isCorrect ? (
+                                                                    <CheckCircle className="w-5 h-5 text-green-500" />
+                                                                ) : (
+                                                                    <XCircle className="w-5 h-5 text-red-500" />
+                                                                )}
+                                                                <span className={`px-3 py-1 rounded-full text-sm font-bold ${
+                                                                    item.risk === 'low' ? 'bg-green-500 text-white' :
+                                                                    item.risk === 'medium' ? 'bg-yellow-500 text-white' :
+                                                                    'bg-red-500 text-white'
+                                                                }`}>
+                                                                    {item.risk.charAt(0).toUpperCase() + item.risk.slice(1)} Risk
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <p className="text-sm text-gray-600">{item.explanation}</p>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+
+                                        <button
+                                            onClick={finishModule}
+                                            className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 rounded-xl font-bold hover:from-cyan-600 hover:to-blue-700 transition-all"
+                                        >
+                                            🏆 See My Results!
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Completion Screen
+            const CompletionScreen = () => {
+                const maxScore = 2 + phishingEmails.length + privacyScenarios.length + 4; // password + emails + scenarios + risk
+                const percentage = Math.round((score / maxScore) * 100);
+                
+                let badge, emoji, message;
+                if (percentage >= 90) {
+                    badge = "Privacy Master";
+                    emoji = "🏆";
+                    message = "Outstanding! You're a true Privacy Guardian!";
+                } else if (percentage >= 70) {
+                    badge = "Privacy Expert";
+                    emoji = "⭐";
+                    message = "Great job protecting your privacy!";
+                } else if (percentage >= 50) {
+                    badge = "Privacy Protector";
+                    emoji = "🛡️";
+                    message = "Good work! Keep learning to stay safer!";
+                } else {
+                    badge = "Privacy Learner";
+                    emoji = "📚";
+                    message = "Keep practicing these important skills!";
+                }
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full">
+                            <div className="text-center">
+                                <div className="text-8xl mb-4 animate-bounce">{emoji}</div>
+                                <h1 className="text-5xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                                    Mission Complete!
+                                </h1>
+                                <p className="text-sm font-semibold text-orange-500 tracking-wider uppercase mb-4">
+                                    MDID Digital Skills
+                                </p>
+                                <div className="text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600 mb-4">
+                                    {score}/{maxScore}
+                                </div>
+                                <p className="text-gray-600 mb-2">({percentage}%)</p>
+                                <p className="text-2xl text-gray-700 mb-6">{message}</p>
+                                
+                                <div className="bg-gradient-to-r from-cyan-100 via-blue-100 to-indigo-100 rounded-xl p-6 mb-6 border-4 border-cyan-300">
+                                    <p className="text-5xl mb-2">{emoji}</p>
+                                    <p className="text-xl font-bold text-gray-800">{badge}</p>
+                                </div>
+                                
+                                <div className="bg-gradient-to-r from-cyan-50 to-blue-50 border-l-4 border-cyan-500 p-4 mb-6 text-left rounded">
+                                    <p className="font-semibold text-cyan-900 mb-2">🎓 Key Takeaways:</p>
+                                    <ul className="space-y-2 text-gray-700">
+                                        <li>✓ Use strong, unique passwords (12+ characters with mixed types)</li>
+                                        <li>✓ Watch for phishing red flags: urgency, bad grammar, suspicious links</li>
+                                        <li>✓ Never share addresses, schedules, or passwords online</li>
+                                        <li>✓ Always verify before clicking links or sharing info</li>
+                                        <li>✓ When in doubt, ask a trusted adult!</li>
+                                    </ul>
+                                </div>
+
+                                <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 mb-6 text-left">
+                                    <p className="font-semibold text-yellow-800 mb-2">🔐 Remember:</p>
+                                    <p className="text-gray-700">
+                                        Your privacy is valuable! Once information is shared online, it can be difficult or impossible to take back.
+                                        Always think before you post or share.
+                                    </p>
+                                </div>
+                                
+                                <div className="flex gap-4 justify-center flex-wrap">
+                                    <button
+                                        onClick={restart}
+                                        className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:from-cyan-600 hover:to-blue-700 transition-all shadow-lg flex items-center gap-2"
+                                    >
+                                        <RefreshCw className="w-5 h-5" />
+                                        Try Again
+                                    </button>
+                                    <button
+                                        onClick={() => window.location.href = '/'}
+                                        className="bg-gradient-to-r from-orange-400 to-pink-500 text-white px-8 py-3 rounded-xl font-bold hover:from-orange-500 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg"
+                                    >
+                                        More Modules
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Activity Router
+            const ActivityScreen = () => {
+                switch(currentChallenge) {
+                    case 0: return <PasswordChallengeScreen />;
+                    case 1: return <PhishingChallengeScreen />;
+                    case 2: return <PrivacyScenariosScreen />;
+                    case 3: return <RiskRadarScreen />;
+                    default: return <PasswordChallengeScreen />;
+                }
+            };
+
+            // Main render
+            try {
+                console.log("Rendering screen:", currentScreen);
+                return (
+                    <div>
+                        {currentScreen === 'welcome' && <WelcomeScreen />}
+                        {currentScreen === 'activity' && <ActivityScreen />}
+                        {currentScreen === 'completion' && <CompletionScreen />}
+                    </div>
+                );
+            } catch (error) {
+                console.error("Render error:", error);
+                return (
+                    <div className="min-h-screen bg-red-100 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md">
+                            <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Module</h2>
+                            <p className="text-gray-700 mb-4">Something went wrong. Please refresh the page.</p>
+                            <p className="text-sm text-gray-500">Error: {error.message}</p>
+                        </div>
+                    </div>
+                );
+            }
+        };
+
+        // Render with error handling
+        try {
+            console.log("Mounting React app...");
+            ReactDOM.render(<PrivacyGuardianModule />, document.getElementById('root'));
+            console.log("React app mounted successfully!");
+        } catch (error) {
+            console.error("Failed to mount React app:", error);
+            document.getElementById('root').innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                    <h2 style="color: red;">Module Failed to Load</h2>
+                    <p>Please check the browser console for errors.</p>
+                    <p style="font-size: 12px; color: #666;">${error.message}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Citation Style - Research Toolkit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #faf9f7; }
+        .font-serif { font-family: 'Instrument Serif', Georgia, serif; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+        .choice-card { transition: all 0.3s ease; }
+        .choice-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-700 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 lg:p-12 max-w-4xl w-full animate-fadeIn">
+        <div class="text-center mb-10">
+            <div class="w-16 h-16 bg-violet-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <svg class="w-8 h-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <p class="text-sm font-semibold text-violet-600 uppercase tracking-wider mb-2">Module 03</p>
+            <h1 class="text-4xl lg:text-5xl font-serif text-gray-900 mb-4">Academic Integrity & Citations</h1>
+            <p class="text-xl text-gray-600 max-w-2xl mx-auto">
+                Both tracks cover why we cite, how to avoid plagiarism, and how to cite AI tools. 
+                Choose the citation format you'll use for your IB research project.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6 mb-10">
+            <!-- MLA Option -->
+            <a href="citations-mla.html" class="choice-card block bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-violet-400">
+                <div class="text-center">
+                    <div class="w-14 h-14 bg-rose-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <span class="text-2xl font-bold text-rose-600">MLA</span>
+                    </div>
+                    <h2 class="text-2xl font-serif text-gray-900 mb-2">MLA Format</h2>
+                    <p class="text-gray-500 text-sm mb-4">Modern Language Association</p>
+                    <p class="text-gray-600 mb-4">
+                        Used in humanities subjects like English, History, Philosophy, and Arts.
+                    </p>
+                    <div class="bg-gray-50 rounded-lg p-4 text-left">
+                        <p class="text-xs text-gray-500 uppercase tracking-wider mb-2">Example citation:</p>
+                        <p class="text-sm text-gray-700 italic">
+                            Smith, John. "Article Title." <span class="not-italic">Journal Name</span>, vol. 12, no. 3, 2024, pp. 45-67.
+                        </p>
+                    </div>
+                    <div class="mt-6 flex items-center justify-center text-violet-600 font-semibold">
+                        Choose MLA
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+
+            <!-- APA Option -->
+            <a href="citations-apa.html" class="choice-card block bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-violet-400">
+                <div class="text-center">
+                    <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <span class="text-2xl font-bold text-blue-600">APA</span>
+                    </div>
+                    <h2 class="text-2xl font-serif text-gray-900 mb-2">APA Format</h2>
+                    <p class="text-gray-500 text-sm mb-4">American Psychological Association</p>
+                    <p class="text-gray-600 mb-4">
+                        Used in sciences and social sciences like Psychology, Biology, and Economics.
+                    </p>
+                    <div class="bg-gray-50 rounded-lg p-4 text-left">
+                        <p class="text-xs text-gray-500 uppercase tracking-wider mb-2">Example citation:</p>
+                        <p class="text-sm text-gray-700">
+                            Smith, J. (2024). Article title. <span class="italic">Journal Name, 12</span>(3), 45-67.
+                        </p>
+                    </div>
+                    <div class="mt-6 flex items-center justify-center text-violet-600 font-semibold">
+                        Choose APA
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="text-center">
+            <p class="text-gray-500 text-sm mb-4">Not sure which to choose? Ask your teacher or supervisor which format they prefer.</p>
+            <a href="./" class="text-violet-600 hover:text-violet-700 font-medium inline-flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Back to all modules
+            </a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Source Detective - MDID Digital Skills</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        console.log("Source Detective module starting...");
+
+        // Icon components
+        const Search = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+            </svg>
+        );
+
+        const CheckCircle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+        );
+
+        const XCircle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="m15 9-6 6"/>
+                <path d="m9 9 6 6"/>
+            </svg>
+        );
+
+        const Lightbulb = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+                <path d="M9 18h6"/>
+                <path d="M10 22h4"/>
+            </svg>
+        );
+
+        const RefreshCw = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                <path d="M8 16H3v5"/>
+            </svg>
+        );
+
+        const SourceDetectiveModule = () => {
+            const [currentScreen, setCurrentScreen] = useState('welcome');
+            const [currentRound, setCurrentRound] = useState(0);
+            const [score, setScore] = useState(0);
+            const [selectedCategory, setSelectedCategory] = useState({});
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [showHint, setShowHint] = useState(false);
+
+            console.log("Module initialized, current screen:", currentScreen);
+
+            const rounds = [
+                {
+                    id: 1,
+                    topic: "The American Civil War",
+                    sources: [
+                        { id: 1, title: "Letter from a Union soldier to his family (1863)", type: "primary", reason: "Written by someone who was there" },
+                        { id: 2, title: "Textbook chapter: 'The Civil War Era'", type: "secondary", reason: "Written by historians analyzing the period" },
+                        { id: 3, title: "Photograph of Gettysburg battlefield (1863)", type: "primary", reason: "Original image from the time" },
+                        { id: 4, title: "Documentary: 'The Civil War' by Ken Burns", type: "secondary", reason: "Modern interpretation of historical events" },
+                        { id: 5, title: "Abraham Lincoln's Gettysburg Address (original text)", type: "primary", reason: "Original speech from the person who gave it" },
+                        { id: 6, title: "History professor's article analyzing Lincoln's speeches", type: "secondary", reason: "Expert analyzing primary sources" }
+                    ],
+                    hints: [
+                        "Primary sources are FROM the time period (letters, photos, speeches)",
+                        "Secondary sources are ABOUT the time period (textbooks, documentaries)",
+                        "Ask: Was this person there when it happened?"
+                    ]
+                },
+                {
+                    id: 2,
+                    topic: "Climate Change Research",
+                    sources: [
+                        { id: 1, title: "Raw temperature data from weather stations (2010-2023)", type: "primary", reason: "Original data measurements" },
+                        { id: 2, title: "News article explaining a climate study", type: "secondary", reason: "Journalist reporting on research" },
+                        { id: 3, title: "Scientific research paper with original experiments", type: "primary", reason: "Researchers presenting their own findings" },
+                        { id: 4, title: "Encyclopedia entry on global warming", type: "secondary", reason: "Summary of existing knowledge" },
+                        { id: 5, title: "Satellite images showing glacier retreat", type: "primary", reason: "Original observational data" },
+                        { id: 6, title: "Book reviewing 50 years of climate research", type: "secondary", reason: "Analysis of multiple studies" }
+                    ],
+                    hints: [
+                        "Primary: Original research, raw data, firsthand observations",
+                        "Secondary: Summaries, interpretations, reviews of research",
+                        "Scientific papers with NEW experiments = primary"
+                    ]
+                },
+                {
+                    id: 3,
+                    topic: "Social Media and Teenagers",
+                    sources: [
+                        { id: 1, title: "Survey results from 1,000 teenagers about Instagram use", type: "primary", reason: "Original survey data" },
+                        { id: 2, title: "Psychology textbook chapter on social media effects", type: "secondary", reason: "Summary of existing research" },
+                        { id: 3, title: "Teenager's personal blog about their social media experience", type: "primary", reason: "Firsthand account from someone experiencing it" },
+                        { id: 4, title: "News report summarizing multiple studies on teens and social media", type: "secondary", reason: "Reporter explaining others' research" },
+                        { id: 5, title: "Screenshots of actual social media posts from teenagers", type: "primary", reason: "Original content from the source" },
+                        { id: 6, title: "Expert's book analyzing teen social media behavior", type: "secondary", reason: "Expert interpreting primary sources" }
+                    ],
+                    hints: [
+                        "Survey data = primary (original research)",
+                        "Personal experiences/blogs = primary (firsthand)",
+                        "Articles ABOUT studies = secondary (analysis)"
+                    ]
+                }
+            ];
+
+            const handleDrop = (sourceId, category) => {
+                setSelectedCategory({ ...selectedCategory, [sourceId]: category });
+            };
+
+            const checkAnswers = () => {
+                const round = rounds[currentRound];
+                let correct = 0;
+                
+                round.sources.forEach(source => {
+                    if (selectedCategory[source.id] === source.type) {
+                        correct++;
+                    }
+                });
+
+                const points = Math.round((correct / round.sources.length) * 100);
+                setScore(score + points);
+                setShowFeedback(true);
+            };
+
+            const nextRound = () => {
+                if (currentRound < rounds.length - 1) {
+                    setCurrentRound(currentRound + 1);
+                    setSelectedCategory({});
+                    setShowFeedback(false);
+                    setShowHint(false);
+                } else {
+                    setCurrentScreen('completion');
+                }
+            };
+
+            const restart = () => {
+                setCurrentScreen('welcome');
+                setCurrentRound(0);
+                setScore(0);
+                setSelectedCategory({});
+                setShowFeedback(false);
+                setShowHint(false);
+            };
+
+            const WelcomeScreen = () => (
+                <div className="min-h-screen bg-gradient-to-br from-green-500 via-teal-500 to-blue-600 flex items-center justify-center p-4">
+                    {/* Back Button */}
+                    <div className="absolute top-4 left-4">
+                        <a
+                            href="./"
+                            className="bg-white text-green-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md flex items-center gap-2"
+                        >
+                            ← Back to Modules
+                        </a>
+                    </div>
+                    
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full animate-fadeIn">
+                        <div className="text-center">
+                            <div className="inline-block p-4 bg-gradient-to-br from-green-400 to-teal-500 rounded-full mb-4 animate-bounce">
+                                <Search className="w-16 h-16 text-white" />
+                            </div>
+                            <h1 className="text-5xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent mb-2">
+                                Source Detective
+                            </h1>
+                            <p className="text-sm font-semibold text-orange-500 tracking-wider uppercase mb-4">
+                                MDID Digital Skills
+                            </p>
+                            <p className="text-xl text-gray-600 mb-6">
+                                Primary vs. Secondary Sources
+                            </p>
+                            <div className="bg-gradient-to-r from-green-50 to-teal-50 border-2 border-green-300 rounded-xl p-6 mb-6 text-left">
+                                <p className="text-gray-700 mb-4">
+                                    <strong className="text-green-600">🎯 Your Mission:</strong> Learn to identify primary and secondary sources. Understanding the difference helps you find the best evidence for your research!
+                                </p>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
+                                        <p className="font-semibold text-blue-800 mb-2">📄 Primary Sources</p>
+                                        <ul className="space-y-1 text-gray-700 text-sm">
+                                            <li>• Original materials</li>
+                                            <li>• Firsthand accounts</li>
+                                            <li>• Raw data</li>
+                                            <li>• Created at the time</li>
+                                        </ul>
+                                        <p className="text-xs text-gray-500 mt-2">Examples: Diaries, photos, surveys, speeches</p>
+                                    </div>
+                                    <div className="bg-white rounded-lg p-4 border-2 border-purple-300">
+                                        <p className="font-semibold text-purple-800 mb-2">📚 Secondary Sources</p>
+                                        <ul className="space-y-1 text-gray-700 text-sm">
+                                            <li>• Analyze primary sources</li>
+                                            <li>• Written after the event</li>
+                                            <li>• Expert interpretation</li>
+                                            <li>• Summarize info</li>
+                                        </ul>
+                                        <p className="text-xs text-gray-500 mt-2">Examples: Textbooks, documentaries, reviews</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 mb-6">
+                                <p className="text-gray-700 text-sm">
+                                    <strong className="text-yellow-700">💡 How it works:</strong> You'll see sources on different topics. Sort each one as Primary or Secondary. Get instant feedback on your detective skills!
+                                </p>
+                            </div>
+                            <p className="text-gray-600 mb-6">
+                                3 Rounds • <strong>15 minutes</strong> • 18 Total Sources
+                            </p>
+                            <button
+                                onClick={() => {
+                                    console.log("Starting activity...");
+                                    setCurrentScreen('activity');
+                                }}
+                                className="bg-gradient-to-r from-green-500 to-teal-600 text-white px-10 py-4 rounded-xl text-xl font-bold hover:from-green-600 hover:to-teal-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-2xl"
+                            >
+                                🔍 Start Investigating!
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const ActivityScreen = () => {
+                const round = rounds[currentRound];
+                const allCategorized = round.sources.every(s => selectedCategory[s.id]);
+
+                return (
+                    <div className="min-h-screen bg-gray-100 p-4 py-8">
+                        {/* Back Button */}
+                        <div className="max-w-6xl mx-auto mb-4">
+                            <a
+                                href="./"
+                                className="inline-block bg-white text-green-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md"
+                            >
+                                ← Back to Modules
+                            </a>
+                        </div>
+                        
+                        <div className="max-w-6xl mx-auto">
+                            {/* Progress */}
+                            <div className="bg-white rounded-lg shadow p-4 mb-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-semibold text-gray-600">
+                                        Round {currentRound + 1} of {rounds.length}: {round.topic}
+                                    </span>
+                                    <span className="text-sm font-semibold text-green-600">
+                                        Score: {score} points
+                                    </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-3">
+                                    <div 
+                                        className="bg-gradient-to-r from-green-500 via-teal-500 to-blue-600 h-3 rounded-full transition-all duration-500"
+                                        style={{ width: `${((currentRound + 1) / rounds.length) * 100}%` }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Instructions */}
+                            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                                <h3 className="text-2xl font-bold text-gray-800 mb-3">
+                                    🔍 Sort These Sources
+                                </h3>
+                                <p className="text-gray-700 mb-4">
+                                    Click each source to categorize it as <strong className="text-blue-600">Primary</strong> or <strong className="text-purple-600">Secondary</strong>
+                                </p>
+                            </div>
+
+                            {/* Drop Zones */}
+                            <div className="grid md:grid-cols-2 gap-6 mb-6">
+                                {/* Primary Zone */}
+                                <div className="bg-blue-50 border-4 border-blue-400 rounded-xl p-6 min-h-64">
+                                    <h4 className="text-2xl font-bold text-blue-800 mb-4 flex items-center gap-2">
+                                        📄 Primary Sources
+                                    </h4>
+                                    <p className="text-sm text-blue-700 mb-4">Original materials from the time/event</p>
+                                    <div className="space-y-3">
+                                        {round.sources
+                                            .filter(s => selectedCategory[s.id] === 'primary')
+                                            .map(source => (
+                                                <div
+                                                    key={source.id}
+                                                    onClick={() => !showFeedback && setSelectedCategory({ ...selectedCategory, [source.id]: undefined })}
+                                                    className={`bg-white p-4 rounded-lg border-2 border-blue-300 ${!showFeedback ? 'cursor-pointer hover:bg-blue-50' : ''} transition-all`}
+                                                >
+                                                    <p className="text-gray-800 font-medium">{source.title}</p>
+                                                </div>
+                                            ))}
+                                    </div>
+                                </div>
+
+                                {/* Secondary Zone */}
+                                <div className="bg-purple-50 border-4 border-purple-400 rounded-xl p-6 min-h-64">
+                                    <h4 className="text-2xl font-bold text-purple-800 mb-4 flex items-center gap-2">
+                                        📚 Secondary Sources
+                                    </h4>
+                                    <p className="text-sm text-purple-700 mb-4">Analysis/interpretation of events</p>
+                                    <div className="space-y-3">
+                                        {round.sources
+                                            .filter(s => selectedCategory[s.id] === 'secondary')
+                                            .map(source => (
+                                                <div
+                                                    key={source.id}
+                                                    onClick={() => !showFeedback && setSelectedCategory({ ...selectedCategory, [source.id]: undefined })}
+                                                    className={`bg-white p-4 rounded-lg border-2 border-purple-300 ${!showFeedback ? 'cursor-pointer hover:bg-purple-50' : ''} transition-all`}
+                                                >
+                                                    <p className="text-gray-800 font-medium">{source.title}</p>
+                                                </div>
+                                            ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Uncategorized Sources */}
+                            {!showFeedback && (
+                                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                                    <h4 className="font-bold text-gray-800 mb-4">
+                                        📋 Click to Categorize:
+                                    </h4>
+                                    <div className="grid sm:grid-cols-2 gap-3">
+                                        {round.sources
+                                            .filter(s => !selectedCategory[s.id])
+                                            .map(source => (
+                                                <div key={source.id} className="space-y-2">
+                                                    <div className="bg-gray-50 p-4 rounded-lg border-2 border-gray-300">
+                                                        <p className="text-gray-800 font-medium mb-3">{source.title}</p>
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => handleDrop(source.id, 'primary')}
+                                                                className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-all"
+                                                            >
+                                                                Primary
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDrop(source.id, 'secondary')}
+                                                                className="flex-1 bg-purple-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-purple-600 transition-all"
+                                                            >
+                                                                Secondary
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Hint */}
+                            {!showFeedback && (
+                                <div className="text-center mb-6">
+                                    <button
+                                        onClick={() => setShowHint(!showHint)}
+                                        className="text-orange-600 hover:text-orange-700 font-semibold flex items-center gap-2 mx-auto transform hover:scale-105 transition-all"
+                                    >
+                                        <Lightbulb className="w-5 h-5" />
+                                        {showHint ? 'Hide Hints' : '💡 Need a Hint?'}
+                                    </button>
+                                    {showHint && (
+                                        <div className="mt-3 bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-300 rounded-lg p-4 max-w-md mx-auto">
+                                            <p className="font-semibold text-orange-800 mb-2">💡 Tips:</p>
+                                            <ul className="text-left space-y-2">
+                                                {round.hints.map((hint, idx) => (
+                                                    <li key={idx} className="text-orange-700 text-sm">
+                                                        {idx + 1}. {hint}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Check Button */}
+                            {!showFeedback && allCategorized && (
+                                <div className="text-center mb-6">
+                                    <button
+                                        onClick={checkAnswers}
+                                        className="bg-gradient-to-r from-green-500 to-teal-600 text-white px-8 py-3 rounded-xl font-bold hover:from-green-600 hover:to-teal-700 transform hover:scale-105 transition-all shadow-lg"
+                                    >
+                                        ✓ Check My Answers
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Feedback */}
+                            {showFeedback && (
+                                <div className="bg-white rounded-lg shadow-lg p-6 mb-6 animate-fadeIn">
+                                    <h3 className="text-2xl font-bold text-gray-800 mb-4">📊 Results:</h3>
+                                    <div className="space-y-3 mb-6">
+                                        {round.sources.map(source => {
+                                            const isCorrect = selectedCategory[source.id] === source.type;
+                                            return (
+                                                <div
+                                                    key={source.id}
+                                                    className={`p-4 rounded-lg border-2 ${
+                                                        isCorrect
+                                                            ? 'bg-green-50 border-green-400'
+                                                            : 'bg-red-50 border-red-400'
+                                                    }`}
+                                                >
+                                                    <div className="flex items-start gap-3">
+                                                        {isCorrect ? (
+                                                            <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+                                                        ) : (
+                                                            <XCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-1" />
+                                                        )}
+                                                        <div className="flex-1">
+                                                            <p className="font-semibold text-gray-800 mb-1">{source.title}</p>
+                                                            <p className="text-sm text-gray-700">
+                                                                <strong>{source.type === 'primary' ? 'Primary' : 'Secondary'}</strong> - {source.reason}
+                                                            </p>
+                                                            {!isCorrect && (
+                                                                <p className="text-sm text-red-700 mt-1">
+                                                                    You selected: {selectedCategory[source.id] === 'primary' ? 'Primary' : 'Secondary'}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    <button
+                                        onClick={nextRound}
+                                        className="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 rounded-lg font-bold hover:from-green-600 hover:to-teal-700 transition-all"
+                                    >
+                                        {currentRound < rounds.length - 1 ? '➡️ Next Round' : '🏆 See Your Results!'}
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Quick Reference */}
+                            <div className="bg-gradient-to-r from-green-50 to-teal-50 border-2 border-green-300 rounded-lg p-4">
+                                <p className="font-semibold text-green-900 mb-2">🔍 Quick Reference:</p>
+                                <div className="grid md:grid-cols-2 gap-3 text-sm">
+                                    <div className="bg-white p-3 rounded">
+                                        <strong className="text-blue-700">Primary:</strong> Original, firsthand, from the time
+                                    </div>
+                                    <div className="bg-white p-3 rounded">
+                                        <strong className="text-purple-700">Secondary:</strong> Analysis, interpretation, after the fact
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const CompletionScreen = () => {
+                const maxScore = 300;
+                const percentage = Math.round((score / maxScore) * 100);
+                let badge, emoji, message;
+
+                if (percentage >= 90) {
+                    badge = "Master Detective";
+                    emoji = "🏆";
+                    message = "Perfect! You're a source identification expert!";
+                } else if (percentage >= 75) {
+                    badge = "Expert Detective";
+                    emoji = "⭐";
+                    message = "Great work! You know your sources!";
+                } else if (percentage >= 60) {
+                    badge = "Detective";
+                    emoji = "🔍";
+                    message = "Good job! Keep practicing!";
+                } else {
+                    badge = "Junior Detective";
+                    emoji = "📚";
+                    message = "You're learning! Review and try again!";
+                }
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-green-500 via-teal-500 to-blue-600 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full">
+                            <div className="text-center">
+                                <div className="text-8xl mb-4 animate-bounce">{emoji}</div>
+                                <h1 className="text-5xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent mb-2">
+                                    Case Closed!
+                                </h1>
+                                <p className="text-sm font-semibold text-orange-500 tracking-wider uppercase mb-4">
+                                    MDID Digital Skills
+                                </p>
+                                <div className="text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-teal-600 mb-4">
+                                    {score}
+                                </div>
+                                <p className="text-gray-600 mb-2">out of {maxScore} points ({percentage}%)</p>
+                                <p className="text-2xl text-gray-700 mb-6">{message}</p>
+                                
+                                <div className="bg-gradient-to-r from-green-100 via-teal-100 to-blue-100 rounded-xl p-6 mb-6 border-4 border-green-300">
+                                    <p className="text-5xl mb-2">{emoji}</p>
+                                    <p className="text-xl font-bold text-gray-800">{badge}</p>
+                                </div>
+                                
+                                <div className="bg-gradient-to-r from-green-50 to-teal-50 border-l-4 border-green-500 p-4 mb-6 text-left rounded">
+                                    <p className="font-semibold text-green-900 mb-2">🎓 What You Learned:</p>
+                                    <ul className="space-y-2 text-gray-700">
+                                        <li>✓ Primary sources are original materials from the time/event</li>
+                                        <li>✓ Secondary sources analyze or interpret primary sources</li>
+                                        <li>✓ Both types are valuable for research!</li>
+                                        <li>✓ Primary = evidence, Secondary = context and analysis</li>
+                                    </ul>
+                                </div>
+
+                                <div className="bg-blue-50 border-2 border-blue-300 rounded-xl p-4 mb-6 text-left">
+                                    <p className="font-semibold text-blue-900 mb-2">💡 When to Use Each:</p>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <p className="font-semibold text-blue-800 text-sm">Use PRIMARY sources to:</p>
+                                            <ul className="text-sm text-gray-700 space-y-1 mt-1">
+                                                <li>• Get direct evidence</li>
+                                                <li>• See different perspectives</li>
+                                                <li>• Support your arguments</li>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-purple-800 text-sm">Use SECONDARY sources to:</p>
+                                            <ul className="text-sm text-gray-700 space-y-1 mt-1">
+                                                <li>• Understand context</li>
+                                                <li>• See expert analysis</li>
+                                                <li>• Find patterns and connections</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex gap-4 justify-center flex-wrap">
+                                    <button
+                                        onClick={restart}
+                                        className="bg-gradient-to-r from-green-500 to-teal-600 text-white px-8 py-3 rounded-xl font-bold hover:from-green-600 hover:to-teal-700 transition-all shadow-lg flex items-center gap-2"
+                                    >
+                                        <RefreshCw className="w-5 h-5" />
+                                        Try Again
+                                    </button>
+                                    <button
+                                        onClick={() => window.location.href = '/'}
+                                        className="bg-gradient-to-r from-orange-400 to-pink-500 text-white px-8 py-3 rounded-xl font-bold hover:from-orange-500 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg"
+                                    >
+                                        More Modules
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // Main render with error boundary
+            try {
+                console.log("Rendering screen:", currentScreen);
+                return (
+                    <div>
+                        {currentScreen === 'welcome' && <WelcomeScreen />}
+                        {currentScreen === 'activity' && <ActivityScreen />}
+                        {currentScreen === 'completion' && <CompletionScreen />}
+                    </div>
+                );
+            } catch (error) {
+                console.error("Render error:", error);
+                return (
+                    <div className="min-h-screen bg-red-100 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md">
+                            <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Module</h2>
+                            <p className="text-gray-700 mb-4">Something went wrong. Please refresh the page.</p>
+                            <p className="text-sm text-gray-500">Error: {error.message}</p>
+                        </div>
+                    </div>
+                );
+            }
+        };
+
+        // Render with error handling
+        try {
+            console.log("Mounting React app...");
+            ReactDOM.render(<SourceDetectiveModule />, document.getElementById('root'));
+            console.log("React app mounted successfully!");
+        } catch (error) {
+            console.error("Failed to mount React app:", error);
+            document.getElementById('root').innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                    <h2 style="color: red;">Module Failed to Load</h2>
+                    <p>Please check the browser console for errors.</p>
+                    <p style="font-size: 12px; color: #666;">${error.message}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

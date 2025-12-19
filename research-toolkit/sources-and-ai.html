@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sources, Evaluation & AI Tools - Research Toolkit</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #faf9f7; }
+        .font-serif { font-family: 'Instrument Serif', Georgia, serif; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+        .animate-slideIn { animation: slideIn 0.3s ease-out; }
+        .progress-bar { transition: width 0.5s ease-out; }
+        .option-btn { transition: all 0.2s ease; }
+        .option-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Icons
+        const ChevronRight = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>;
+        const ChevronLeft = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>;
+        const CheckCircle = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+        const XCircle = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 9l-6 6M9 9l6 6" /></svg>;
+        const Database = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>;
+        const RefreshCw = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>;
+        const Lightbulb = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>;
+        const Target = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={2} /><circle cx="12" cy="12" r="6" strokeWidth={2} /><circle cx="12" cy="12" r="2" strokeWidth={2} /></svg>;
+        const Shield = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>;
+        const Bot = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>;
+        const AlertTriangle = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>;
+
+        const SourcesAndAIModule = () => {
+            const [screen, setScreen] = useState('welcome');
+            const [currentStep, setCurrentStep] = useState(0);
+            const [score, setScore] = useState(0);
+            const [selectedAnswer, setSelectedAnswer] = useState(null);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [isCorrect, setIsCorrect] = useState(false);
+            const [attempts, setAttempts] = useState(0);
+            const [showHint, setShowHint] = useState(false);
+            const [triedAnswers, setTriedAnswers] = useState([]);
+            const [completedSteps, setCompletedSteps] = useState([]);
+
+            const totalPoints = 160;
+
+            const steps = [
+                // SECTION 1: FINDING SOURCES
+                {
+                    id: 'sources-1',
+                    section: 'Finding Sources',
+                    type: 'content',
+                    title: 'Beyond Google: Academic Databases',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Google is great for quick searches, but for academic research, you need 
+                                <span className="font-semibold text-blue-700"> specialized databases</span> that contain 
+                                peer-reviewed journals, scholarly books, and reliable sources.
+                            </p>
+                            <div className="bg-blue-50 border-l-4 border-blue-500 p-5 rounded-r-lg">
+                                <p className="font-semibold text-blue-800 mb-2">🔍 Why use databases?</p>
+                                <ul className="space-y-2 text-blue-700">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-500" />
+                                        <span><strong>Quality control</strong> — sources are vetted by experts</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-500" />
+                                        <span><strong>Full text access</strong> — read complete articles, not just snippets</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-500" />
+                                        <span><strong>Better search tools</strong> — filter by date, subject, source type</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-blue-500" />
+                                        <span><strong>Citation help</strong> — export citations in MLA, APA, etc.</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="text-2xl mb-2">📚</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">ProQuest</h4>
+                                    <p className="text-gray-600 text-sm">Newspapers, magazines, journals, dissertations — great for current events and social sciences</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="text-2xl mb-2">🎓</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">JSTOR</h4>
+                                    <p className="text-gray-600 text-sm">Academic journals across disciplines — excellent for humanities and historical research</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="text-2xl mb-2">🔬</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">Google Scholar</h4>
+                                    <p className="text-gray-600 text-sm">Free academic search engine — good starting point, but verify source quality</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="text-2xl mb-2">📖</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">Your School Library</h4>
+                                    <p className="text-gray-600 text-sm">Access to multiple databases through one login — ask your librarian!</p>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'sources-2',
+                    section: 'Finding Sources',
+                    type: 'content',
+                    title: 'Source Types: Know What You\'re Using',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Different source types serve different purposes. Understanding this helps you build a 
+                                <span className="font-semibold text-blue-700"> balanced, credible research foundation</span>.
+                            </p>
+                            <div className="space-y-4">
+                                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                                    <div className="bg-emerald-100 px-5 py-3 border-b border-gray-200">
+                                        <span className="font-semibold text-emerald-800">Primary Sources</span>
+                                        <span className="text-emerald-600 text-sm ml-2">→ Original, firsthand evidence</span>
+                                    </div>
+                                    <div className="p-5 bg-white">
+                                        <p className="text-gray-600 text-sm mb-2">Created at the time of an event or by someone with direct experience</p>
+                                        <p className="text-gray-800 text-sm"><strong>Examples:</strong> Interviews, diaries, original research studies, historical documents, artwork, speeches, data sets</p>
+                                    </div>
+                                </div>
+                                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                                    <div className="bg-blue-100 px-5 py-3 border-b border-gray-200">
+                                        <span className="font-semibold text-blue-800">Secondary Sources</span>
+                                        <span className="text-blue-600 text-sm ml-2">→ Analysis of primary sources</span>
+                                    </div>
+                                    <div className="p-5 bg-white">
+                                        <p className="text-gray-600 text-sm mb-2">Interpret, analyze, or summarize primary sources</p>
+                                        <p className="text-gray-800 text-sm"><strong>Examples:</strong> Journal articles analyzing data, biographies, textbooks, documentaries, literary criticism</p>
+                                    </div>
+                                </div>
+                                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                                    <div className="bg-purple-100 px-5 py-3 border-b border-gray-200">
+                                        <span className="font-semibold text-purple-800">Tertiary Sources</span>
+                                        <span className="text-purple-600 text-sm ml-2">→ Summaries & overviews</span>
+                                    </div>
+                                    <div className="p-5 bg-white">
+                                        <p className="text-gray-600 text-sm mb-2">Compile and summarize primary and secondary sources</p>
+                                        <p className="text-gray-800 text-sm"><strong>Examples:</strong> Encyclopedias, Wikipedia, textbooks, dictionaries — great for background, but rarely cited in final work</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <p className="text-amber-800">
+                                    <strong>💡 For IB research:</strong> You'll typically use a mix of primary and secondary sources. 
+                                    Use tertiary sources for background research, but build your argument on primary and secondary evidence.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-1',
+                    section: 'Finding Sources',
+                    type: 'quiz',
+                    title: 'Identify Source Types',
+                    question: 'You\'re researching the impact of the 1960s Civil Rights Movement. Which of these is a PRIMARY source?',
+                    options: [
+                        { id: 'a', text: 'A 2020 documentary about Martin Luther King Jr.' },
+                        { id: 'b', text: 'A Wikipedia article on the Civil Rights Act of 1964' },
+                        { id: 'c', text: 'A speech delivered by MLK Jr. during the March on Washington (1963)' },
+                        { id: 'd', text: 'A historian\'s analysis of civil rights legislation' }
+                    ],
+                    correct: 'c',
+                    explanation: 'MLK\'s original speech is a primary source — it was created at the time by someone directly involved. The documentary and historian\'s analysis are secondary (they interpret events). Wikipedia is tertiary (it summarizes other sources).',
+                    wrongFeedback: 'Think about when each source was created and by whom. Primary sources are created at the time of the event by people directly involved. Secondary sources analyze or interpret events later. Tertiary sources summarize other sources.',
+                    hint: 'Primary sources are created AT THE TIME of the event by people who were THERE.',
+                    points: 15
+                },
+                {
+                    id: 'sources-3',
+                    section: 'Finding Sources',
+                    type: 'content',
+                    title: 'Database Search Tips',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Databases have powerful features — but they're only useful if you know how to use them:
+                            </p>
+                            <div className="space-y-4">
+                                {[
+                                    { num: '1', title: 'Use Advanced Search', desc: 'Most databases have an "Advanced Search" option that lets you search specific fields (title, author, abstract) and combine terms with Boolean operators.', color: 'blue' },
+                                    { num: '2', title: 'Apply Filters', desc: 'Narrow results by date range, source type (peer-reviewed only!), subject area, or language. This saves hours of sorting through irrelevant results.', color: 'emerald' },
+                                    { num: '3', title: 'Read Abstracts First', desc: 'The abstract summarizes the entire article. Read it before downloading — make sure the source actually addresses your research question.', color: 'purple' },
+                                    { num: '4', title: 'Check "Cited By" and References', desc: 'Found a great article? Check what sources IT cites (for background) and what later articles cite IT (for more recent research). This is called citation chaining.', color: 'amber' }
+                                ].map((tip) => (
+                                    <div key={tip.num} className="flex items-start gap-4 p-4 bg-white border border-gray-200 rounded-lg">
+                                        <div className={`w-10 h-10 bg-${tip.color}-100 rounded-full flex items-center justify-center flex-shrink-0`}>
+                                            <span className={`text-${tip.color}-700 font-bold`}>{tip.num}</span>
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-gray-900">{tip.title}</p>
+                                            <p className="text-gray-600 text-sm mt-1">{tip.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                                <p className="text-blue-800">
+                                    <strong>🔗 Citation chaining</strong> is one of the most powerful research techniques. 
+                                    One good source can lead you to dozens of relevant sources through its references!
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-2',
+                    section: 'Finding Sources',
+                    type: 'quiz',
+                    title: 'Database Strategies',
+                    question: 'You found a highly relevant 2019 journal article for your research. What\'s the BEST next step to find more sources?',
+                    options: [
+                        { id: 'a', text: 'Stop searching — one good source is enough' },
+                        { id: 'b', text: 'Use citation chaining: check what sources the article cites AND what newer articles cite it' },
+                        { id: 'c', text: 'Search Google for the author\'s name' },
+                        { id: 'd', text: 'Delete the article and start a completely new search' }
+                    ],
+                    correct: 'b',
+                    explanation: 'Citation chaining is incredibly efficient! The article\'s references lead you to foundational sources in the field, while "cited by" features show you more recent research that builds on those ideas. This creates a web of related, relevant sources.',
+                    wrongFeedback: 'When you find one good source, think about how it connects to other research. Academic sources build on each other through citations — look for ways to follow those connections both backward (what this article cites) and forward (what cites this article).',
+                    hint: 'Think about how academic sources are connected to each other through citations.',
+                    points: 15
+                },
+                // SECTION 2: EVALUATING SOURCES
+                {
+                    id: 'eval-1',
+                    section: 'Evaluating Sources',
+                    type: 'content',
+                    title: 'Why Evaluation Matters',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Finding sources is only half the battle. You must 
+                                <span className="font-semibold text-indigo-700"> critically evaluate</span> every source before using it. 
+                                Not everything published — even in databases — is reliable or appropriate for your research.
+                            </p>
+                            <div className="bg-red-50 border-l-4 border-red-500 p-5 rounded-r-lg">
+                                <p className="font-semibold text-red-800 mb-2">⚠️ Warning signs to watch for:</p>
+                                <ul className="space-y-2 text-red-700 text-sm">
+                                    <li>• No author identified or author has no relevant credentials</li>
+                                    <li>• No sources cited or references provided</li>
+                                    <li>• Extreme bias or emotional language</li>
+                                    <li>• Outdated information (for fast-changing topics)</li>
+                                    <li>• Claims that contradict scientific consensus without strong evidence</li>
+                                </ul>
+                            </div>
+                            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                                <p className="text-emerald-800">
+                                    <strong>✓ Your goal:</strong> Build your research on sources that are accurate, credible, 
+                                    and appropriate for academic work. One weak source can undermine your entire argument.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'eval-2',
+                    section: 'Evaluating Sources',
+                    type: 'content',
+                    title: 'The SIFT Method',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                <span className="font-semibold text-indigo-700">SIFT</span> is a quick, practical method for evaluating sources, 
+                                developed by digital literacy expert Mike Caulfield:
+                            </p>
+                            <div className="space-y-4">
+                                <div className="border-2 border-indigo-200 rounded-xl overflow-hidden">
+                                    <div className="bg-indigo-500 text-white px-5 py-4">
+                                        <span className="text-2xl font-bold mr-3">S</span>
+                                        <span className="text-xl font-semibold">Stop</span>
+                                    </div>
+                                    <div className="p-5 bg-white">
+                                        <p className="text-gray-700">Before you use or share a source, <strong>stop</strong>. Do you know this website or publication? Do you know its reputation? If not, use the other steps to investigate.</p>
+                                    </div>
+                                </div>
+                                <div className="border-2 border-blue-200 rounded-xl overflow-hidden">
+                                    <div className="bg-blue-500 text-white px-5 py-4">
+                                        <span className="text-2xl font-bold mr-3">I</span>
+                                        <span className="text-xl font-semibold">Investigate the Source</span>
+                                    </div>
+                                    <div className="p-5 bg-white">
+                                        <p className="text-gray-700">Who is behind this information? What's the author's expertise? What's the publication's reputation? A quick search can reveal if a source is credible.</p>
+                                    </div>
+                                </div>
+                                <div className="border-2 border-emerald-200 rounded-xl overflow-hidden">
+                                    <div className="bg-emerald-500 text-white px-5 py-4">
+                                        <span className="text-2xl font-bold mr-3">F</span>
+                                        <span className="text-xl font-semibold">Find Better Coverage</span>
+                                    </div>
+                                    <div className="p-5 bg-white">
+                                        <p className="text-gray-700">Can you find the same information from a more authoritative source? Sometimes it's better to find the original study or a more reputable outlet covering the same story.</p>
+                                    </div>
+                                </div>
+                                <div className="border-2 border-amber-200 rounded-xl overflow-hidden">
+                                    <div className="bg-amber-500 text-white px-5 py-4">
+                                        <span className="text-2xl font-bold mr-3">T</span>
+                                        <span className="text-xl font-semibold">Trace Claims</span>
+                                    </div>
+                                    <div className="p-5 bg-white">
+                                        <p className="text-gray-700">Where did this information originate? Trace claims back to their original source. A news article might cite a study — find that study and read it yourself.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-3',
+                    section: 'Evaluating Sources',
+                    type: 'quiz',
+                    title: 'Apply SIFT',
+                    question: 'You find a blog post claiming "Scientists prove coffee cures cancer." Applying the SIFT method, what should you do FIRST?',
+                    options: [
+                        { id: 'a', text: 'Immediately cite it in your research paper — it mentions scientists!' },
+                        { id: 'b', text: 'Stop and investigate: Who wrote this? What\'s their expertise? Then trace the claim to the original study.' },
+                        { id: 'c', text: 'Share it on social media to spread the good news' },
+                        { id: 'd', text: 'Assume it\'s false because it\'s a blog' }
+                    ],
+                    correct: 'b',
+                    explanation: 'SIFT starts with Stop — pause before accepting the claim. Then Investigate (who\'s the author?) and Trace (what study? who conducted it? what did it actually find?). The claim might be exaggerated or taken out of context. Don\'t dismiss it just because it\'s a blog, but don\'t accept it uncritically either.',
+                    wrongFeedback: 'The SIFT method gives you a structured approach to evaluating claims. The first step is always to Stop and not react immediately. Then you need to Investigate the source and Trace claims back to their origins before accepting or rejecting information.',
+                    hint: 'Remember the first letter of SIFT — what should you do before anything else?',
+                    points: 15
+                },
+                {
+                    id: 'eval-3',
+                    section: 'Evaluating Sources',
+                    type: 'content',
+                    title: 'Lateral Reading',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Professional fact-checkers use a technique called 
+                                <span className="font-semibold text-indigo-700"> lateral reading</span>: instead of staying on a website 
+                                to evaluate it, they open new tabs and search for information ABOUT the source.
+                            </p>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="bg-red-50 border border-red-200 rounded-xl p-5">
+                                    <p className="font-semibold text-red-800 mb-3">❌ Vertical Reading (Less Effective)</p>
+                                    <ul className="space-y-2 text-red-700 text-sm">
+                                        <li>• Stay on the website</li>
+                                        <li>• Read the "About Us" page</li>
+                                        <li>• Look at the site's design</li>
+                                        <li>• Trust what the site says about itself</li>
+                                    </ul>
+                                    <p className="text-red-600 text-xs mt-3 italic">Problem: The site controls this narrative</p>
+                                </div>
+                                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                                    <p className="font-semibold text-emerald-800 mb-3">✓ Lateral Reading (More Effective)</p>
+                                    <ul className="space-y-2 text-emerald-700 text-sm">
+                                        <li>• Open new tabs immediately</li>
+                                        <li>• Search for the organization/author</li>
+                                        <li>• See what others say about them</li>
+                                        <li>• Check Wikipedia, news sources, fact-checkers</li>
+                                    </ul>
+                                    <p className="text-emerald-600 text-xs mt-3 italic">Advantage: Independent verification</p>
+                                </div>
+                            </div>
+                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                                <p className="text-blue-800">
+                                    <strong>💡 Try this:</strong> When you find a new source, immediately search: 
+                                    <span className="font-mono bg-blue-100 px-2 py-1 rounded text-sm ml-1">"[source name]" + reputation</span> or 
+                                    <span className="font-mono bg-blue-100 px-2 py-1 rounded text-sm ml-1">"[source name]" + bias</span>
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-4',
+                    section: 'Evaluating Sources',
+                    type: 'quiz',
+                    title: 'Lateral vs. Vertical Reading',
+                    question: 'You find an article on a website you\'ve never heard of. The site has a professional design and an impressive "About Us" page. What\'s the BEST evaluation strategy?',
+                    options: [
+                        { id: 'a', text: 'Trust it — professional design means it\'s reliable' },
+                        { id: 'b', text: 'Reject it — unknown websites are always unreliable' },
+                        { id: 'c', text: 'Read the entire website carefully from top to bottom' },
+                        { id: 'd', text: 'Open new tabs and search for what independent sources say about this website and its authors' }
+                    ],
+                    correct: 'd',
+                    explanation: 'This is lateral reading! Professional design is easy to fake, and "About Us" pages are self-promotional. Instead, see what Wikipedia, news outlets, and fact-checkers say about the source. Independent verification is more reliable than any information the site provides about itself.',
+                    wrongFeedback: 'A professional-looking website doesn\'t guarantee credibility, and an unfamiliar source isn\'t automatically unreliable. The best approach is to look outside the website for independent verification. What do other sources say about this site and its authors?',
+                    hint: 'Professional fact-checkers leave the site immediately to check what OTHERS say about it.',
+                    points: 15
+                },
+                // SECTION 3: AI TOOLS IN RESEARCH
+                {
+                    id: 'ai-1',
+                    section: 'AI Tools in Research',
+                    type: 'content',
+                    title: 'AI: A Powerful Tool (With Limits)',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                AI tools like ChatGPT, Claude, and Perplexity can be 
+                                <span className="font-semibold text-purple-700"> genuinely useful for research</span> — but only if you 
+                                understand what they can and cannot do.
+                            </p>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                                    <p className="font-semibold text-emerald-800 mb-3">✓ AI CAN help with:</p>
+                                    <ul className="space-y-2 text-emerald-700 text-sm">
+                                        <li>• Brainstorming and exploring topics</li>
+                                        <li>• Explaining difficult concepts</li>
+                                        <li>• Suggesting search terms and keywords</li>
+                                        <li>• Summarizing long texts (that you provide)</li>
+                                        <li>• Identifying gaps in your argument</li>
+                                        <li>• Proofreading and improving clarity</li>
+                                    </ul>
+                                </div>
+                                <div className="bg-red-50 border border-red-200 rounded-xl p-5">
+                                    <p className="font-semibold text-red-800 mb-3">✗ AI CANNOT reliably:</p>
+                                    <ul className="space-y-2 text-red-700 text-sm">
+                                        <li>• Provide accurate citations (often fabricated!)</li>
+                                        <li>• Access current information (knowledge cutoffs)</li>
+                                        <li>• Verify facts or check sources</li>
+                                        <li>• Replace your own critical analysis</li>
+                                        <li>• Guarantee accuracy on any claim</li>
+                                        <li>• Think, understand, or "know" things</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border-l-4 border-amber-500 p-5 rounded-r-lg">
+                                <p className="font-semibold text-amber-800 mb-2">🎯 The key principle:</p>
+                                <p className="text-amber-700">
+                                    AI is a <strong>starting point</strong>, not an ending point. Use it to generate ideas and 
+                                    accelerate your process, but <strong>always verify</strong> with reliable sources.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'ai-2',
+                    section: 'AI Tools in Research',
+                    type: 'content',
+                    title: 'The Hallucination Problem',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                AI models sometimes generate information that sounds convincing but is completely false. 
+                                This is called <span className="font-semibold text-purple-700">"hallucination"</span> — and it's one of 
+                                the biggest risks when using AI for research.
+                            </p>
+                            <div className="bg-red-50 border border-red-300 rounded-xl p-6">
+                                <div className="flex items-start gap-4">
+                                    <AlertTriangle className="w-8 h-8 text-red-500 flex-shrink-0" />
+                                    <div>
+                                        <p className="font-semibold text-red-800 text-lg mb-2">Real Example: Fake Citations</p>
+                                        <p className="text-red-700 mb-3">
+                                            AI tools frequently invent citations that look legitimate but don't exist. 
+                                            They'll generate author names, journal titles, publication years, and page numbers 
+                                            — all completely fabricated.
+                                        </p>
+                                        <div className="bg-white rounded-lg p-4 border border-red-200">
+                                            <p className="text-gray-600 text-sm italic mb-2">AI might generate:</p>
+                                            <p className="text-gray-800 text-sm font-mono">
+                                                Smith, J. & Chen, L. (2021). "Social Media and Adolescent Mental Health." 
+                                                Journal of Digital Psychology, 15(3), 234-251.
+                                            </p>
+                                            <p className="text-red-600 text-sm mt-2 font-semibold">
+                                                ⚠️ This journal, article, and authors might not exist at all!
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-purple-50 border border-purple-200 rounded-xl p-5">
+                                <p className="font-semibold text-purple-800 mb-2">🧠 Why does this happen?</p>
+                                <p className="text-purple-700">
+                                    AI doesn't "know" facts — it predicts what text would typically come next based on patterns. 
+                                    It's very good at generating text that <em>looks</em> like a citation, even when the source doesn't exist.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-5',
+                    section: 'AI Tools in Research',
+                    type: 'quiz',
+                    title: 'Understanding AI Limitations',
+                    question: 'ChatGPT gives you a citation for a journal article that perfectly supports your argument. What should you do?',
+                    options: [
+                        { id: 'a', text: 'Use it immediately — AI tools are reliable for citations' },
+                        { id: 'b', text: 'Search for the article in Google Scholar or a database to verify it actually exists' },
+                        { id: 'c', text: 'Trust it because it includes specific details like page numbers' },
+                        { id: 'd', text: 'Assume it\'s fake and ignore all AI suggestions' }
+                    ],
+                    correct: 'b',
+                    explanation: 'Always verify AI-generated citations! Search for the article in Google Scholar, JSTOR, or another database. If you can\'t find it, the AI likely hallucinated it. Specific details (page numbers, volume numbers) don\'t guarantee accuracy — AI is very good at generating realistic-looking fake citations.',
+                    wrongFeedback: 'AI tools are known for "hallucinating" citations that look real but don\'t exist. Specific details like page numbers don\'t mean a source is real — AI can generate those convincingly. However, completely ignoring AI isn\'t the answer either. The key is verification.',
+                    hint: 'The more specific an AI citation looks, the more important it is to verify it exists.',
+                    points: 20
+                },
+                {
+                    id: 'ai-3',
+                    section: 'AI Tools in Research',
+                    type: 'content',
+                    title: 'Verification Strategies',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                When using AI for research, <span className="font-semibold text-purple-700">verification is not optional</span>. 
+                                Here's how to check AI-generated information:
+                            </p>
+                            <div className="space-y-4">
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <span className="text-blue-700 font-bold">1</span>
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-gray-900">Cross-reference with databases</p>
+                                            <p className="text-gray-600 text-sm mt-1">
+                                                Search for any citation in Google Scholar, JSTOR, or ProQuest. If it doesn't appear, it probably doesn't exist.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <span className="text-emerald-700 font-bold">2</span>
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-gray-900">Check facts against multiple sources</p>
+                                            <p className="text-gray-600 text-sm mt-1">
+                                                Any factual claim should be verifiable in at least 2-3 independent, reliable sources. Don't rely on AI alone.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <span className="text-purple-700 font-bold">3</span>
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-gray-900">Be skeptical of confident-sounding claims</p>
+                                            <p className="text-gray-600 text-sm mt-1">
+                                                AI always sounds confident, even when wrong. Treat confident AI statements the same as uncertain ones — verify everything.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                            <span className="text-amber-700 font-bold">4</span>
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-gray-900">Use AI tools with source grounding</p>
+                                            <p className="text-gray-600 text-sm mt-1">
+                                                Tools like Perplexity, Elicit, and Consensus search real sources and provide links. These reduce (but don't eliminate) hallucination risk.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'ai-4',
+                    section: 'AI Tools in Research',
+                    type: 'content',
+                    title: 'Academic Integrity & AI',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Using AI in your research raises important questions about 
+                                <span className="font-semibold text-purple-700"> academic honesty</span>. Here's how to use AI ethically:
+                            </p>
+                            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6">
+                                <p className="font-semibold text-emerald-800 mb-4 flex items-center gap-2">
+                                    <Shield className="w-5 h-5" />
+                                    IB Expectations
+                                </p>
+                                <p className="text-emerald-700 mb-4">
+                                    The IB treats AI-generated content like any other source: if you use it, you must 
+                                    <strong> acknowledge it transparently</strong>. The ideas in your research project must be your own.
+                                </p>
+                                <div className="space-y-2">
+                                    <div className="flex items-start gap-2 text-emerald-700">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-emerald-500" />
+                                        <span>Using AI to brainstorm or clarify concepts = ✓ OK (acknowledge it)</span>
+                                    </div>
+                                    <div className="flex items-start gap-2 text-emerald-700">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-emerald-500" />
+                                        <span>Using AI to improve your writing's clarity = ✓ OK (acknowledge it)</span>
+                                    </div>
+                                    <div className="flex items-start gap-2 text-red-700">
+                                        <XCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" />
+                                        <span>Submitting AI-written text as your own = ✗ Academic misconduct</span>
+                                    </div>
+                                    <div className="flex items-start gap-2 text-red-700">
+                                        <XCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" />
+                                        <span>Using AI to generate your analysis/argument = ✗ Academic misconduct</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <p className="text-amber-800">
+                                    <strong>💡 The test:</strong> Could you explain and defend every part of your research project 
+                                    in a conversation with your supervisor? If AI did the thinking for you, the answer is no.
+                                </p>
+                            </div>
+                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                                <p className="text-blue-800">
+                                    <strong>📝 How to cite AI:</strong> When you use AI tools, document what tool you used, 
+                                    what you used it for, and how you verified the information. We'll cover specific citation 
+                                    formats in Module 3.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-6',
+                    section: 'AI Tools in Research',
+                    type: 'quiz',
+                    title: 'Academic Integrity Check',
+                    question: 'Which use of AI would be considered ACCEPTABLE for an IB research project?',
+                    options: [
+                        { id: 'a', text: 'Asking ChatGPT to write your introduction paragraph' },
+                        { id: 'b', text: 'Using Claude to explain a difficult concept, then writing your understanding in your own words and citing Claude' },
+                        { id: 'c', text: 'Having AI generate your thesis statement and main arguments' },
+                        { id: 'd', text: 'Copying AI-generated analysis without acknowledgment' }
+                    ],
+                    correct: 'b',
+                    explanation: 'Using AI to help understand concepts is acceptable — it\'s like asking a tutor for help. The key is that YOU then do the thinking and writing, and you acknowledge the AI assistance. Having AI write your content or generate your arguments crosses the line into academic misconduct.',
+                    wrongFeedback: 'Think about who is doing the intellectual work. AI can help you understand things, but you must do your own thinking, writing, and analysis. Any AI assistance should be acknowledged. The line is crossed when AI does the work that should be yours.',
+                    hint: 'The acceptable use involves YOU doing the thinking and writing, with AI as a helper.',
+                    points: 20
+                },
+                {
+                    id: 'ai-5',
+                    section: 'AI Tools in Research',
+                    type: 'content',
+                    title: 'AI Research Tools Worth Knowing',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Some AI tools are specifically designed for academic research and include 
+                                <span className="font-semibold text-purple-700"> source verification features</span>:
+                            </p>
+                            <div className="grid gap-4">
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="flex items-start gap-4">
+                                        <div className="text-2xl">🔍</div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900">Perplexity</h4>
+                                            <p className="text-gray-600 text-sm mt-1">AI search that provides answers WITH sources. Shows you where information comes from so you can verify.</p>
+                                            <p className="text-purple-600 text-xs mt-2">Best for: Quick research questions with source links</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="flex items-start gap-4">
+                                        <div className="text-2xl">📊</div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900">Elicit</h4>
+                                            <p className="text-gray-600 text-sm mt-1">Searches academic papers and extracts key findings. Helps you find relevant studies quickly.</p>
+                                            <p className="text-purple-600 text-xs mt-2">Best for: Finding and analyzing academic papers</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="flex items-start gap-4">
+                                        <div className="text-2xl">🔬</div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900">Consensus</h4>
+                                            <p className="text-gray-600 text-sm mt-1">Searches scientific papers and shows what the research consensus is on a question.</p>
+                                            <p className="text-purple-600 text-xs mt-2">Best for: Understanding scientific consensus on topics</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                                    <div className="flex items-start gap-4">
+                                        <div className="text-2xl">🕸️</div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900">Research Rabbit / Connected Papers</h4>
+                                            <p className="text-gray-600 text-sm mt-1">Visualize connections between papers. Start with one good paper and discover related research.</p>
+                                            <p className="text-purple-600 text-xs mt-2">Best for: Citation chaining and discovering related work</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <p className="text-amber-800">
+                                    <strong>⚠️ Remember:</strong> Even these tools can make mistakes. Always verify important information 
+                                    by finding and reading the original sources yourself.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-7',
+                    section: 'AI Tools in Research',
+                    type: 'quiz',
+                    title: 'Choosing the Right Tool',
+                    question: 'You want to understand what scientific research says about the relationship between sleep and academic performance. Which AI tool would be MOST helpful as a starting point?',
+                    options: [
+                        { id: 'a', text: 'ChatGPT (general AI assistant)' },
+                        { id: 'b', text: 'Consensus or Elicit (academic paper search tools)' },
+                        { id: 'c', text: 'A random Google search' },
+                        { id: 'd', text: 'Wikipedia only' }
+                    ],
+                    correct: 'b',
+                    explanation: 'Consensus and Elicit are designed specifically for searching academic papers and understanding research findings. They\'ll show you actual studies on your topic with links to verify. ChatGPT might give you general information but could hallucinate specific claims. Wikipedia is good for background but won\'t show you the research itself.',
+                    wrongFeedback: 'Different tools serve different purposes. For finding what scientific research actually says, you want tools that search real academic papers and provide links to verify. General AI assistants may give you information but without the source verification you need for academic work.',
+                    hint: 'Which tools are specifically designed to search and analyze academic papers?',
+                    points: 15
+                },
+                {
+                    id: 'ai-6',
+                    section: 'AI Tools in Research',
+                    type: 'content',
+                    title: 'Your AI Research Workflow',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Here's how to integrate AI tools into your research process <span className="font-semibold text-purple-700">effectively and ethically</span>:
+                            </p>
+                            <div className="relative">
+                                <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-purple-200"></div>
+                                <div className="space-y-6">
+                                    {[
+                                        { num: '1', title: 'Explore & Brainstorm', desc: 'Use AI to explore your topic, generate questions, and identify key concepts. Great for early-stage thinking.', color: 'purple' },
+                                        { num: '2', title: 'Find Real Sources', desc: 'Use databases (ProQuest, JSTOR, Google Scholar) or AI research tools (Elicit, Consensus) to find actual academic sources.', color: 'blue' },
+                                        { num: '3', title: 'Verify Everything', desc: 'Check every claim, citation, and fact against reliable sources. If you can\'t verify it, don\'t use it.', color: 'emerald' },
+                                        { num: '4', title: 'Do Your Own Analysis', desc: 'Read the sources yourself. Form your own arguments. AI can help you understand — but YOU must do the thinking.', color: 'amber' },
+                                        { num: '5', title: 'Document AI Use', desc: 'Keep track of how you used AI. Be ready to acknowledge it and cite it appropriately.', color: 'rose' }
+                                    ].map((step, i) => (
+                                        <div key={step.num} className="flex items-start gap-4 pl-2">
+                                            <div className={`w-10 h-10 bg-${step.color}-500 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold relative z-10`}>
+                                                {step.num}
+                                            </div>
+                                            <div className="bg-white border border-gray-200 rounded-xl p-4 flex-1 shadow-sm">
+                                                <p className="font-semibold text-gray-900">{step.title}</p>
+                                                <p className="text-gray-600 text-sm mt-1">{step.desc}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="bg-purple-50 border border-purple-200 rounded-xl p-5 mt-6">
+                                <p className="text-purple-800">
+                                    <strong>🎯 The bottom line:</strong> AI is a powerful research assistant, but it's not a replacement 
+                                    for your own critical thinking. The best researchers use AI to work faster while maintaining 
+                                    rigorous standards for accuracy and originality.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-8',
+                    section: 'AI Tools in Research',
+                    type: 'quiz',
+                    title: 'Final Check',
+                    question: 'What\'s the MOST important principle to remember when using AI for academic research?',
+                    options: [
+                        { id: 'a', text: 'AI is always accurate if you use the right prompts' },
+                        { id: 'b', text: 'AI should be avoided entirely in academic work' },
+                        { id: 'c', text: 'AI is a helpful starting point, but you must verify information and do your own thinking' },
+                        { id: 'd', text: 'AI-generated content doesn\'t need to be cited' }
+                    ],
+                    correct: 'c',
+                    explanation: 'AI is a powerful tool that can help with research — but it requires verification and cannot replace your own analysis. It\'s not always accurate (regardless of prompts), it shouldn\'t be avoided entirely, and it DOES need to be acknowledged when used. The key is using it wisely as one tool among many.',
+                    wrongFeedback: 'Throughout this module, we\'ve emphasized that AI has real benefits but also real limitations. It\'s not perfect, but it\'s also not something to completely avoid. And like any source you use, AI must be acknowledged. What approach balances these considerations?',
+                    hint: 'Think about the theme that ran through this entire section on AI tools.',
+                    points: 15
+                }
+            ];
+
+            const currentStepData = steps[currentStep];
+            const totalSteps = steps.length;
+            const progressPercent = ((currentStep + 1) / totalSteps) * 100;
+
+            const getSectionColor = () => {
+                if (!currentStepData) return 'blue';
+                const section = currentStepData.section;
+                if (section === 'Finding Sources') return 'blue';
+                if (section === 'Evaluating Sources') return 'indigo';
+                if (section === 'AI Tools in Research') return 'purple';
+                return 'blue';
+            };
+
+            const sectionColor = getSectionColor();
+
+            const resetQuiz = () => {
+                setSelectedAnswer(null);
+                setShowFeedback(false);
+                setIsCorrect(false);
+                setAttempts(0);
+                setShowHint(false);
+                setTriedAnswers([]);
+            };
+
+            const handleNext = () => {
+                if (currentStep < totalSteps - 1) {
+                    setCurrentStep(currentStep + 1);
+                    resetQuiz();
+                } else {
+                    setScreen('complete');
+                }
+            };
+
+            const handlePrev = () => {
+                if (currentStep > 0) {
+                    setCurrentStep(currentStep - 1);
+                    resetQuiz();
+                }
+            };
+
+            const handleAnswerSelect = (id) => {
+                if (showFeedback) return;
+                if (triedAnswers.includes(id)) return;
+                setSelectedAnswer(id);
+            };
+
+            const checkAnswer = () => {
+                if (!selectedAnswer) return;
+                const correct = selectedAnswer === currentStepData.correct;
+                setIsCorrect(correct);
+                setShowFeedback(true);
+                
+                if (correct) {
+                    // Graduated scoring based on attempts
+                    let earnedPoints;
+                    if (attempts === 0) {
+                        earnedPoints = currentStepData.points; // Full points
+                    } else if (attempts === 1) {
+                        earnedPoints = Math.floor(currentStepData.points * 0.75); // 75%
+                    } else if (attempts === 2) {
+                        earnedPoints = Math.floor(currentStepData.points * 0.5); // 50%
+                    } else {
+                        earnedPoints = Math.floor(currentStepData.points * 0.25); // 25%
+                    }
+                    setScore(score + earnedPoints);
+                    setCompletedSteps([...completedSteps, currentStepData.id]);
+                } else {
+                    // Track this wrong answer
+                    setTriedAnswers([...triedAnswers, selectedAnswer]);
+                    setAttempts(attempts + 1);
+                }
+            };
+
+            const handleTryAgain = () => {
+                setShowFeedback(false);
+                setSelectedAnswer(null);
+                setShowHint(true);
+            };
+
+            const restart = () => {
+                setScreen('welcome');
+                setCurrentStep(0);
+                setScore(0);
+                setSelectedAnswer(null);
+                setShowFeedback(false);
+                setIsCorrect(false);
+                setAttempts(0);
+                setShowHint(false);
+                setTriedAnswers([]);
+                setCompletedSteps([]);
+            };
+
+            // WELCOME SCREEN
+            if (screen === 'welcome') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 lg:p-12 max-w-3xl w-full animate-fadeIn">
+                            <div className="text-center">
+                                <div className="w-20 h-20 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                                    <Database className="w-10 h-10 text-blue-600" />
+                                </div>
+                                <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-2">Module 02</p>
+                                <h1 className="text-4xl lg:text-5xl font-serif text-gray-900 mb-4">Sources, Evaluation & AI Tools</h1>
+                                <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+                                    Learn to find quality sources, evaluate information critically, 
+                                    and use AI tools effectively and ethically in your research.
+                                </p>
+                                
+                                <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
+                                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                        <Target className="w-5 h-5 text-blue-600" />
+                                        What you'll learn:
+                                    </h3>
+                                    <div className="grid md:grid-cols-3 gap-4">
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span className="text-blue-700 font-bold text-sm">1</span>
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-900 text-sm">Finding Sources</p>
+                                                <p className="text-gray-500 text-xs">Databases, source types, search strategies</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span className="text-indigo-700 font-bold text-sm">2</span>
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-900 text-sm">Evaluating Sources</p>
+                                                <p className="text-gray-500 text-xs">SIFT method, lateral reading</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span className="text-purple-700 font-bold text-sm">3</span>
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-900 text-sm">AI Tools</p>
+                                                <p className="text-gray-500 text-xs">Capabilities, limits, ethical use</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex items-center justify-center gap-6 text-sm text-gray-500 mb-8">
+                                    <span className="flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        ~50 minutes
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        8 interactive quizzes
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                        {totalPoints} points possible
+                                    </span>
+                                </div>
+                                
+                                <button
+                                    onClick={() => setScreen('learn')}
+                                    className="bg-blue-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg inline-flex items-center gap-2"
+                                >
+                                    Start Learning
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // COMPLETION SCREEN
+            if (screen === 'complete') {
+                const percentage = Math.round((score / totalPoints) * 100);
+                let badge, emoji, message;
+                
+                if (percentage >= 90) {
+                    badge = "Source Expert"; emoji = "🏆"; message = "Outstanding! You've mastered source evaluation and AI literacy.";
+                } else if (percentage >= 75) {
+                    badge = "Critical Thinker"; emoji = "⭐"; message = "Great work! You have strong evaluation skills.";
+                } else if (percentage >= 60) {
+                    badge = "Developing Evaluator"; emoji = "📚"; message = "Good progress! Review sections on AI verification.";
+                } else {
+                    badge = "Source Apprentice"; emoji = "🌱"; message = "Keep building your skills. Consider reviewing this module.";
+                }
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 lg:p-12 max-w-2xl w-full animate-fadeIn">
+                            <div className="text-center">
+                                <div className="text-7xl mb-4">{emoji}</div>
+                                <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-2">Module Complete!</p>
+                                <h1 className="text-4xl font-serif text-gray-900 mb-2">Sources, Evaluation & AI</h1>
+                                
+                                <div className="my-8">
+                                    <div className="text-6xl font-bold text-blue-600">{score}<span className="text-2xl text-gray-400">/{totalPoints}</span></div>
+                                    <p className="text-gray-500 mt-1">{percentage}% Score</p>
+                                </div>
+                                
+                                <div className="bg-blue-50 rounded-xl p-6 mb-6 inline-block">
+                                    <p className="text-blue-800 font-semibold text-lg">{badge}</p>
+                                    <p className="text-blue-600 text-sm mt-1">{message}</p>
+                                </div>
+
+                                <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
+                                    <h3 className="font-semibold text-gray-900 mb-4">🎓 What you learned:</h3>
+                                    <ul className="space-y-2 text-gray-700">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                                            <span>How to find sources using academic databases</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                                            <span>The SIFT method and lateral reading for evaluation</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                                            <span>AI capabilities, limitations, and ethical use in research</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div className="bg-violet-50 border border-violet-200 rounded-xl p-5 mb-8">
+                                    <p className="text-violet-800">
+                                        <strong>Next up:</strong> Module 3 covers academic integrity and citations — 
+                                        including how to properly cite AI tools.
+                                    </p>
+                                </div>
+
+                                <div className="flex gap-4 justify-center flex-wrap">
+                                    <button onClick={restart} className="flex items-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                                        <RefreshCw className="w-5 h-5" />
+                                        Try Again
+                                    </button>
+                                    <a href="./" className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors">
+                                        Back to Modules
+                                        <ChevronRight className="w-5 h-5" />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // LEARNING SCREEN
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+                        <div className="max-w-4xl mx-auto px-4 py-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                    <a href="./" className="text-gray-400 hover:text-gray-600 transition-colors">
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </a>
+                                    <div>
+                                        <p className="text-xs text-gray-500 uppercase tracking-wider">Sources & AI Tools</p>
+                                        <h1 className="font-semibold text-gray-900">{currentStepData?.section}</h1>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-sm font-semibold text-blue-600">{score} pts</p>
+                                    <p className="text-xs text-gray-500">of {totalPoints}</p>
+                                </div>
+                            </div>
+                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div 
+                                    className="h-full progress-bar rounded-full"
+                                    style={{ 
+                                        width: `${progressPercent}%`,
+                                        backgroundColor: sectionColor === 'blue' ? '#3b82f6' : sectionColor === 'indigo' ? '#6366f1' : '#a855f7'
+                                    }}
+                                ></div>
+                            </div>
+                            <div className="flex justify-between mt-1">
+                                <span className="text-xs text-gray-500">Step {currentStep + 1} of {totalSteps}</span>
+                                <span className="text-xs text-gray-500">{Math.round(progressPercent)}% complete</span>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="max-w-4xl mx-auto px-4 py-8">
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 lg:p-8 animate-fadeIn" key={currentStep}>
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                                    currentStepData?.type === 'quiz' 
+                                        ? 'bg-amber-100 text-amber-700' 
+                                        : sectionColor === 'blue' ? 'bg-blue-100 text-blue-700'
+                                        : sectionColor === 'indigo' ? 'bg-indigo-100 text-indigo-700'
+                                        : 'bg-purple-100 text-purple-700'
+                                }`}>
+                                    {currentStepData?.type === 'quiz' ? '✍️ Check Your Understanding' : '📖 Learn'}
+                                </span>
+                            </div>
+
+                            <h2 className="text-2xl lg:text-3xl font-serif text-gray-900 mb-6">{currentStepData?.title}</h2>
+
+                            {currentStepData?.type === 'content' ? (
+                                <div>{currentStepData.content}</div>
+                            ) : (
+                                <div className="space-y-6">
+                                    <p className="text-lg text-gray-700">{currentStepData?.question}</p>
+                                    
+                                    {showHint && currentStepData?.hint && (
+                                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3 animate-slideIn">
+                                            <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                                            <p className="text-amber-800 text-sm"><strong>Hint:</strong> {currentStepData.hint}</p>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="space-y-3">
+                                        {currentStepData?.options?.map((option) => {
+                                            let btnClass = "w-full text-left p-4 rounded-xl border-2 transition-all option-btn ";
+                                            
+                                            const isTriedAnswer = triedAnswers.includes(option.id);
+                                            const isCurrentWrongAnswer = showFeedback && option.id === selectedAnswer && !isCorrect;
+                                            
+                                            if (isTriedAnswer && !showFeedback) {
+                                                // Previously tried wrong answer - show as disabled/crossed out
+                                                btnClass += "border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed";
+                                            } else if (isCurrentWrongAnswer) {
+                                                // Currently selected wrong answer during feedback
+                                                btnClass += "border-red-500 bg-red-50";
+                                            } else if (showFeedback && isCorrect && option.id === selectedAnswer) {
+                                                // Correct answer selected
+                                                btnClass += "border-emerald-500 bg-emerald-50";
+                                            } else if (showFeedback) {
+                                                // Other answers during feedback
+                                                btnClass += "border-gray-200 opacity-50";
+                                            } else if (selectedAnswer === option.id) {
+                                                btnClass += "border-blue-500 bg-blue-50";
+                                            } else {
+                                                btnClass += "border-gray-200 hover:border-gray-300 hover:bg-gray-50";
+                                            }
+                                            
+                                            return (
+                                                <button
+                                                    key={option.id}
+                                                    onClick={() => handleAnswerSelect(option.id)}
+                                                    disabled={showFeedback || isTriedAnswer}
+                                                    className={btnClass}
+                                                >
+                                                    <div className="flex items-start gap-3">
+                                                        <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 text-sm font-semibold transition-colors ${
+                                                            isTriedAnswer && !showFeedback
+                                                                ? 'bg-gray-400 border-gray-400 text-white'
+                                                                : isCurrentWrongAnswer
+                                                                    ? 'bg-red-500 border-red-500 text-white'
+                                                                    : showFeedback && isCorrect && option.id === selectedAnswer
+                                                                        ? 'bg-emerald-500 border-emerald-500 text-white'
+                                                                        : selectedAnswer === option.id
+                                                                            ? 'bg-blue-500 border-blue-500 text-white'
+                                                                            : 'border-gray-300 text-gray-500'
+                                                        }`}>
+                                                            {option.id.toUpperCase()}
+                                                        </span>
+                                                        <span className={`pt-0.5 ${isTriedAnswer && !showFeedback ? 'text-gray-400 line-through' : 'text-gray-700'}`}>{option.text}</span>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {!showFeedback && selectedAnswer && (
+                                        <button
+                                            onClick={checkAnswer}
+                                            className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                                        >
+                                            Check Answer
+                                        </button>
+                                    )}
+
+                                    {/* Feedback for correct answer */}
+                                    {showFeedback && isCorrect && (
+                                        <div className="p-5 rounded-xl animate-fadeIn bg-emerald-50 border border-emerald-200">
+                                            <div className="flex items-start gap-3">
+                                                <CheckCircle className="w-6 h-6 text-emerald-500 flex-shrink-0" />
+                                                <div>
+                                                    <p className="font-semibold text-emerald-800">Correct!</p>
+                                                    <p className="mt-1 text-sm text-emerald-700">
+                                                        {currentStepData.explanation}
+                                                    </p>
+                                                    <p className="mt-2 text-emerald-600 font-semibold text-sm">
+                                                        +{attempts === 0 ? currentStepData.points : 
+                                                          attempts === 1 ? Math.floor(currentStepData.points * 0.75) :
+                                                          attempts === 2 ? Math.floor(currentStepData.points * 0.5) :
+                                                          Math.floor(currentStepData.points * 0.25)} points
+                                                        {attempts === 1 && ' (2nd try)'}
+                                                        {attempts === 2 && ' (3rd try)'}
+                                                        {attempts >= 3 && ` (${attempts + 1}th try)`}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Feedback for wrong answer - with Try Again button */}
+                                    {showFeedback && !isCorrect && (
+                                        <div className="p-5 rounded-xl animate-fadeIn bg-red-50 border border-red-200">
+                                            <div className="flex items-start gap-3">
+                                                <XCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
+                                                <div className="flex-1">
+                                                    <p className="font-semibold text-red-800">Not quite right</p>
+                                                    <p className="mt-1 text-sm text-red-700">
+                                                        {currentStepData.wrongFeedback || currentStepData.explanation}
+                                                    </p>
+                                                    <button
+                                                        onClick={handleTryAgain}
+                                                        className="mt-3 flex items-center gap-2 bg-red-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                                                    >
+                                                        <RefreshCw className="w-4 h-4" />
+                                                        Try Again
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
+                                <button
+                                    onClick={handlePrev}
+                                    disabled={currentStep === 0}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                                        currentStep === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    <ChevronLeft className="w-5 h-5" />
+                                    Previous
+                                </button>
+                                
+                                <button
+                                    onClick={handleNext}
+                                    disabled={currentStepData?.type === 'quiz' && !(showFeedback && isCorrect)}
+                                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+                                        currentStepData?.type === 'quiz' && !(showFeedback && isCorrect)
+                                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                                    }`}
+                                >
+                                    {currentStep === totalSteps - 1 ? 'Complete Module' : 'Continue'}
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<SourcesAndAIModule />, document.getElementById('root'));
+    </script>
+</body>
+</html>

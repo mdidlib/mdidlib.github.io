@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spot the Fake - MDID Digital Skills</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Lucide React icons as inline SVG components
+        const Eye = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+        );
+
+        const CheckCircle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+        );
+
+        const XCircle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="m15 9-6 6"/>
+                <path d="m9 9 6 6"/>
+            </svg>
+        );
+
+        const AlertCircle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" x2="12" y1="8" y2="12"/>
+                <line x1="12" x2="12.01" y1="16" y2="16"/>
+            </svg>
+        );
+
+        const RefreshCw = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                <path d="M8 16H3v5"/>
+            </svg>
+        );
+
+        const SpotTheFakeModule = () => {
+            const [currentScreen, setCurrentScreen] = useState('welcome');
+            const [currentSource, setCurrentSource] = useState(0);
+            const [score, setScore] = useState(0);
+            const [selectedAnswer, setSelectedAnswer] = useState(null);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [answeredSources, setAnsweredSources] = useState([]);
+            const [showHint, setShowHint] = useState(false);
+
+            const sources = [
+                {
+                    id: 1,
+                    title: "Climate Change Facts",
+                    url: "www.climate-truth-now.com",
+                    author: "No author listed",
+                    date: "Updated daily",
+                    content: "SHOCKING! What scientists DON'T want you to know about climate change! The REAL truth revealed! Click here to learn more and buy our book for only $29.99!",
+                    design: "Lots of ads, pop-ups, ALL CAPS headlines",
+                    correctAnswer: "skip",
+                    credibilityScore: "Not Credible",
+                    explanation: "This source has major red flags: no author, sensational language (SHOCKING, REAL truth), trying to sell something, and makes claims about scientists hiding information. The .com domain and commercial purpose make it unreliable for research.",
+                    hints: [
+                        "Look at the language used - is it emotional or factual?",
+                        "Who wrote this? Can you verify their credentials?",
+                        "What's the purpose of this site?"
+                    ]
+                },
+                {
+                    id: 2,
+                    title: "Climate Change: Evidence & Causes",
+                    url: "www.nasa.gov/climate",
+                    author: "NASA Climate Science Team",
+                    date: "Last updated: January 2024",
+                    content: "Multiple studies show that Earth's average temperature has risen about 2 degrees Fahrenheit since the late 19th century. This warming is primarily driven by increased carbon dioxide and other human-made emissions into the atmosphere.",
+                    design: "Clean government website, .gov domain, citations to scientific studies",
+                    correctAnswer: "use",
+                    credibilityScore: "Highly Credible",
+                    explanation: "This is an excellent source! NASA is a respected government scientific organization (.gov domain), they cite evidence, use neutral language, provide clear authorship, and regularly update their information. Perfect for academic research.",
+                    hints: [
+                        "What does the .gov domain tell you?",
+                        "Is the language emotional or factual?",
+                        "Can you verify who NASA is?"
+                    ]
+                },
+                {
+                    id: 3,
+                    title: "My Thoughts on Global Warming",
+                    url: "www.johnsblog.wordpress.com",
+                    author: "John M. (hobby blogger)",
+                    date: "Posted 2 weeks ago",
+                    content: "I've been thinking about global warming lately. From what I've seen in my own backyard, winters seem colder than when I was a kid. I don't think it's as big of a deal as everyone says. Just my opinion though!",
+                    design: "Personal blog, casual writing, no sources cited",
+                    correctAnswer: "skip",
+                    credibilityScore: "Not Credible for Research",
+                    explanation: "While John's personal observations are valid for him, this isn't appropriate for academic research. It's one person's opinion with no scientific evidence, no expert credentials, and relies on personal experience rather than data. Blogs can be useful for some things, but not for proving scientific facts.",
+                    hints: [
+                        "What are the author's qualifications?",
+                        "Is personal observation enough for scientific claims?",
+                        "Are any sources or studies cited?"
+                    ]
+                },
+                {
+                    id: 4,
+                    title: "Global Temperature Analysis",
+                    url: "www.science-journal.edu/climate/2023",
+                    author: "Dr. Sarah Martinez, Climate Scientist at MIT",
+                    date: "Published: March 2023",
+                    content: "This peer-reviewed study examines temperature data from 1,200 weather stations globally over 50 years. Results indicate a statistically significant warming trend of 0.18°C per decade (p < 0.01). Methodology and raw data available in supplementary materials.",
+                    design: "Academic journal format, .edu domain, detailed citations, methodology section",
+                    correctAnswer: "use",
+                    credibilityScore: "Highly Credible",
+                    explanation: "This is an excellent academic source! It's peer-reviewed (meaning other scientists checked it), written by a qualified expert from a reputable university, published in an academic journal (.edu), includes specific data and methods, and provides access to raw data. This is exactly what you want for research!",
+                    hints: [
+                        "What does 'peer-reviewed' mean?",
+                        "What are Dr. Martinez's credentials?",
+                        "Does it provide evidence and methodology?"
+                    ]
+                }
+            ];
+
+            const handleAnswer = (answer) => {
+                setSelectedAnswer(answer);
+                setShowFeedback(true);
+                
+                if (answer === sources[currentSource].correctAnswer) {
+                    setScore(score + 1);
+                }
+                
+                setAnsweredSources([...answeredSources, currentSource]);
+            };
+
+            const nextSource = () => {
+                setShowFeedback(false);
+                setSelectedAnswer(null);
+                setShowHint(false);
+                
+                if (currentSource < sources.length - 1) {
+                    setCurrentSource(currentSource + 1);
+                } else {
+                    setCurrentScreen('completion');
+                }
+            };
+
+            const restart = () => {
+                setCurrentScreen('welcome');
+                setCurrentSource(0);
+                setScore(0);
+                setSelectedAnswer(null);
+                setShowFeedback(false);
+                setAnsweredSources([]);
+                setShowHint(false);
+            };
+
+            const WelcomeScreen = () => (
+                <div className="min-h-screen bg-gradient-to-br from-teal-500 via-blue-600 to-indigo-700 flex items-center justify-center p-4 relative">
+                    {/* Back Button */}
+                    <div className="absolute top-4 left-4">
+                        <a
+                            href="./"
+                            className="bg-white text-teal-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md flex items-center gap-2"
+                        >
+                            ← Back to Modules
+                        </a>
+                    </div>
+                    
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full animate-fadeIn">
+                        <div className="text-center">
+                            <div className="inline-block p-4 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full mb-4 animate-bounce">
+                                <Eye className="w-16 h-16 text-white" />
+                            </div>
+                            <h1 className="text-5xl font-bold bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                                Spot the Fake!
+                            </h1>
+                            <p className="text-sm font-semibold text-orange-500 tracking-wider uppercase mb-4">
+                                MDID Digital Skills
+                            </p>
+                            <p className="text-xl text-gray-600 mb-6">
+                                Source Evaluation Challenge
+                            </p>
+                            <div className="bg-gradient-to-r from-orange-50 to-pink-50 border-2 border-orange-300 rounded-xl p-4 mb-6 text-left">
+                                <p className="text-gray-700">
+                                    <strong className="text-orange-600">🎯 Your Mission:</strong> You'll see 4 different sources about climate change. 
+                                    Your job is to decide which ones are credible enough to use in a research paper!
+                                </p>
+                            </div>
+                            <div className="space-y-3 text-left mb-8">
+                                <div className="flex items-start gap-3">
+                                    <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+                                    <p className="text-gray-700">
+                                        <strong>Use It</strong> - This source is credible and appropriate for research
+                                    </p>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <AlertCircle className="w-6 h-6 text-yellow-500 flex-shrink-0 mt-1" />
+                                    <p className="text-gray-700">
+                                        <strong>Maybe</strong> - This source has some issues but might be useful
+                                    </p>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <XCircle className="w-6 h-6 text-red-500 flex-shrink-0 mt-1" />
+                                    <p className="text-gray-700">
+                                        <strong>Skip It</strong> - This source is not credible for academic research
+                                    </p>
+                                </div>
+                            </div>
+                            <p className="text-gray-600 mb-6">
+                                Time to complete: <strong>15-20 minutes</strong>
+                            </p>
+                            <button
+                                onClick={() => setCurrentScreen('activity')}
+                                className="bg-gradient-to-r from-teal-500 to-blue-600 text-white px-10 py-4 rounded-xl text-xl font-bold hover:from-teal-600 hover:to-blue-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-2xl"
+                            >
+                                🚀 Start the Challenge!
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const ActivityScreen = () => {
+                const source = sources[currentSource];
+                
+                return (
+                    <div className="min-h-screen bg-gray-100 p-4 py-8">
+                        {/* Back Button */}
+                        <div className="max-w-4xl mx-auto mb-4">
+                            <a
+                                href="./"
+                                className="inline-block bg-white text-teal-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md"
+                            >
+                                ← Back to Modules
+                            </a>
+                        </div>
+                        
+                        <div className="max-w-4xl mx-auto">
+                            <div className="bg-white rounded-lg shadow p-4 mb-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-semibold text-gray-600">
+                                        Source {currentSource + 1} of {sources.length}
+                                    </span>
+                                    <span className="text-sm font-semibold text-teal-600">
+                                        Score: {score}/{answeredSources.length}
+                                    </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-3">
+                                    <div 
+                                        className="bg-gradient-to-r from-teal-500 via-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-500"
+                                        style={{ width: `${((currentSource + 1) / sources.length) * 100}%` }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                                <div className="border-4 border-gray-300 rounded-lg p-6 bg-gray-50">
+                                    <div className="mb-4">
+                                        <h2 className="text-2xl font-bold text-gray-800 mb-2">{source.title}</h2>
+                                        <p className="text-blue-600 text-sm mb-1">🔗 {source.url}</p>
+                                        <p className="text-gray-600 text-sm mb-1">✍️ Author: {source.author}</p>
+                                        <p className="text-gray-600 text-sm">📅 {source.date}</p>
+                                    </div>
+                                    
+                                    <div className="border-t-2 border-gray-300 pt-4 mb-4">
+                                        <p className="text-gray-700 leading-relaxed">{source.content}</p>
+                                    </div>
+                                    
+                                    <div className="bg-blue-50 border border-blue-200 rounded p-3">
+                                        <p className="text-sm text-gray-700">
+                                            <strong>Design notes:</strong> {source.design}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {!showFeedback && (
+                                <div className="text-center mb-4">
+                                    <button
+                                        onClick={() => setShowHint(!showHint)}
+                                        className="text-orange-600 hover:text-orange-700 font-semibold flex items-center gap-2 mx-auto transform hover:scale-105 transition-all"
+                                    >
+                                        <AlertCircle className="w-5 h-5" />
+                                        {showHint ? '🙈 Hide Hints' : '💡 Need a Hint?'}
+                                    </button>
+                                    {showHint && (
+                                        <div className="mt-3 bg-gradient-to-r from-orange-50 to-pink-50 border-2 border-orange-300 rounded-lg p-4 max-w-md mx-auto">
+                                            <p className="font-semibold text-orange-800 mb-2">🤔 Think about:</p>
+                                            <ul className="text-left space-y-1">
+                                                {source.hints.map((hint, idx) => (
+                                                    <li key={idx} className="text-orange-700 text-sm">• {hint}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {!showFeedback && (
+                                <div className="bg-white rounded-lg shadow-lg p-6">
+                                    <h3 className="text-xl font-bold text-center mb-4 text-gray-800">
+                                        What's your verdict?
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <button
+                                            onClick={() => handleAnswer('use')}
+                                            className="p-6 border-4 border-green-400 rounded-xl hover:bg-green-50 transition-all transform hover:scale-105 hover:shadow-lg"
+                                        >
+                                            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-2" />
+                                            <p className="font-bold text-green-700 text-lg">✓ Use It</p>
+                                            <p className="text-sm text-gray-600 mt-1">Credible for research</p>
+                                        </button>
+                                        
+                                        <button
+                                            onClick={() => handleAnswer('maybe')}
+                                            className="p-6 border-4 border-yellow-400 rounded-xl hover:bg-yellow-50 transition-all transform hover:scale-105 hover:shadow-lg"
+                                        >
+                                            <AlertCircle className="w-12 h-12 text-yellow-500 mx-auto mb-2" />
+                                            <p className="font-bold text-yellow-700 text-lg">? Maybe</p>
+                                            <p className="text-sm text-gray-600 mt-1">Has some issues</p>
+                                        </button>
+                                        
+                                        <button
+                                            onClick={() => handleAnswer('skip')}
+                                            className="p-6 border-4 border-red-400 rounded-xl hover:bg-red-50 transition-all transform hover:scale-105 hover:shadow-lg"
+                                        >
+                                            <XCircle className="w-12 h-12 text-red-500 mx-auto mb-2" />
+                                            <p className="font-bold text-red-700 text-lg">✗ Skip It</p>
+                                            <p className="text-sm text-gray-600 mt-1">Not credible</p>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {showFeedback && (
+                                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                                    {selectedAnswer === source.correctAnswer ? (
+                                        <div className="text-center">
+                                            <div className="animate-bounce mb-4">
+                                                <CheckCircle className="w-20 h-20 text-green-500 mx-auto" />
+                                            </div>
+                                            <h3 className="text-3xl font-bold text-green-700 mb-2">🎉 Correct!</h3>
+                                            <p className="text-lg text-gray-700 mb-4">
+                                                This source is: <strong className="text-green-600">{source.credibilityScore}</strong>
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center">
+                                            <div className="mb-4">
+                                                <XCircle className="w-20 h-20 text-red-500 mx-auto" />
+                                            </div>
+                                            <h3 className="text-3xl font-bold text-red-700 mb-2">Not Quite!</h3>
+                                            <p className="text-lg text-gray-700 mb-4">
+                                                This source is actually: <strong className="text-orange-600">{source.credibilityScore}</strong>
+                                            </p>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="bg-gradient-to-r from-teal-50 to-blue-50 border-l-4 border-teal-500 p-4 mb-4 rounded">
+                                        <p className="font-semibold text-teal-900 mb-2">💡 Why?</p>
+                                        <p className="text-gray-700">{source.explanation}</p>
+                                    </div>
+                                    
+                                    <button
+                                        onClick={nextSource}
+                                        className="w-full bg-gradient-to-r from-teal-500 to-blue-600 text-white py-3 rounded-lg font-bold hover:from-teal-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg"
+                                    >
+                                        {currentSource < sources.length - 1 ? 'Next Source →' : '🏆 See Your Results!'}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            };
+
+            const CompletionScreen = () => {
+                const percentage = Math.round((score / sources.length) * 100);
+                let message = '';
+                let badge = '';
+                let emoji = '';
+                
+                if (percentage === 100) {
+                    message = "Perfect score! You're a source evaluation expert!";
+                    badge = "Master Detective";
+                    emoji = "🏆";
+                } else if (percentage >= 75) {
+                    message = "Great job! You've got strong source evaluation skills!";
+                    badge = "Expert Evaluator";
+                    emoji = "⭐";
+                } else if (percentage >= 50) {
+                    message = "Good start! Keep practicing these skills.";
+                    badge = "Learning Detective";
+                    emoji = "📚";
+                } else {
+                    message = "Keep learning! Source evaluation takes practice.";
+                    badge = "Junior Detective";
+                    emoji = "🔍";
+                }
+                
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-teal-500 via-blue-600 to-indigo-700 flex items-center justify-center p-4 relative">
+                        {/* Back Button */}
+                        <div className="absolute top-4 left-4">
+                            <a
+                                href="./"
+                                className="bg-white text-teal-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md flex items-center gap-2"
+                            >
+                                ← Back to Modules
+                            </a>
+                        </div>
+                        
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full">
+                            <div className="text-center">
+                                <div className="text-8xl mb-4 animate-bounce">{emoji}</div>
+                                <h1 className="text-5xl font-bold bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent mb-2">
+                                    Challenge Complete!
+                                </h1>
+                                <p className="text-sm font-semibold text-orange-500 tracking-wider uppercase mb-4">
+                                    MDID Digital Skills
+                                </p>
+                                <div className="text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600 mb-4">
+                                    {score}/{sources.length}
+                                </div>
+                                <p className="text-2xl text-gray-700 mb-6">{message}</p>
+                                
+                                <div className="bg-gradient-to-r from-orange-100 via-pink-100 to-orange-100 rounded-xl p-6 mb-6 border-4 border-orange-300">
+                                    <p className="text-5xl mb-2">{emoji}</p>
+                                    <p className="text-xl font-bold text-gray-800 mb-1">{badge}</p>
+                                    <p className="text-gray-700 font-semibold">You earned: {percentage}%</p>
+                                </div>
+                                
+                                <div className="bg-gradient-to-r from-teal-50 to-blue-50 border-l-4 border-teal-500 p-4 mb-6 text-left rounded">
+                                    <p className="font-semibold text-teal-900 mb-2">🎓 Key Takeaways:</p>
+                                    <ul className="space-y-2 text-gray-700">
+                                        <li>✓ Check the author's credentials and expertise</li>
+                                        <li>✓ Look for .gov, .edu domains for academic research</li>
+                                        <li>✓ Watch out for emotional language and selling tactics</li>
+                                        <li>✓ Prefer peer-reviewed sources over personal blogs</li>
+                                        <li>✓ Verify information with multiple credible sources</li>
+                                    </ul>
+                                </div>
+                                
+                                <div className="flex gap-4 justify-center flex-wrap">
+                                    <button
+                                        onClick={restart}
+                                        className="bg-gradient-to-r from-teal-500 to-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:from-teal-600 hover:to-blue-700 transform hover:scale-105 transition-all flex items-center gap-2 shadow-lg"
+                                    >
+                                        <RefreshCw className="w-5 h-5" />
+                                        Try Again
+                                    </button>
+                                    <button
+                                        onClick={() => window.location.href = '/'}
+                                        className="bg-gradient-to-r from-orange-400 to-pink-500 text-white px-8 py-3 rounded-xl font-bold hover:from-orange-500 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg"
+                                    >
+                                        More Modules
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            return (
+                <div>
+                    {currentScreen === 'welcome' && <WelcomeScreen />}
+                    {currentScreen === 'activity' && <ActivityScreen />}
+                    {currentScreen === 'completion' && <CompletionScreen />}
+                </div>
+            );
+        };
+
+        ReactDOM.render(<SpotTheFakeModule />, document.getElementById('root'));
+    </script>
+</body>
+</html>

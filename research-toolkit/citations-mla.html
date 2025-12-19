@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Integrity & Citations (MLA) - Research Toolkit</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #faf9f7; }
+        .font-serif { font-family: 'Instrument Serif', Georgia, serif; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+        .animate-slideIn { animation: slideIn 0.3s ease-out; }
+        .progress-bar { transition: width 0.5s ease-out; }
+        .option-btn { transition: all 0.2s ease; }
+        .option-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Icons
+        const ChevronRight = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>;
+        const ChevronLeft = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>;
+        const CheckCircle = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+        const XCircle = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 9l-6 6M9 9l6 6" /></svg>;
+        const FileText = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>;
+        const RefreshCw = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>;
+        const Lightbulb = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>;
+        const Target = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={2} /><circle cx="12" cy="12" r="6" strokeWidth={2} /><circle cx="12" cy="12" r="2" strokeWidth={2} /></svg>;
+        const AlertTriangle = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>;
+        const Quote = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>;
+
+        const CitationsMLAModule = () => {
+            const [screen, setScreen] = useState('welcome');
+            const [currentStep, setCurrentStep] = useState(0);
+            const [score, setScore] = useState(0);
+            const [selectedAnswer, setSelectedAnswer] = useState(null);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [isCorrect, setIsCorrect] = useState(false);
+            const [attempts, setAttempts] = useState(0);
+            const [showHint, setShowHint] = useState(false);
+            const [triedAnswers, setTriedAnswers] = useState([]);
+            const [completedSteps, setCompletedSteps] = useState([]);
+
+            const totalPoints = 170;
+
+            const steps = [
+                // SECTION 1: WHY CITATIONS MATTER
+                {
+                    id: 'why-1',
+                    section: 'Why Citations Matter',
+                    type: 'content',
+                    title: 'The Purpose of Citations',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Citations aren't just a bureaucratic requirement — they serve 
+                                <span className="font-semibold text-violet-700"> essential purposes</span> in academic work:
+                            </p>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="text-2xl mb-2">🎯</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">Give Credit</h4>
+                                    <p className="text-gray-600 text-sm">Acknowledge the scholars whose ideas you're building on. It's intellectual honesty.</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="text-2xl mb-2">🔍</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">Enable Verification</h4>
+                                    <p className="text-gray-600 text-sm">Readers can check your sources and verify your claims. This builds trust.</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="text-2xl mb-2">🗣️</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">Join the Conversation</h4>
+                                    <p className="text-gray-600 text-sm">Show how your work connects to existing scholarship. You're part of a larger dialogue.</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="text-2xl mb-2">💪</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">Strengthen Your Argument</h4>
+                                    <p className="text-gray-600 text-sm">Expert sources add credibility and weight to your claims.</p>
+                                </div>
+                            </div>
+                            <div className="bg-violet-50 border-l-4 border-violet-500 p-5 rounded-r-lg">
+                                <p className="text-violet-800">
+                                    <strong>Think of it this way:</strong> Citations are how academics show respect for each other's work 
+                                    and maintain integrity in the pursuit of knowledge.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'why-2',
+                    section: 'Why Citations Matter',
+                    type: 'content',
+                    title: 'What is Plagiarism?',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                <span className="font-semibold text-red-700">Plagiarism</span> is presenting someone else's words, ideas, 
+                                or work as your own — whether intentionally or accidentally.
+                            </p>
+                            <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+                                <p className="font-semibold text-red-800 mb-4 flex items-center gap-2">
+                                    <AlertTriangle className="w-5 h-5" />
+                                    Forms of Plagiarism
+                                </p>
+                                <div className="space-y-3">
+                                    <div className="flex items-start gap-3">
+                                        <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="font-medium text-red-800">Direct copying</p>
+                                            <p className="text-red-700 text-sm">Using exact words without quotation marks and citation</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="font-medium text-red-800">Paraphrasing without citation</p>
+                                            <p className="text-red-700 text-sm">Rewording ideas but not crediting the original source</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="font-medium text-red-800">Mosaic plagiarism</p>
+                                            <p className="text-red-700 text-sm">Mixing copied phrases with your own words without proper attribution</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <XCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="font-medium text-red-800">Self-plagiarism</p>
+                                            <p className="text-red-700 text-sm">Reusing your own previous work without acknowledgment</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <p className="text-amber-800">
+                                    <strong>💡 Important:</strong> Plagiarism can be accidental! Taking good notes and citing as you 
+                                    research (not just at the end) helps prevent unintentional plagiarism.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-1',
+                    section: 'Why Citations Matter',
+                    type: 'quiz',
+                    title: 'Identify Plagiarism',
+                    question: 'A student reads an article, puts it aside, then writes a paragraph using the same ideas in their own words WITHOUT citing the source. This is:',
+                    options: [
+                        { id: 'a', text: 'Fine — they used their own words' },
+                        { id: 'b', text: 'Plagiarism — ideas must be cited even when paraphrased' },
+                        { id: 'c', text: 'Only a problem if the teacher notices' },
+                        { id: 'd', text: 'Acceptable as long as they cite other sources in the paper' }
+                    ],
+                    correct: 'b',
+                    explanation: 'Even when you paraphrase (put ideas in your own words), you must cite the source of those ideas. Using your own words doesn\'t make the ideas yours. This is one of the most common forms of unintentional plagiarism.',
+                    wrongFeedback: 'Consider what belongs to the original author. Is it just their specific words, or also their ideas and arguments? Paraphrasing changes the words, but where did the underlying ideas come from?',
+                    hint: 'Think about what belongs to the original author — just the words, or also the ideas?',
+                    points: 15
+                },
+                // SECTION 2: QUOTING VS PARAPHRASING
+                {
+                    id: 'quote-1',
+                    section: 'Quoting & Paraphrasing',
+                    type: 'content',
+                    title: 'When to Quote vs. Paraphrase',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Both quoting and paraphrasing require citations, but they serve different purposes:
+                            </p>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                                    <p className="font-semibold text-blue-800 mb-3 text-lg">"Direct Quotes"</p>
+                                    <p className="text-blue-700 mb-3">Use the author's exact words in quotation marks.</p>
+                                    <p className="font-medium text-blue-800 mb-2">Use when:</p>
+                                    <ul className="space-y-1 text-blue-700 text-sm">
+                                        <li>• The exact wording is important</li>
+                                        <li>• The author said it perfectly</li>
+                                        <li>• You're analyzing the language itself</li>
+                                        <li>• It's a key definition or famous phrase</li>
+                                    </ul>
+                                </div>
+                                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                                    <p className="font-semibold text-emerald-800 mb-3 text-lg">Paraphrasing</p>
+                                    <p className="text-emerald-700 mb-3">Restate the idea completely in your own words.</p>
+                                    <p className="font-medium text-emerald-800 mb-2">Use when:</p>
+                                    <ul className="space-y-1 text-emerald-700 text-sm">
+                                        <li>• The idea matters more than the wording</li>
+                                        <li>• You can say it more clearly</li>
+                                        <li>• You're summarizing a longer passage</li>
+                                        <li>• You want smoother flow in your writing</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <p className="text-amber-800">
+                                    <strong>⚠️ Balance matters:</strong> Too many quotes can make your paper feel like a patchwork 
+                                    of other people's words. Aim to paraphrase most of the time, quoting only when the exact 
+                                    words truly matter.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quote-2',
+                    section: 'Quoting & Paraphrasing',
+                    type: 'content',
+                    title: 'How to Paraphrase Properly',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Good paraphrasing is more than just swapping out a few words. Follow this process:
+                            </p>
+                            <div className="space-y-4">
+                                {[
+                                    { num: '1', title: 'Read and understand', desc: 'Read the passage several times until you fully understand the meaning.', color: 'violet' },
+                                    { num: '2', title: 'Set it aside', desc: 'Put the source away. Don\'t look at it while you write.', color: 'blue' },
+                                    { num: '3', title: 'Write in your own words', desc: 'Explain the idea as if telling a friend. Use your own sentence structure.', color: 'emerald' },
+                                    { num: '4', title: 'Compare and check', desc: 'Compare your version to the original. Is it different enough? Did you capture the meaning?', color: 'amber' },
+                                    { num: '5', title: 'Add your citation', desc: 'Even though it\'s in your words, the idea came from somewhere — cite it!', color: 'rose' }
+                                ].map((step) => (
+                                    <div key={step.num} className="flex items-start gap-4">
+                                        <div className={`w-10 h-10 bg-${step.color}-500 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold`}>
+                                            {step.num}
+                                        </div>
+                                        <div className="pt-1">
+                                            <p className="font-semibold text-gray-900">{step.title}</p>
+                                            <p className="text-gray-600 text-sm">{step.desc}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="bg-red-50 border border-red-200 rounded-xl p-5">
+                                <p className="text-red-800">
+                                    <strong>❌ Not paraphrasing:</strong> Copying the sentence and just replacing some words with 
+                                    synonyms. This is "patchwriting" and is still considered plagiarism.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-2',
+                    section: 'Quoting & Paraphrasing',
+                    type: 'quiz',
+                    title: 'Good Paraphrase?',
+                    question: 'Original: "Social media has fundamentally transformed how teenagers communicate with peers." \n\nWhich is a PROPER paraphrase?',
+                    options: [
+                        { id: 'a', text: 'Social media has basically changed how teens talk with friends.' },
+                        { id: 'b', text: 'The way young people interact with each other has been dramatically reshaped by platforms like Instagram and TikTok.' },
+                        { id: 'c', text: 'Social media has fundamentally transformed teen communication.' },
+                        { id: 'd', text: '"Social media has fundamentally transformed how teenagers communicate with peers."' }
+                    ],
+                    correct: 'b',
+                    explanation: 'Option B completely restructures the sentence and uses different vocabulary while preserving the meaning. Option A just swaps a few words (synonyms). Option C is too close to the original. Option D is a quote, not a paraphrase. All would still need citations!',
+                    wrongFeedback: 'A proper paraphrase requires completely restructuring the sentence, not just replacing words with synonyms. Look for the option that expresses the same idea using entirely different phrasing and sentence structure.',
+                    hint: 'A good paraphrase uses completely different sentence structure, not just synonym swaps.',
+                    points: 15
+                },
+                // SECTION 3: MLA BASICS
+                {
+                    id: 'mla-1',
+                    section: 'MLA Format Basics',
+                    type: 'content',
+                    title: 'MLA: The Core Principle',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                MLA (Modern Language Association) style is used primarily in 
+                                <span className="font-semibold text-rose-700"> humanities</span> — English, literature, philosophy, history, and arts.
+                            </p>
+                            <div className="bg-rose-50 border-l-4 border-rose-500 p-5 rounded-r-lg">
+                                <p className="font-semibold text-rose-800 mb-2">📚 MLA's Core Container System</p>
+                                <p className="text-rose-700">
+                                    MLA thinks of sources as nested "containers." An article (small container) might be in a journal 
+                                    (bigger container) which is in a database (even bigger container). You cite from smallest to largest.
+                                </p>
+                            </div>
+                            <div className="bg-white border border-gray-200 rounded-xl p-6">
+                                <p className="font-semibold text-gray-800 mb-4">The MLA Core Elements (in order):</p>
+                                <div className="space-y-2 text-sm">
+                                    <p><span className="font-mono bg-gray-100 px-2 py-1 rounded">1.</span> <strong>Author.</strong></p>
+                                    <p><span className="font-mono bg-gray-100 px-2 py-1 rounded">2.</span> <strong>"Title of Source."</strong></p>
+                                    <p><span className="font-mono bg-gray-100 px-2 py-1 rounded">3.</span> <em>Title of Container,</em></p>
+                                    <p><span className="font-mono bg-gray-100 px-2 py-1 rounded">4.</span> Other contributors,</p>
+                                    <p><span className="font-mono bg-gray-100 px-2 py-1 rounded">5.</span> Version,</p>
+                                    <p><span className="font-mono bg-gray-100 px-2 py-1 rounded">6.</span> Number,</p>
+                                    <p><span className="font-mono bg-gray-100 px-2 py-1 rounded">7.</span> Publisher,</p>
+                                    <p><span className="font-mono bg-gray-100 px-2 py-1 rounded">8.</span> Publication date,</p>
+                                    <p><span className="font-mono bg-gray-100 px-2 py-1 rounded">9.</span> Location (pages, URL, etc.).</p>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <p className="text-amber-800">
+                                    <strong>💡 Good news:</strong> Not every source has all elements. Just include what's available 
+                                    and applicable, in this order.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'mla-2',
+                    section: 'MLA Format Basics',
+                    type: 'content',
+                    title: 'MLA In-Text Citations',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                In-text citations point readers to your Works Cited. MLA uses 
+                                <span className="font-semibold text-rose-700"> author-page</span> format:
+                            </p>
+                            <div className="space-y-4">
+                                <div className="bg-white border border-gray-200 rounded-xl p-5">
+                                    <p className="font-semibold text-gray-800 mb-3">Basic format:</p>
+                                    <div className="bg-gray-50 rounded-lg p-4">
+                                        <p className="text-gray-700">
+                                            According to recent research, social media affects teen mental health 
+                                            <span className="bg-rose-100 px-1 rounded">(Smith 45)</span>.
+                                        </p>
+                                    </div>
+                                    <p className="text-gray-500 text-sm mt-2">→ Author's last name + page number, no comma</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5">
+                                    <p className="font-semibold text-gray-800 mb-3">Author named in sentence:</p>
+                                    <div className="bg-gray-50 rounded-lg p-4">
+                                        <p className="text-gray-700">
+                                            <span className="bg-rose-100 px-1 rounded">Smith</span> argues that social media affects teen mental health 
+                                            <span className="bg-rose-100 px-1 rounded">(45)</span>.
+                                        </p>
+                                    </div>
+                                    <p className="text-gray-500 text-sm mt-2">→ If you name the author, just put page number in parentheses</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5">
+                                    <p className="font-semibold text-gray-800 mb-3">No page numbers (websites, etc.):</p>
+                                    <div className="bg-gray-50 rounded-lg p-4">
+                                        <p className="text-gray-700">
+                                            The organization reported significant changes 
+                                            <span className="bg-rose-100 px-1 rounded">(World Health Organization)</span>.
+                                        </p>
+                                    </div>
+                                    <p className="text-gray-500 text-sm mt-2">→ Just use author/organization name</p>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-3',
+                    section: 'MLA Format Basics',
+                    type: 'quiz',
+                    title: 'MLA In-Text Practice',
+                    question: 'You want to cite page 127 of a book by Maria Garcia. Which is the correct MLA in-text citation?',
+                    options: [
+                        { id: 'a', text: '(Garcia, 127)' },
+                        { id: 'b', text: '(Garcia 127)' },
+                        { id: 'c', text: '(Garcia, p. 127)' },
+                        { id: 'd', text: '(Maria Garcia, 127)' }
+                    ],
+                    correct: 'b',
+                    explanation: 'MLA in-text citations use author\'s last name and page number with NO comma between them, and no "p." or "pg." Just: (LastName PageNumber). First names are not used in in-text citations.',
+                    wrongFeedback: 'MLA format is very specific about in-text citations. Check: Is there a comma? Is there a "p." before the page number? Is the first name included? MLA keeps it minimal.',
+                    hint: 'MLA keeps it simple: last name and page number, no comma, no "p."',
+                    points: 15
+                },
+                {
+                    id: 'mla-3',
+                    section: 'MLA Format Basics',
+                    type: 'content',
+                    title: 'MLA Works Cited Examples',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Your Works Cited page lists all sources alphabetically by author's last name. Here are common formats:
+                            </p>
+                            <div className="space-y-4">
+                                <div className="bg-white border border-gray-200 rounded-xl p-5">
+                                    <p className="font-semibold text-rose-700 mb-2">📖 Book</p>
+                                    <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">
+                                        <p>Smith, John. <em>The Title of the Book</em>. Publisher, Year.</p>
+                                    </div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5">
+                                    <p className="font-semibold text-rose-700 mb-2">📰 Journal Article</p>
+                                    <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">
+                                        <p>Smith, John. "Title of Article." <em>Journal Name</em>, vol. 12, no. 3, Year, pp. 45-67.</p>
+                                    </div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5">
+                                    <p className="font-semibold text-rose-700 mb-2">🌐 Website</p>
+                                    <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">
+                                        <p>Smith, John. "Title of Page." <em>Website Name</em>, Publisher, Day Month Year, URL.</p>
+                                    </div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5">
+                                    <p className="font-semibold text-rose-700 mb-2">🗃️ Database Article</p>
+                                    <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">
+                                        <p>Smith, John. "Article Title." <em>Journal Name</em>, vol. 12, no. 3, Year, pp. 45-67. <em>Database Name</em>, URL or DOI.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+                                <p className="text-blue-800">
+                                    <strong>💡 Pro tip:</strong> Databases like JSTOR and ProQuest can generate MLA citations for you. 
+                                    Always double-check them for accuracy, but they're a great starting point!
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-4',
+                    section: 'MLA Format Basics',
+                    type: 'quiz',
+                    title: 'MLA Works Cited',
+                    question: 'In an MLA Works Cited entry, how should book and journal titles be formatted?',
+                    options: [
+                        { id: 'a', text: 'Both in "quotation marks"' },
+                        { id: 'b', text: 'Both in italics' },
+                        { id: 'c', text: 'Books in italics, article titles in "quotation marks"' },
+                        { id: 'd', text: 'Books in "quotation marks," article titles in italics' }
+                    ],
+                    correct: 'c',
+                    explanation: 'In MLA, larger works (books, journals, websites) are italicized. Smaller works within them (articles, chapters, web pages) go in "quotation marks." Think: the container is italicized, what\'s inside gets quotes.',
+                    wrongFeedback: 'MLA distinguishes between larger works (containers) and smaller works within them. Think about which is the "whole" and which is a "part" — they get formatted differently.',
+                    hint: 'Think about containers: which is the "bigger" work that contains the other?',
+                    points: 15
+                },
+                // SECTION 4: CITING AI
+                {
+                    id: 'ai-1',
+                    section: 'Citing AI Tools',
+                    type: 'content',
+                    title: 'When and How to Cite AI',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                If you use AI tools like ChatGPT or Claude in your research, you 
+                                <span className="font-semibold text-violet-700"> must acknowledge this</span>. The IB requires transparency about AI use.
+                            </p>
+                            <div className="bg-violet-50 border-l-4 border-violet-500 p-5 rounded-r-lg">
+                                <p className="font-semibold text-violet-800 mb-2">🤖 MLA Format for AI Tools</p>
+                                <div className="bg-white rounded-lg p-4 mt-3 font-mono text-sm">
+                                    <p>"Prompt you used" prompt. <em>AI Tool Name</em>, Version, Company, Date, URL.</p>
+                                </div>
+                            </div>
+                            <div className="bg-white border border-gray-200 rounded-xl p-5">
+                                <p className="font-semibold text-gray-800 mb-3">Example:</p>
+                                <div className="bg-gray-50 rounded-lg p-4 font-mono text-sm">
+                                    <p>"Explain the causes of the French Revolution in simple terms" prompt. <em>ChatGPT</em>, GPT-4, OpenAI, 15 Mar. 2024, chat.openai.com.</p>
+                                </div>
+                            </div>
+                            <div className="bg-white border border-gray-200 rounded-xl p-5">
+                                <p className="font-semibold text-gray-800 mb-3">In-text citation:</p>
+                                <div className="bg-gray-50 rounded-lg p-4">
+                                    <p className="text-gray-700">
+                                        The AI explained that multiple factors contributed to the revolution 
+                                        <span className="bg-violet-100 px-1 rounded">("Explain the causes")</span>.
+                                    </p>
+                                </div>
+                                <p className="text-gray-500 text-sm mt-2">→ Use a shortened version of your prompt</p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'ai-2',
+                    section: 'Citing AI Tools',
+                    type: 'content',
+                    title: 'Documenting AI Use for IB',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Beyond citations, the IB expects you to be 
+                                <span className="font-semibold text-violet-700"> transparent about HOW you used AI</span>. Many teachers require an AI use statement.
+                            </p>
+                            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-6">
+                                <p className="font-semibold text-emerald-800 mb-3">✓ Good AI documentation includes:</p>
+                                <ul className="space-y-2 text-emerald-700">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-emerald-500" />
+                                        <span><strong>What tool</strong> you used (ChatGPT, Claude, Perplexity, etc.)</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-emerald-500" />
+                                        <span><strong>How</strong> you used it (brainstorming, explaining concepts, proofreading)</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-emerald-500" />
+                                        <span><strong>What</strong> you did with the output (verified, modified, used as starting point)</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div className="bg-white border border-gray-200 rounded-xl p-5">
+                                <p className="font-semibold text-gray-800 mb-3">Example AI acknowledgment:</p>
+                                <div className="bg-gray-50 rounded-lg p-4 text-sm text-gray-700 italic">
+                                    "I used ChatGPT to help brainstorm initial research questions and to explain the concept of 
+                                    economic elasticity. All AI-generated explanations were verified against textbook sources, 
+                                    and the final analysis and arguments are my own work."
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <p className="text-amber-800">
+                                    <strong>⚠️ Remember:</strong> Cite AI in your Works Cited AND explain your use. 
+                                    Being transparent protects you and demonstrates academic integrity.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-5',
+                    section: 'Citing AI Tools',
+                    type: 'quiz',
+                    title: 'AI Citation Practice',
+                    question: 'You used Claude to help understand a difficult concept, then wrote about it in your own words. What should you do?',
+                    options: [
+                        { id: 'a', text: 'No citation needed — you wrote it in your own words' },
+                        { id: 'b', text: 'Cite Claude in your Works Cited and acknowledge AI use in your paper' },
+                        { id: 'c', text: 'Just mention "AI" somewhere in your paper' },
+                        { id: 'd', text: 'Only cite if your teacher specifically asks' }
+                    ],
+                    correct: 'b',
+                    explanation: 'Even when you rephrase AI output in your own words, you used it as a source for understanding. Cite it properly in your Works Cited AND be transparent about how you used it. This is what academic integrity looks like in the AI age.',
+                    wrongFeedback: 'The IB expects full transparency about AI use. Using your own words doesn\'t eliminate the need to acknowledge where you got your understanding. Think about what proper documentation of AI use requires.',
+                    hint: 'Think about the principles from Module 2: what does the IB expect regarding AI transparency?',
+                    points: 20
+                },
+                // SECTION 5: PRACTICAL APPLICATION
+                {
+                    id: 'practice-1',
+                    section: 'Putting It Together',
+                    type: 'content',
+                    title: 'Citation Workflow',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Good citation habits start <span className="font-semibold text-violet-700">during</span> research, not after. Here's an effective workflow:
+                            </p>
+                            <div className="relative">
+                                <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-violet-200"></div>
+                                <div className="space-y-6">
+                                    {[
+                                        { num: '1', title: 'Collect as you go', desc: 'Every time you find a useful source, immediately record all citation information. Use a citation manager or simple document.', color: 'violet' },
+                                        { num: '2', title: 'Note page numbers', desc: 'When you take notes from a source, always write down the page number. You\'ll need it for in-text citations.', color: 'rose' },
+                                        { num: '3', title: 'Mark direct quotes clearly', desc: 'In your notes, use quotation marks and highlight anything that\'s a direct quote. This prevents accidental plagiarism.', color: 'blue' },
+                                        { num: '4', title: 'Track AI interactions', desc: 'Keep a log of your AI prompts and how you used the responses. Screenshot or save chat logs.', color: 'purple' },
+                                        { num: '5', title: 'Build Works Cited incrementally', desc: 'Add to your Works Cited as you write, not at the end. This ensures nothing is forgotten.', color: 'emerald' }
+                                    ].map((step, i) => (
+                                        <div key={step.num} className="flex items-start gap-4 pl-2">
+                                            <div className={`w-10 h-10 bg-${step.color}-500 rounded-full flex items-center justify-center flex-shrink-0 text-white font-bold relative z-10`}>
+                                                {step.num}
+                                            </div>
+                                            <div className="bg-white border border-gray-200 rounded-xl p-4 flex-1 shadow-sm">
+                                                <p className="font-semibold text-gray-900">{step.title}</p>
+                                                <p className="text-gray-600 text-sm mt-1">{step.desc}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'practice-2',
+                    section: 'Putting It Together',
+                    type: 'content',
+                    title: 'Helpful Tools',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                These tools can help manage your citations (but always double-check their output!):
+                            </p>
+                            <div className="grid gap-4">
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="flex items-start gap-4">
+                                        <div className="text-2xl">📚</div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900">NoodleTools</h4>
+                                            <p className="text-gray-600 text-sm mt-1">Your school may have access. Creates properly formatted citations and helps organize research.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="flex items-start gap-4">
+                                        <div className="text-2xl">🔧</div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900">ZoteroBib / MyBib</h4>
+                                            <p className="text-gray-600 text-sm mt-1">Free online tools. Paste in a URL or ISBN and get a formatted citation. Quick and easy for basic sources.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="flex items-start gap-4">
+                                        <div className="text-2xl">🗄️</div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900">Database Export</h4>
+                                            <p className="text-gray-600 text-sm mt-1">JSTOR, ProQuest, and other databases have "Cite" buttons. Export citations directly in MLA format.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="flex items-start gap-4">
+                                        <div className="text-2xl">📖</div>
+                                        <div>
+                                            <h4 className="font-semibold text-gray-900">Purdue OWL</h4>
+                                            <p className="text-gray-600 text-sm mt-1">The definitive free MLA guide online. When in doubt, check owl.purdue.edu for examples.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <p className="text-amber-800">
+                                    <strong>⚠️ Always verify:</strong> Auto-generated citations often have errors — wrong capitalization, 
+                                    missing information, incorrect formatting. Use tools as a starting point, then check carefully.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-6',
+                    section: 'Putting It Together',
+                    type: 'quiz',
+                    title: 'Best Practices',
+                    question: 'When is the BEST time to record citation information for a source?',
+                    options: [
+                        { id: 'a', text: 'After you finish writing your paper' },
+                        { id: 'b', text: 'The night before the deadline' },
+                        { id: 'c', text: 'As soon as you find and decide to use the source' },
+                        { id: 'd', text: 'Only for sources you directly quote' }
+                    ],
+                    correct: 'c',
+                    explanation: 'Record citation information immediately when you find a useful source! Waiting until later means you might forget sources, lose track of page numbers, or scramble to relocate information. Cite as you go, not as an afterthought.',
+                    wrongFeedback: 'Think about when problems are easiest to prevent. If you wait to record citation information, what might go wrong? Consider the practical challenges of trying to find sources again later.',
+                    hint: 'Think about preventing problems rather than fixing them later.',
+                    points: 15
+                },
+                {
+                    id: 'quiz-7',
+                    section: 'Putting It Together',
+                    type: 'quiz',
+                    title: 'Final Check',
+                    question: 'What\'s the relationship between in-text citations and the Works Cited page?',
+                    options: [
+                        { id: 'a', text: 'They\'re separate — you only need one or the other' },
+                        { id: 'b', text: 'Every in-text citation must have a matching entry in Works Cited, and vice versa' },
+                        { id: 'c', text: 'Works Cited is optional if you have in-text citations' },
+                        { id: 'd', text: 'In-text citations are only needed for direct quotes' }
+                    ],
+                    correct: 'b',
+                    explanation: 'In-text citations and Works Cited work together as a system. Every (Author Page) in your text points to a full entry in Works Cited, and every Works Cited entry should be cited somewhere in your paper. They must match perfectly.',
+                    wrongFeedback: 'In-text citations and Works Cited are designed to work together. Think about how a reader would use them — what happens when they see a citation in your text? How do these two elements connect?',
+                    hint: 'Think of them as partners — one doesn\'t work without the other.',
+                    points: 20
+                },
+                {
+                    id: 'final',
+                    section: 'Putting It Together',
+                    type: 'content',
+                    title: 'MLA Quick Reference',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Keep this reference handy as you work on your research project:
+                            </p>
+                            <div className="bg-rose-50 border border-rose-200 rounded-xl p-6">
+                                <h4 className="font-semibold text-rose-800 mb-4">📋 MLA Checklist</h4>
+                                <div className="space-y-2">
+                                    <label className="flex items-start gap-3 text-rose-700">
+                                        <span className="w-5 h-5 border-2 border-rose-300 rounded mt-0.5 flex-shrink-0"></span>
+                                        <span>In-text citations: (Author Page) — no comma, no "p."</span>
+                                    </label>
+                                    <label className="flex items-start gap-3 text-rose-700">
+                                        <span className="w-5 h-5 border-2 border-rose-300 rounded mt-0.5 flex-shrink-0"></span>
+                                        <span>Book/journal titles in <em>italics</em></span>
+                                    </label>
+                                    <label className="flex items-start gap-3 text-rose-700">
+                                        <span className="w-5 h-5 border-2 border-rose-300 rounded mt-0.5 flex-shrink-0"></span>
+                                        <span>Article/chapter titles in "quotation marks"</span>
+                                    </label>
+                                    <label className="flex items-start gap-3 text-rose-700">
+                                        <span className="w-5 h-5 border-2 border-rose-300 rounded mt-0.5 flex-shrink-0"></span>
+                                        <span>Works Cited alphabetized by author's last name</span>
+                                    </label>
+                                    <label className="flex items-start gap-3 text-rose-700">
+                                        <span className="w-5 h-5 border-2 border-rose-300 rounded mt-0.5 flex-shrink-0"></span>
+                                        <span>Hanging indent for Works Cited entries</span>
+                                    </label>
+                                    <label className="flex items-start gap-3 text-rose-700">
+                                        <span className="w-5 h-5 border-2 border-rose-300 rounded mt-0.5 flex-shrink-0"></span>
+                                        <span>AI tools cited with prompt, tool name, version, company, date</span>
+                                    </label>
+                                    <label className="flex items-start gap-3 text-rose-700">
+                                        <span className="w-5 h-5 border-2 border-rose-300 rounded mt-0.5 flex-shrink-0"></span>
+                                        <span>AI use acknowledged/documented in paper</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="bg-violet-50 border border-violet-200 rounded-xl p-5">
+                                <p className="text-violet-800">
+                                    <strong>🎉 You've completed the MLA track!</strong> Remember: when in doubt, check Purdue OWL 
+                                    or ask your librarian. Good citation habits take practice, but they're essential for academic success.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                }
+            ];
+
+            const currentStepData = steps[currentStep];
+            const totalSteps = steps.length;
+            const progressPercent = ((currentStep + 1) / totalSteps) * 100;
+
+            const getSectionColor = () => {
+                if (!currentStepData) return 'violet';
+                const section = currentStepData.section;
+                if (section === 'Why Citations Matter') return 'violet';
+                if (section === 'Quoting & Paraphrasing') return 'blue';
+                if (section === 'MLA Format Basics') return 'rose';
+                if (section === 'Citing AI Tools') return 'purple';
+                if (section === 'Putting It Together') return 'emerald';
+                return 'violet';
+            };
+
+            const sectionColor = getSectionColor();
+
+            const resetQuiz = () => {
+                setSelectedAnswer(null);
+                setShowFeedback(false);
+                setIsCorrect(false);
+                setAttempts(0);
+                setShowHint(false);
+                setTriedAnswers([]);
+            };
+
+            const handleNext = () => {
+                if (currentStep < totalSteps - 1) {
+                    setCurrentStep(currentStep + 1);
+                    resetQuiz();
+                } else {
+                    setScreen('complete');
+                }
+            };
+
+            const handlePrev = () => {
+                if (currentStep > 0) {
+                    setCurrentStep(currentStep - 1);
+                    resetQuiz();
+                }
+            };
+
+            const handleAnswerSelect = (id) => {
+                if (showFeedback) return;
+                if (triedAnswers.includes(id)) return;
+                setSelectedAnswer(id);
+            };
+
+            const checkAnswer = () => {
+                if (!selectedAnswer) return;
+                const correct = selectedAnswer === currentStepData.correct;
+                setIsCorrect(correct);
+                setShowFeedback(true);
+                
+                if (correct) {
+                    // Graduated scoring based on attempts
+                    let earnedPoints;
+                    if (attempts === 0) {
+                        earnedPoints = currentStepData.points; // Full points
+                    } else if (attempts === 1) {
+                        earnedPoints = Math.floor(currentStepData.points * 0.75); // 75%
+                    } else if (attempts === 2) {
+                        earnedPoints = Math.floor(currentStepData.points * 0.5); // 50%
+                    } else {
+                        earnedPoints = Math.floor(currentStepData.points * 0.25); // 25%
+                    }
+                    setScore(score + earnedPoints);
+                    setCompletedSteps([...completedSteps, currentStepData.id]);
+                } else {
+                    // Track this wrong answer
+                    setTriedAnswers([...triedAnswers, selectedAnswer]);
+                    setAttempts(attempts + 1);
+                }
+            };
+
+            const handleTryAgain = () => {
+                setShowFeedback(false);
+                setSelectedAnswer(null);
+                setShowHint(true);
+            };
+
+            const restart = () => {
+                setScreen('welcome');
+                setCurrentStep(0);
+                setScore(0);
+                setSelectedAnswer(null);
+                setShowFeedback(false);
+                setIsCorrect(false);
+                setAttempts(0);
+                setShowHint(false);
+                setTriedAnswers([]);
+                setCompletedSteps([]);
+            };
+
+            // WELCOME SCREEN
+            if (screen === 'welcome') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-rose-500 via-pink-600 to-violet-700 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 lg:p-12 max-w-3xl w-full animate-fadeIn">
+                            <div className="text-center">
+                                <div className="w-20 h-20 bg-rose-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                                    <FileText className="w-10 h-10 text-rose-600" />
+                                </div>
+                                <div className="inline-block bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-sm font-semibold mb-4">
+                                    MLA FORMAT
+                                </div>
+                                <p className="text-sm font-semibold text-violet-600 uppercase tracking-wider mb-2">Module 03</p>
+                                <h1 className="text-4xl lg:text-5xl font-serif text-gray-900 mb-4">Academic Integrity & Citations</h1>
+                                <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+                                    Learn why citations matter, how to quote and paraphrase properly, 
+                                    and master MLA format — including how to cite AI tools.
+                                </p>
+                                
+                                <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
+                                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                        <Target className="w-5 h-5 text-rose-600" />
+                                        What you'll learn:
+                                    </h3>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span className="text-violet-700 font-bold text-sm">1</span>
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-900 text-sm">Why Citations Matter</p>
+                                                <p className="text-gray-500 text-xs">Purpose & plagiarism prevention</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span className="text-blue-700 font-bold text-sm">2</span>
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-900 text-sm">Quoting & Paraphrasing</p>
+                                                <p className="text-gray-500 text-xs">When and how to use each</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span className="text-rose-700 font-bold text-sm">3</span>
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-900 text-sm">MLA Format</p>
+                                                <p className="text-gray-500 text-xs">In-text citations & Works Cited</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span className="text-purple-700 font-bold text-sm">4</span>
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-gray-900 text-sm">Citing AI Tools</p>
+                                                <p className="text-gray-500 text-xs">MLA format for ChatGPT, Claude, etc.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex items-center justify-center gap-6 text-sm text-gray-500 mb-8">
+                                    <span className="flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        ~50 minutes
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        7 interactive quizzes
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                        {totalPoints} points possible
+                                    </span>
+                                </div>
+                                
+                                <button
+                                    onClick={() => setScreen('learn')}
+                                    className="bg-rose-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-rose-700 transition-all transform hover:scale-105 shadow-lg inline-flex items-center gap-2"
+                                >
+                                    Start Learning
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                                
+                                <p className="mt-6 text-gray-500 text-sm">
+                                    Wrong format? <a href="/citations-choice.html" className="text-rose-600 hover:underline">Switch to APA</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // COMPLETION SCREEN
+            if (screen === 'complete') {
+                const percentage = Math.round((score / totalPoints) * 100);
+                let badge, emoji, message;
+                
+                if (percentage >= 90) {
+                    badge = "Citation Expert"; emoji = "🏆"; message = "Outstanding! You've mastered MLA citations.";
+                } else if (percentage >= 75) {
+                    badge = "Skilled Citer"; emoji = "⭐"; message = "Great work! You have strong citation skills.";
+                } else if (percentage >= 60) {
+                    badge = "Developing Researcher"; emoji = "📚"; message = "Good progress! Review the MLA format sections.";
+                } else {
+                    badge = "Citation Apprentice"; emoji = "🌱"; message = "Keep practicing! Consider reviewing this module.";
+                }
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-rose-500 via-pink-600 to-violet-700 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 lg:p-12 max-w-2xl w-full animate-fadeIn">
+                            <div className="text-center">
+                                <div className="text-7xl mb-4">{emoji}</div>
+                                <p className="text-sm font-semibold text-rose-600 uppercase tracking-wider mb-2">Module Complete!</p>
+                                <h1 className="text-4xl font-serif text-gray-900 mb-2">Academic Integrity & Citations</h1>
+                                <p className="text-rose-600 font-medium">MLA Format</p>
+                                
+                                <div className="my-8">
+                                    <div className="text-6xl font-bold text-rose-600">{score}<span className="text-2xl text-gray-400">/{totalPoints}</span></div>
+                                    <p className="text-gray-500 mt-1">{percentage}% Score</p>
+                                </div>
+                                
+                                <div className="bg-rose-50 rounded-xl p-6 mb-6 inline-block">
+                                    <p className="text-rose-800 font-semibold text-lg">{badge}</p>
+                                    <p className="text-rose-600 text-sm mt-1">{message}</p>
+                                </div>
+
+                                <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
+                                    <h3 className="font-semibold text-gray-900 mb-4">🎓 What you learned:</h3>
+                                    <ul className="space-y-2 text-gray-700">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
+                                            <span>Why citations matter and how to avoid plagiarism</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
+                                            <span>When to quote vs. paraphrase</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
+                                            <span>MLA in-text citations and Works Cited format</span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle className="w-5 h-5 text-rose-500 flex-shrink-0 mt-0.5" />
+                                            <span>How to cite AI tools properly</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 mb-8">
+                                    <p className="text-emerald-800">
+                                        <strong>🎉 Congratulations!</strong> You've completed all three modules of the Research Toolkit. 
+                                        You're ready to tackle your IB research project with confidence!
+                                    </p>
+                                </div>
+
+                                <div className="flex gap-4 justify-center flex-wrap">
+                                    <button onClick={restart} className="flex items-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                                        <RefreshCw className="w-5 h-5" />
+                                        Try Again
+                                    </button>
+                                    <a href="./" className="flex items-center gap-2 px-6 py-3 bg-rose-600 text-white rounded-xl font-semibold hover:bg-rose-700 transition-colors">
+                                        Back to Modules
+                                        <ChevronRight className="w-5 h-5" />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // LEARNING SCREEN
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+                        <div className="max-w-4xl mx-auto px-4 py-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                    <a href="/citations-choice.html" className="text-gray-400 hover:text-gray-600 transition-colors">
+                                        <ChevronLeft className="w-5 h-5" />
+                                    </a>
+                                    <div>
+                                        <p className="text-xs text-gray-500 uppercase tracking-wider">Citations (MLA)</p>
+                                        <h1 className="font-semibold text-gray-900">{currentStepData?.section}</h1>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-sm font-semibold text-rose-600">{score} pts</p>
+                                    <p className="text-xs text-gray-500">of {totalPoints}</p>
+                                </div>
+                            </div>
+                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div 
+                                    className="h-full progress-bar rounded-full bg-rose-500"
+                                    style={{ width: `${progressPercent}%` }}
+                                ></div>
+                            </div>
+                            <div className="flex justify-between mt-1">
+                                <span className="text-xs text-gray-500">Step {currentStep + 1} of {totalSteps}</span>
+                                <span className="text-xs text-gray-500">{Math.round(progressPercent)}% complete</span>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="max-w-4xl mx-auto px-4 py-8">
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 lg:p-8 animate-fadeIn" key={currentStep}>
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
+                                    currentStepData?.type === 'quiz' 
+                                        ? 'bg-amber-100 text-amber-700' 
+                                        : 'bg-rose-100 text-rose-700'
+                                }`}>
+                                    {currentStepData?.type === 'quiz' ? '✍️ Check Your Understanding' : '📖 Learn'}
+                                </span>
+                            </div>
+
+                            <h2 className="text-2xl lg:text-3xl font-serif text-gray-900 mb-6">{currentStepData?.title}</h2>
+
+                            {currentStepData?.type === 'content' ? (
+                                <div>{currentStepData.content}</div>
+                            ) : (
+                                <div className="space-y-6">
+                                    <p className="text-lg text-gray-700 whitespace-pre-line">{currentStepData?.question}</p>
+                                    
+                                    {showHint && currentStepData?.hint && (
+                                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3 animate-slideIn">
+                                            <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                                            <p className="text-amber-800 text-sm"><strong>Hint:</strong> {currentStepData.hint}</p>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="space-y-3">
+                                        {currentStepData?.options?.map((option) => {
+                                            let btnClass = "w-full text-left p-4 rounded-xl border-2 transition-all option-btn ";
+                                            
+                                            const isTriedAnswer = triedAnswers.includes(option.id);
+                                            const isCurrentWrongAnswer = showFeedback && option.id === selectedAnswer && !isCorrect;
+                                            
+                                            if (isTriedAnswer && !showFeedback) {
+                                                // Previously tried wrong answer - show as disabled/crossed out
+                                                btnClass += "border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed";
+                                            } else if (isCurrentWrongAnswer) {
+                                                // Currently selected wrong answer during feedback
+                                                btnClass += "border-red-500 bg-red-50";
+                                            } else if (showFeedback && isCorrect && option.id === selectedAnswer) {
+                                                // Correct answer selected
+                                                btnClass += "border-emerald-500 bg-emerald-50";
+                                            } else if (showFeedback) {
+                                                // Other answers during feedback
+                                                btnClass += "border-gray-200 opacity-50";
+                                            } else if (selectedAnswer === option.id) {
+                                                btnClass += "border-rose-500 bg-rose-50";
+                                            } else {
+                                                btnClass += "border-gray-200 hover:border-gray-300 hover:bg-gray-50";
+                                            }
+                                            
+                                            return (
+                                                <button
+                                                    key={option.id}
+                                                    onClick={() => handleAnswerSelect(option.id)}
+                                                    disabled={showFeedback || isTriedAnswer}
+                                                    className={btnClass}
+                                                >
+                                                    <div className="flex items-start gap-3">
+                                                        <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 text-sm font-semibold transition-colors ${
+                                                            isTriedAnswer && !showFeedback
+                                                                ? 'bg-gray-400 border-gray-400 text-white'
+                                                                : isCurrentWrongAnswer
+                                                                    ? 'bg-red-500 border-red-500 text-white'
+                                                                    : showFeedback && isCorrect && option.id === selectedAnswer
+                                                                        ? 'bg-emerald-500 border-emerald-500 text-white'
+                                                                        : selectedAnswer === option.id
+                                                                            ? 'bg-rose-500 border-rose-500 text-white'
+                                                                            : 'border-gray-300 text-gray-500'
+                                                        }`}>
+                                                            {option.id.toUpperCase()}
+                                                        </span>
+                                                        <span className={`pt-0.5 ${isTriedAnswer && !showFeedback ? 'text-gray-400 line-through' : 'text-gray-700'}`}>{option.text}</span>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {!showFeedback && selectedAnswer && (
+                                        <button
+                                            onClick={checkAnswer}
+                                            className="bg-rose-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-rose-700 transition-colors"
+                                        >
+                                            Check Answer
+                                        </button>
+                                    )}
+
+                                    {/* Feedback for correct answer */}
+                                    {showFeedback && isCorrect && (
+                                        <div className="p-5 rounded-xl animate-fadeIn bg-emerald-50 border border-emerald-200">
+                                            <div className="flex items-start gap-3">
+                                                <CheckCircle className="w-6 h-6 text-emerald-500 flex-shrink-0" />
+                                                <div>
+                                                    <p className="font-semibold text-emerald-800">Correct!</p>
+                                                    <p className="mt-1 text-sm text-emerald-700">
+                                                        {currentStepData.explanation}
+                                                    </p>
+                                                    <p className="mt-2 text-emerald-600 font-semibold text-sm">
+                                                        +{attempts === 0 ? currentStepData.points : 
+                                                          attempts === 1 ? Math.floor(currentStepData.points * 0.75) :
+                                                          attempts === 2 ? Math.floor(currentStepData.points * 0.5) :
+                                                          Math.floor(currentStepData.points * 0.25)} points
+                                                        {attempts === 1 && ' (2nd try)'}
+                                                        {attempts === 2 && ' (3rd try)'}
+                                                        {attempts >= 3 && ` (${attempts + 1}th try)`}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Feedback for wrong answer - with Try Again button */}
+                                    {showFeedback && !isCorrect && (
+                                        <div className="p-5 rounded-xl animate-fadeIn bg-red-50 border border-red-200">
+                                            <div className="flex items-start gap-3">
+                                                <XCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
+                                                <div className="flex-1">
+                                                    <p className="font-semibold text-red-800">Not quite right</p>
+                                                    <p className="mt-1 text-sm text-red-700">
+                                                        {currentStepData.wrongFeedback || currentStepData.explanation}
+                                                    </p>
+                                                    <button
+                                                        onClick={handleTryAgain}
+                                                        className="mt-3 flex items-center gap-2 bg-red-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                                                    >
+                                                        <RefreshCw className="w-4 h-4" />
+                                                        Try Again
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
+                                <button
+                                    onClick={handlePrev}
+                                    disabled={currentStep === 0}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                                        currentStep === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'
+                                    }`}
+                                >
+                                    <ChevronLeft className="w-5 h-5" />
+                                    Previous
+                                </button>
+                                
+                                <button
+                                    onClick={handleNext}
+                                    disabled={currentStepData?.type === 'quiz' && !(showFeedback && isCorrect)}
+                                    className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all ${
+                                        currentStepData?.type === 'quiz' && !(showFeedback && isCorrect)
+                                            ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                            : 'bg-rose-600 text-white hover:bg-rose-700'
+                                    }`}
+                                >
+                                    {currentStep === totalSteps - 1 ? 'Complete Module' : 'Continue'}
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<CitationsMLAModule />, document.getElementById('root'));
+    </script>
+</body>
+</html>

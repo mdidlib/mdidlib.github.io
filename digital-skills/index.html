@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MDID Digital Skills - Interactive Learning Modules</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fadeInUp {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        .animate-delay-100 {
+            animation-delay: 0.1s;
+            animation-fill-mode: both;
+        }
+        .animate-delay-200 {
+            animation-delay: 0.2s;
+            animation-fill-mode: both;
+        }
+        .animate-delay-300 {
+            animation-delay: 0.3s;
+            animation-fill-mode: both;
+        }
+        .animate-delay-400 {
+            animation-delay: 0.4s;
+            animation-fill-mode: both;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-teal-500 via-blue-600 to-indigo-700 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold bg-gradient-to-r from-teal-600 to-blue-600 bg-clip-text text-transparent">
+                        MDID Digital Skills
+                    </h1>
+                    <p class="text-gray-600 mt-1">Interactive Learning Modules</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-500">Mingdao International Department</p>
+                    <a href="https://mdid.info/library" class="text-teal-600 hover:text-teal-700 text-sm font-semibold">
+                        ← Back to Library
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <!-- Welcome Section -->
+        <div class="bg-white rounded-2xl shadow-2xl p-8 mb-12 animate-fadeInUp">
+            <div class="text-center max-w-3xl mx-auto">
+                <div class="text-6xl mb-4">🚀</div>
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">
+                    Welcome to Digital Skills!
+                </h2>
+                <p class="text-xl text-gray-600 mb-6">
+                    Build essential research, citation, and digital citizenship skills through fun, interactive challenges.
+                </p>
+                <div class="bg-gradient-to-r from-orange-50 to-pink-50 border-2 border-orange-300 rounded-xl p-4">
+                    <p class="text-gray-700">
+                        <strong class="text-orange-600">Choose a module below</strong> to start learning at your own pace. 
+                        Each module takes 15-40 minutes to complete and includes interactive activities with instant feedback!
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module Categories -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold text-white text-center mb-6">Available Modules</h3>
+        </div>
+
+        <!-- Research & Evaluation Modules -->
+        <div class="mb-12">
+            <h4 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <span class="bg-white rounded-full w-8 h-8 flex items-center justify-center text-teal-600">🔍</span>
+                Research & Source Evaluation
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Spot the Fake Module - LIVE -->
+                <a href="spot-the-fake.html" class="group animate-fadeInUp animate-delay-100">
+                    <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 overflow-hidden h-full">
+                        <div class="bg-gradient-to-br from-teal-400 to-blue-500 p-6 text-white">
+                            <div class="text-5xl mb-3">👁️</div>
+                            <h5 class="text-2xl font-bold mb-2">Spot the Fake</h5>
+                            <p class="text-sm opacity-90">Source Evaluation Challenge</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Live Now! 🎉</span>
+                                <span>⏱️ 15-20 min</span>
+                            </div>
+                            <p class="text-gray-700 mb-4">
+                                Learn to identify credible sources and avoid misinformation. Evaluate 4 different sources and get instant feedback!
+                            </p>
+                            <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                                <p class="text-sm font-semibold text-gray-700 mb-1">You'll learn:</p>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>✓ How to check author credentials</li>
+                                    <li>✓ Recognizing bias and purpose</li>
+                                    <li>✓ Understanding domain types</li>
+                                </ul>
+                            </div>
+                            <div class="text-teal-600 font-bold group-hover:text-teal-700 flex items-center gap-2">
+                                Start Challenge →
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Search Strategies Module - LIVE -->
+                <a href="search-like-pro.html" class="group animate-fadeInUp animate-delay-200">
+                    <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 overflow-hidden h-full">
+                        <div class="bg-gradient-to-br from-purple-400 to-pink-500 p-6 text-white">
+                            <div class="text-5xl mb-3">🔎</div>
+                            <h5 class="text-2xl font-bold mb-2">Search Like a Pro</h5>
+                            <p class="text-sm opacity-90">Boolean Search Challenge</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Live Now! 🎉</span>
+                                <span>⏱️ 20-25 min</span>
+                            </div>
+                            <p class="text-gray-700 mb-4">
+                                Master advanced search techniques using Boolean operators. Find exactly what you need, faster!
+                            </p>
+                            <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                                <p class="text-sm font-semibold text-gray-700 mb-1">You'll learn:</p>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>✓ Boolean operators (AND, OR, NOT)</li>
+                                    <li>✓ Advanced search filters</li>
+                                    <li>✓ Building precise queries</li>
+                                </ul>
+                            </div>
+                            <div class="text-purple-600 font-bold group-hover:text-purple-700 flex items-center gap-2">
+                                Start Challenge →
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Primary vs Secondary Sources - LIVE -->
+                <a href="source-detective.html" class="group animate-fadeInUp animate-delay-300">
+                    <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 overflow-hidden h-full">
+                        <div class="bg-gradient-to-br from-green-400 to-teal-500 p-6 text-white">
+                            <div class="text-5xl mb-3">📚</div>
+                            <h5 class="text-2xl font-bold mb-2">Source Detective</h5>
+                            <p class="text-sm opacity-90">Primary vs. Secondary Sources</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Live Now! 🎉</span>
+                                <span>⏱️ 15 min</span>
+                            </div>
+                            <p class="text-gray-700 mb-4">
+                                Learn the difference between primary and secondary sources and when to use each type.
+                            </p>
+                            <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                                <p class="text-sm font-semibold text-gray-700 mb-1">You'll learn:</p>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>✓ Identifying source types</li>
+                                    <li>✓ When to use each type</li>
+                                    <li>✓ Finding primary sources</li>
+                                </ul>
+                            </div>
+                            <div class="text-green-600 font-bold group-hover:text-green-700 flex items-center gap-2">
+                                Start Challenge →
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Citation & Writing Modules -->
+        <div class="mb-12">
+            <h4 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <span class="bg-white rounded-full w-8 h-8 flex items-center justify-center text-orange-600">✍️</span>
+                Citations & Academic Writing
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Paraphrasing Module - LIVE -->
+                <a href="paraphrase-master.html" class="group animate-fadeInUp animate-delay-100">
+                    <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 overflow-hidden h-full">
+                        <div class="bg-gradient-to-br from-orange-400 to-red-500 p-6 text-white">
+                            <div class="text-5xl mb-3">✏️</div>
+                            <h5 class="text-2xl font-bold mb-2">Paraphrase Master</h5>
+                            <p class="text-sm opacity-90">Avoid Plagiarism Challenge</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Live Now! 🎉</span>
+                                <span>⏱️ 20 min</span>
+                            </div>
+                            <p class="text-gray-700 mb-4">
+                                Practice putting information into your own words. AI-powered feedback helps you improve!
+                            </p>
+                            <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                                <p class="text-sm font-semibold text-gray-700 mb-1">You'll learn:</p>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>✓ Paraphrasing techniques</li>
+                                    <li>✓ Avoiding plagiarism</li>
+                                    <li>✓ Using your own voice</li>
+                                </ul>
+                            </div>
+                            <div class="text-orange-600 font-bold group-hover:text-orange-700 flex items-center gap-2">
+                                Start Challenge →
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Citation Builder - LIVE -->
+                <a href="citation-builder.html" class="group animate-fadeInUp animate-delay-200">
+                    <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 overflow-hidden h-full">
+                        <div class="bg-gradient-to-br from-blue-400 to-indigo-500 p-6 text-white">
+                            <div class="text-5xl mb-3">📝</div>
+                            <h5 class="text-2xl font-bold mb-2">Citation Builder</h5>
+                            <p class="text-sm opacity-90">MLA Citation Practice</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Live Now! 🎉</span>
+                                <span>⏱️ 30-40 min</span>
+                            </div>
+                            <p class="text-gray-700 mb-4">
+                                Master MLA citations! Learn the 9 core elements, then tackle 19 citation challenges including social media and AI sources.
+                            </p>
+                            <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                                <p class="text-sm font-semibold text-gray-700 mb-1">You'll learn:</p>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>✓ MLA 9 core elements</li>
+                                    <li>✓ Books, articles, and databases</li>
+                                    <li>✓ Social media, YouTube & AI citations</li>
+                                </ul>
+                            </div>
+                            <div class="text-blue-600 font-bold group-hover:text-blue-700 flex items-center gap-2">
+                                Start Challenge →
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Synthesis Module - LIVE -->
+                <a href="synthesis-challenge.html" class="group animate-fadeInUp animate-delay-300">
+                    <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 overflow-hidden h-full">
+                        <div class="bg-gradient-to-br from-pink-400 to-purple-500 p-6 text-white">
+                            <div class="text-5xl mb-3">🧩</div>
+                            <h5 class="text-2xl font-bold mb-2">Synthesis Challenge</h5>
+                            <p class="text-sm opacity-90">Connecting Multiple Sources</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Live Now! 🎉</span>
+                                <span>⏱️ 20 min</span>
+                            </div>
+                            <p class="text-gray-700 mb-4">
+                                Learn to connect ideas from multiple sources and create your own analysis.
+                            </p>
+                            <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                                <p class="text-sm font-semibold text-gray-700 mb-1">You'll learn:</p>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>✓ Synthesizing information</li>
+                                    <li>✓ Finding connections</li>
+                                    <li>✓ Adding your analysis</li>
+                                </ul>
+                            </div>
+                            <div class="text-pink-600 font-bold group-hover:text-pink-700 flex items-center gap-2">
+                                Start Challenge →
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Digital Citizenship Modules -->
+        <div class="mb-12">
+            <h4 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                <span class="bg-white rounded-full w-8 h-8 flex items-center justify-center text-green-600">🌐</span>
+                Digital Citizenship
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Privacy & Security - LIVE -->
+                <a href="privacy-guardian.html" class="group animate-fadeInUp animate-delay-100">
+                    <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 overflow-hidden h-full">
+                        <div class="bg-gradient-to-br from-cyan-400 to-blue-500 p-6 text-white">
+                            <div class="text-5xl mb-3">🔒</div>
+                            <h5 class="text-2xl font-bold mb-2">Privacy Guardian</h5>
+                            <p class="text-sm opacity-90">Online Safety & Privacy</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Live Now! 🎉</span>
+                                <span>⏱️ 20 min</span>
+                            </div>
+                            <p class="text-gray-700 mb-4">
+                                Learn to protect your privacy and stay safe online. Make smart decisions about digital security.
+                            </p>
+                            <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                                <p class="text-sm font-semibold text-gray-700 mb-1">You'll learn:</p>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>✓ Password security</li>
+                                    <li>✓ Privacy settings</li>
+                                    <li>✓ Recognizing scams</li>
+                                </ul>
+                            </div>
+                            <div class="text-cyan-600 font-bold group-hover:text-cyan-700 flex items-center gap-2">
+                                Start Challenge →
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Digital Footprint - LIVE -->
+                <a href="digital-footprint.html" class="group animate-fadeInUp animate-delay-200">
+                    <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 overflow-hidden h-full">
+                        <div class="bg-gradient-to-br from-lime-400 to-green-500 p-6 text-white">
+                            <div class="text-5xl mb-3">👣</div>
+                            <h5 class="text-2xl font-bold mb-2">Digital Footprint</h5>
+                            <p class="text-sm opacity-90">Your Online Presence</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Live Now! 🎉</span>
+                                <span>⏱️ 15 min</span>
+                            </div>
+                            <p class="text-gray-700 mb-4">
+                                Understand how your online actions create a permanent digital footprint and learn to manage it.
+                            </p>
+                            <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                                <p class="text-sm font-semibold text-gray-700 mb-1">You'll learn:</p>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>✓ What is a digital footprint</li>
+                                    <li>✓ Managing your reputation</li>
+                                    <li>✓ Social media responsibility</li>
+                                </ul>
+                            </div>
+                            <div class="text-lime-600 font-bold group-hover:text-lime-700 flex items-center gap-2">
+                                Start Challenge →
+                            </div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Fake News Fighter - LIVE -->
+                <a href="fake-news-fighter.html" class="group animate-fadeInUp animate-delay-300">
+                    <div class="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all transform hover:scale-105 overflow-hidden h-full">
+                        <div class="bg-gradient-to-br from-red-400 to-orange-500 p-6 text-white">
+                            <div class="text-5xl mb-3">📰</div>
+                            <h5 class="text-2xl font-bold mb-2">Fake News Fighter</h5>
+                            <p class="text-sm opacity-90">Media Literacy Challenge</p>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full font-semibold">Live Now! 🎉</span>
+                                <span>⏱️ 20 min</span>
+                            </div>
+                            <p class="text-gray-700 mb-4">
+                                Learn to identify fake news, misinformation, and manipulated media in your news feed.
+                            </p>
+                            <div class="bg-gray-50 rounded-lg p-3 mb-4">
+                                <p class="text-sm font-semibold text-gray-700 mb-1">You'll learn:</p>
+                                <ul class="text-sm text-gray-600 space-y-1">
+                                    <li>✓ Fact-checking techniques</li>
+                                    <li>✓ Spotting manipulation</li>
+                                    <li>✓ Lateral reading</li>
+                                </ul>
+                            </div>
+                            <div class="text-red-600 font-bold group-hover:text-red-700 flex items-center gap-2">
+                                Start Challenge →
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 animate-fadeInUp animate-delay-400">
+            <div class="max-w-3xl mx-auto text-center">
+                <div class="text-4xl mb-4">💡</div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Need Help?</h3>
+                <p class="text-gray-600 mb-6">
+                    If you have questions about these modules or need assistance with your research, 
+                    the library staff is here to help!
+                </p>
+                <div class="flex gap-4 justify-center flex-wrap">
+                    <a href="https://mdid.info/library" 
+                       class="bg-gradient-to-r from-teal-500 to-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:from-teal-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg">
+                        Visit Library Website
+                    </a>
+                    <a href="mailto:mdidlib@ms.mingdao.edu.tw" class="bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-bold hover:bg-gray-300 transition-all">
+                        Email the Librarian
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white mt-12 py-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-600">
+            <p>&copy; 2024 Mingdao International Department Library</p>
+            <p class="text-sm mt-1">Building digital skills for lifelong learning</p>
+        </div

@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synthesis Challenge - MDID Digital Skills</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .animate-slideIn {
+            animation: slideIn 0.3s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        console.log("Synthesis Challenge module starting...");
+
+        // Icon components
+        const PuzzlePiece = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19.439 7.85c-.049.322.059.648.289.878l1.568 1.568c.47.47.706 1.087.706 1.704s-.235 1.233-.706 1.704l-1.611 1.611a.98.98 0 0 1-.837.276c-.47-.07-.802-.48-.968-.925a2.501 2.501 0 1 0-3.214 3.214c.446.166.855.497.925.968a.979.979 0 0 1-.276.837l-1.61 1.61a2.404 2.404 0 0 1-1.705.707 2.402 2.402 0 0 1-1.704-.706l-1.568-1.568a1.026 1.026 0 0 0-.877-.29c-.493.074-.84.504-1.02.968a2.5 2.5 0 1 1-3.237-3.237c.464-.18.894-.527.967-1.02a1.026 1.026 0 0 0-.289-.877l-1.568-1.568A2.402 2.402 0 0 1 1.998 12c0-.617.236-1.234.706-1.704L4.23 8.77c.24-.24.581-.353.917-.303.515.077.877.528 1.073 1.01a2.5 2.5 0 1 0 3.259-3.259c-.482-.196-.933-.558-1.01-1.073-.05-.336.062-.676.303-.917l1.525-1.525A2.402 2.402 0 0 1 12 1.998c.617 0 1.234.236 1.704.706l1.568 1.568c.23.23.556.338.877.29.493-.074.84-.504 1.02-.968a2.5 2.5 0 1 1 3.237 3.237c-.464.18-.894.527-.967 1.02Z"/>
+            </svg>
+        );
+
+        const CheckCircle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+        );
+
+        const XCircle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="m15 9-6 6"/>
+                <path d="m9 9 6 6"/>
+            </svg>
+        );
+
+        const Lightbulb = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+                <path d="M9 18h6"/>
+                <path d="M10 22h4"/>
+            </svg>
+        );
+
+        const RefreshCw = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                <path d="M8 16H3v5"/>
+            </svg>
+        );
+
+        // Challenge data defined outside component to avoid recreation
+        const warmupChallenges = [
+            {
+                id: 1,
+                title: "Warm-up 1: Spot the Connection",
+                sources: [
+                    { id: 'A', text: "Studies show that students who get 8-10 hours of sleep perform better on tests." },
+                    { id: 'B', text: "Teenagers need more sleep than adults because their brains are still developing." },
+                    { id: 'C', text: "Pizza is the most popular food among high school students." }
+                ],
+                connections: [
+                    { pair: ['A', 'B'], type: 'related', label: "Both about sleep and students" },
+                    { pair: ['A', 'C'], type: 'unrelated', label: "Not connected" },
+                    { pair: ['B', 'C'], type: 'unrelated', label: "Not connected" }
+                ],
+                correctPairs: [['A', 'B']],
+                explanation: "Sources A and B both discuss sleep and its importance for students/teenagers. Source C is about food preferences and doesn't connect to the sleep topic."
+            },
+            {
+                id: 2,
+                title: "Warm-up 2: Find All Connections",
+                sources: [
+                    { id: 'A', text: "Social media use has increased by 60% among teenagers since 2015." },
+                    { id: 'B', text: "Anxiety rates in teens have risen significantly over the past decade." },
+                    { id: 'C', text: "Smartphone ownership among teens reached 95% in 2023." }
+                ],
+                connections: [
+                    { pair: ['A', 'B'], type: 'related', label: "Both show increases in teen behavior/health" },
+                    { pair: ['A', 'C'], type: 'related', label: "Social media relates to smartphone use" },
+                    { pair: ['B', 'C'], type: 'related', label: "Smartphones may impact anxiety" }
+                ],
+                correctPairs: [['A', 'B'], ['A', 'C'], ['B', 'C']],
+                explanation: "All three sources are connected! They all relate to technology use and teen wellbeing. Social media (A) requires smartphones (C), and both may relate to anxiety (B)."
+            },
+            {
+                id: 3,
+                title: "Warm-up 3: Agreement vs. Disagreement",
+                sources: [
+                    { id: 'A', text: "Video games can improve problem-solving skills and hand-eye coordination." },
+                    { id: 'B', text: "Excessive gaming has been linked to decreased physical activity in children." },
+                    { id: 'C', text: "The video game industry generated $180 billion in revenue last year." }
+                ],
+                question: "Which sources discuss benefits or concerns about gaming (not just facts)?",
+                correctPairs: [['A', 'B']],
+                explanation: "A and B both make claims about gaming's effects - one positive, one negative. C just states a fact about revenue. Good synthesis acknowledges different perspectives!"
+            }
+        ];
+
+        const beginnerChallenges = [
+            {
+                id: 1,
+                title: "Level 1: Complete the Synthesis",
+                sources: [
+                    "According to Smith, exercise improves mental health by reducing stress hormones.",
+                    "Jones found that regular physical activity increases endorphins, the body's natural mood lifters."
+                ],
+                prompt: "Write ONE sentence that connects both sources. Use words like 'and', 'also', 'both', or 'similarly'.",
+                goodExample: "Both Smith and Jones found that exercise benefits mental health, with Smith noting stress reduction and Jones highlighting increased endorphins.",
+                badExample: "Smith says exercise improves mental health. Jones found activity increases endorphins.",
+                hints: [
+                    "Start with 'Both...' to show they're connected",
+                    "Use their names to give credit",
+                    "Show what's similar AND what's different",
+                    "One sentence can contain multiple ideas connected with 'and' or 'while'"
+                ],
+                keywords: ["both", "smith", "jones", "mental health", "exercise"]
+            },
+            {
+                id: 2,
+                title: "Level 2: Show Agreement",
+                sources: [
+                    "Research by Chen indicates that meditation reduces anxiety in college students.",
+                    "Williams' study confirms that mindfulness practices lower stress levels in young adults."
+                ],
+                prompt: "Write a sentence showing these sources AGREE with each other.",
+                goodExample: "Both Chen and Williams agree that mindfulness-based practices benefit young adults, with Chen focusing on meditation for anxiety and Williams on stress reduction.",
+                hints: [
+                    "Use words like: both, agree, confirm, support, similarly",
+                    "Show what they have in common",
+                    "You can note small differences while showing overall agreement"
+                ],
+                keywords: ["both", "agree", "chen", "williams", "young adults", "stress"]
+            },
+            {
+                id: 3,
+                title: "Level 3: Show Contrast",
+                sources: [
+                    "Brown argues that homework is essential for reinforcing classroom learning.",
+                    "Martinez contends that excessive homework causes student burnout and reduces learning effectiveness."
+                ],
+                prompt: "Write a sentence showing these sources DISAGREE. Use words like 'while', 'however', or 'in contrast'.",
+                goodExample: "While Brown views homework as essential for learning, Martinez argues it can be counterproductive when excessive, suggesting the debate centers on quantity rather than concept.",
+                hints: [
+                    "Use contrast words: while, however, in contrast, whereas, but",
+                    "Show both perspectives fairly",
+                    "You can add your insight about what the disagreement really means"
+                ],
+                keywords: ["while", "brown", "martinez", "homework", "contrast"]
+            }
+        ];
+
+        const intermediateChallenges = [
+            {
+                id: 1,
+                title: "Level 4: Three-Source Synthesis",
+                sources: [
+                    { author: "Garcia", claim: "Climate change is causing more frequent hurricanes." },
+                    { author: "Lee", claim: "Rising ocean temperatures fuel more intense storms." },
+                    { author: "Patterson", claim: "Coastal communities face increasing flood risks." }
+                ],
+                prompt: "Write 2-3 sentences that weave all three sources together. Show how they connect and build on each other.",
+                goodExample: "Climate scientists agree that warming oceans are creating more dangerous weather patterns. Garcia documents increasing hurricane frequency, while Lee explains the mechanism: rising ocean temperatures that fuel more intense storms. Patterson extends this research by examining the consequences, showing how these changes threaten coastal populations.",
+                hints: [
+                    "Start with what they all have in common",
+                    "Use one source to explain another",
+                    "Show progression: problem → cause → effect",
+                    "Use transitional phrases: 'while', 'furthermore', 'this means that'"
+                ]
+            },
+            {
+                id: 2,
+                title: "Level 5: Complex Agreement",
+                sources: [
+                    { author: "Taylor", claim: "Arts education improves academic performance across all subjects." },
+                    { author: "Kim", claim: "Music training enhances mathematical reasoning skills." },
+                    { author: "Johnson", claim: "Drama classes boost reading comprehension and empathy." }
+                ],
+                prompt: "Synthesize these sources to show they support a larger argument. What's the big picture?",
+                goodExample: "Multiple studies confirm that arts education benefits academic achievement in unexpected ways. While Taylor observes broad improvements across subjects, Kim and Johnson identify specific mechanisms: music strengthening mathematical thinking and drama enhancing literacy and social skills. Together, these findings suggest arts education develops cognitive abilities that transfer across the curriculum.",
+                hints: [
+                    "What's the overall pattern or trend?",
+                    "Use specific examples to support the general claim",
+                    "Show cause and effect relationships",
+                    "End with the 'so what?' - why does this matter?"
+                ]
+            }
+        ];
+
+        const advancedChallenges = [
+            {
+                id: 1,
+                title: "Final Challenge: The Full Synthesis",
+                sources: [
+                    { author: "Rodriguez", claim: "Social media algorithms create echo chambers by showing users content they already agree with." },
+                    { author: "Chen", claim: "Diverse news consumption decreases when people primarily use social media for news." },
+                    { author: "Williams", claim: "However, social media also enables marginalized voices to reach wider audiences." },
+                    { author: "Thompson", claim: "Media literacy education helps users recognize bias and seek diverse sources." }
+                ],
+                prompt: "Write a full paragraph (4-5 sentences) that synthesizes all four sources. Show agreements, contradictions, and your analysis of what this all means.",
+                goodExample: "The relationship between social media and information diversity proves more complex than simple narratives suggest. Rodriguez and Chen document concerning trends: algorithms creating echo chambers and reducing exposure to diverse viewpoints. However, Williams complicates this picture by noting social media's democratizing potential for marginalized communities. Thompson's research on media literacy offers a solution, suggesting that education—not abandoning social platforms—might address these challenges. Together, these sources reveal that social media's impact on discourse depends heavily on how users engage with these platforms.",
+                hints: [
+                    "Start with your main point (topic sentence)",
+                    "Group sources by agreement/disagreement",
+                    "Use someone to complicate or challenge others",
+                    "Add your insight: what does this all mean?",
+                    "End with significance: so what?"
+                ]
+            }
+        ];
+
+        const SynthesisModule = () => {
+            const [currentScreen, setCurrentScreen] = useState('welcome');
+            const [currentRound, setCurrentRound] = useState('warmup');
+            const [currentChallenge, setCurrentChallenge] = useState(0);
+            const [score, setScore] = useState(0);
+            const [userAnswer, setUserAnswer] = useState('');
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [isCorrect, setIsCorrect] = useState(false);
+            const [showHint, setShowHint] = useState(false);
+            const [selectedConnections, setSelectedConnections] = useState([]);
+
+            console.log("Module initialized, current screen:", currentScreen);
+
+            const getAllChallenges = () => {
+                if (currentRound === 'warmup') return warmupChallenges;
+                if (currentRound === 'beginner') return beginnerChallenges;
+                if (currentRound === 'intermediate') return intermediateChallenges;
+                return advancedChallenges;
+            };
+
+            const getCurrentChallenge = () => {
+                return getAllChallenges()[currentChallenge];
+            };
+
+            const handleSubmitWarmup = () => {
+                const challenge = getCurrentChallenge();
+                const correctPairStrings = challenge.correctPairs.map(pair => 
+                    [...pair].sort().join('-')
+                );
+                const selectedPairStrings = selectedConnections.map(pair => 
+                    [...pair].sort().join('-')
+                );
+                
+                const correct = correctPairStrings.length === selectedPairStrings.length &&
+                               correctPairStrings.every(pair => selectedPairStrings.includes(pair));
+                
+                setIsCorrect(correct);
+                setShowFeedback(true);
+                if (correct) {
+                    setScore(score + 20);
+                }
+            };
+
+            const handleSubmitWriting = () => {
+                const challenge = getCurrentChallenge();
+                const answer = userAnswer.toLowerCase();
+                
+                let points = 0;
+                const hasKeywords = challenge.keywords?.some(keyword => 
+                    answer.includes(keyword.toLowerCase())
+                );
+                
+                const isLongEnough = userAnswer.split(' ').length >= 15;
+                const notTooShort = userAnswer.length > 50;
+                
+                if (hasKeywords && isLongEnough && notTooShort) {
+                    points = currentRound === 'beginner' ? 30 : 
+                            currentRound === 'intermediate' ? 50 : 75;
+                    setIsCorrect(true);
+                } else {
+                    setIsCorrect(false);
+                }
+                
+                setShowFeedback(true);
+                setScore(score + points);
+            };
+
+            const handleNext = () => {
+                const challenges = getAllChallenges();
+                if (currentChallenge < challenges.length - 1) {
+                    setCurrentChallenge(currentChallenge + 1);
+                    setUserAnswer('');
+                    setSelectedConnections([]);
+                    setShowFeedback(false);
+                    setShowHint(false);
+                    setIsCorrect(false);
+                } else {
+                    if (currentRound === 'warmup') {
+                        setCurrentRound('beginner');
+                        setCurrentChallenge(0);
+                        setUserAnswer('');
+                        setSelectedConnections([]);
+                        setShowFeedback(false);
+                        setShowHint(false);
+                        setIsCorrect(false);
+                    } else if (currentRound === 'beginner') {
+                        setCurrentRound('intermediate');
+                        setCurrentChallenge(0);
+                        setUserAnswer('');
+                        setShowFeedback(false);
+                        setShowHint(false);
+                        setIsCorrect(false);
+                    } else if (currentRound === 'intermediate') {
+                        setCurrentRound('advanced');
+                        setCurrentChallenge(0);
+                        setUserAnswer('');
+                        setShowFeedback(false);
+                        setShowHint(false);
+                        setIsCorrect(false);
+                    } else {
+                        setCurrentScreen('completion');
+                    }
+                }
+            };
+
+            const restart = () => {
+                setCurrentScreen('welcome');
+                setCurrentRound('warmup');
+                setCurrentChallenge(0);
+                setScore(0);
+                setUserAnswer('');
+                setSelectedConnections([]);
+                setShowFeedback(false);
+                setShowHint(false);
+                setIsCorrect(false);
+            };
+
+            const toggleConnection = (source1, source2) => {
+                const pairKey = [source1, source2].sort().join('-');
+                const exists = selectedConnections.some(pair => 
+                    [...pair].sort().join('-') === pairKey
+                );
+                
+                if (exists) {
+                    setSelectedConnections(selectedConnections.filter(pair => 
+                        [...pair].sort().join('-') !== pairKey
+                    ));
+                } else {
+                    setSelectedConnections([...selectedConnections, [source1, source2]]);
+                }
+            };
+
+            // Get current challenge data
+            const challenge = getCurrentChallenge();
+            const totalChallenges = warmupChallenges.length + beginnerChallenges.length + 
+                                  intermediateChallenges.length + advancedChallenges.length;
+            const completedChallenges = (currentRound === 'warmup' ? 0 : warmupChallenges.length) +
+                                      (currentRound === 'beginner' ? currentChallenge : 
+                                       currentRound === 'warmup' ? 0 : beginnerChallenges.length) +
+                                      (currentRound === 'intermediate' ? currentChallenge : 
+                                       ['warmup', 'beginner'].includes(currentRound) ? 0 : intermediateChallenges.length) +
+                                      (currentRound === 'advanced' ? currentChallenge : 0);
+
+            // Main render - inline JSX instead of nested function components
+            try {
+                console.log("Rendering screen:", currentScreen);
+                
+                // Welcome Screen
+                if (currentScreen === 'welcome') {
+                    return (
+                        <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 flex items-center justify-center p-4">
+                            <div className="absolute top-4 left-4">
+                                <a
+                                    href="./"
+                                    className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md flex items-center gap-2"
+                                >
+                                    ← Back to Modules
+                                </a>
+                            </div>
+                            
+                            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full animate-fadeIn">
+                                <div className="text-center">
+                                    <div className="inline-block p-4 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full mb-4">
+                                        <PuzzlePiece className="w-16 h-16 text-white" />
+                                    </div>
+                                    <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                                        Synthesis Challenge
+                                    </h1>
+                                    <p className="text-sm font-semibold text-indigo-500 tracking-wider uppercase mb-4">
+                                        MDID Digital Skills
+                                    </p>
+                                    <p className="text-xl text-gray-600 mb-6">
+                                        Connecting Multiple Sources
+                                    </p>
+                                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-300 rounded-xl p-6 mb-6 text-left">
+                                        <p className="text-gray-700 mb-4">
+                                            <strong className="text-indigo-600">🎯 Your Mission:</strong> Learn to synthesize information by connecting ideas from multiple sources instead of just summarizing them one by one!
+                                        </p>
+                                        <div className="bg-white rounded-lg p-4">
+                                            <p className="font-semibold text-gray-800 mb-2">What you'll master:</p>
+                                            <ul className="space-y-2 text-gray-700 text-sm">
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-green-500 mt-1">✓</span>
+                                                    <span>Finding connections between sources</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-green-500 mt-1">✓</span>
+                                                    <span>Showing agreement and disagreement</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-green-500 mt-1">✓</span>
+                                                    <span>Writing synthesis sentences and paragraphs</span>
+                                                </li>
+                                                <li className="flex items-start gap-2">
+                                                    <span className="text-green-500 mt-1">✓</span>
+                                                    <span>Adding your own analysis</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 mb-6">
+                                        <p className="text-gray-700">
+                                            <strong className="text-yellow-700">💡 Remember:</strong> Synthesis means making sources "talk to each other" - not just listing them one by one!
+                                        </p>
+                                    </div>
+                                    <p className="text-gray-600 mb-6">
+                                        4 Rounds • <strong>25-30 minutes</strong> • Progressive Difficulty
+                                    </p>
+                                    <button
+                                        onClick={() => {
+                                            console.log("Starting activity...");
+                                            setCurrentScreen('activity');
+                                        }}
+                                        className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-10 py-4 rounded-xl text-xl font-bold hover:from-indigo-600 hover:to-purple-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-2xl"
+                                    >
+                                        🚀 Start Challenge!
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
+
+                // Completion Screen
+                if (currentScreen === 'completion') {
+                    return (
+                        <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 flex items-center justify-center p-4">
+                            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full">
+                                <div className="text-center">
+                                    <div className="text-6xl mb-4">🏆</div>
+                                    <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-4">
+                                        Congratulations!
+                                    </h1>
+                                    <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                                        Synthesis Master!
+                                    </h2>
+                                    <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-xl p-6 mb-6">
+                                        <p className="text-5xl font-bold text-indigo-600 mb-2">{score}</p>
+                                        <p className="text-xl text-gray-700">Total Points</p>
+                                    </div>
+                                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-300 rounded-xl p-6 mb-6 text-left">
+                                        <p className="font-semibold text-indigo-900 mb-3">🎯 You've Mastered:</p>
+                                        <ul className="space-y-2 text-gray-700 text-sm">
+                                            <li>✓ Finding connections between sources</li>
+                                            <li>✓ Showing agreement and disagreement</li>
+                                            <li>✓ Writing synthesis sentences</li>
+                                            <li>✓ Creating synthesis paragraphs</li>
+                                            <li>✓ Adding your own analysis</li>
+                                        </ul>
+                                    </div>
+                                    <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 mb-6">
+                                        <p className="text-gray-700 text-sm">
+                                            <strong className="text-yellow-700">💡 Remember:</strong> Good research writing synthesizes sources - it doesn't just list them. Make your sources have a conversation!
+                                        </p>
+                                    </div>
+                                    <div className="flex gap-4 justify-center">
+                                        <button
+                                            onClick={restart}
+                                            className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-8 py-3 rounded-xl font-bold hover:from-indigo-600 hover:to-purple-700 flex items-center gap-2"
+                                        >
+                                            <RefreshCw className="w-5 h-5" />
+                                            Practice Again
+                                        </button>
+                                        <button
+                                            onClick={() => window.location.href = '/'}
+                                            className="bg-gradient-to-r from-green-400 to-teal-500 text-white px-8 py-3 rounded-xl font-bold hover:from-green-500 hover:to-teal-600"
+                                        >
+                                            More Modules
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                }
+
+                // Activity Screen (default)
+                return (
+                    <div className="min-h-screen bg-gray-100 p-4 py-8">
+                        {/* Back Button */}
+                        <div className="max-w-4xl mx-auto mb-4">
+                            <a
+                                href="./"
+                                className="inline-block bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md"
+                            >
+                                ← Back to Modules
+                            </a>
+                        </div>
+                        
+                        <div className="max-w-4xl mx-auto">
+                            {/* Progress Header */}
+                            <div className="bg-white rounded-lg shadow p-4 mb-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div>
+                                        <span className="text-sm font-semibold text-gray-600">
+                                            {challenge.title}
+                                        </span>
+                                        <span className={`ml-3 px-3 py-1 rounded-full text-xs font-bold ${
+                                            currentRound === 'warmup' ? 'bg-green-100 text-green-700' :
+                                            currentRound === 'beginner' ? 'bg-blue-100 text-blue-700' :
+                                            currentRound === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
+                                            'bg-red-100 text-red-700'
+                                        }`}>
+                                            {currentRound === 'warmup' ? 'Warm-up' :
+                                             currentRound === 'beginner' ? 'Beginner' :
+                                             currentRound === 'intermediate' ? 'Intermediate' : 'Advanced'}
+                                        </span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-indigo-600">
+                                        Score: {score} points
+                                    </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-3">
+                                    <div 
+                                        className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500"
+                                        style={{ width: `${(completedChallenges / totalChallenges) * 100}%` }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Sources Display */}
+                            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                                <h3 className="text-xl font-bold text-gray-800 mb-4">
+                                    📚 Sources to Synthesize
+                                </h3>
+                                {currentRound === 'warmup' ? (
+                                    <div className="space-y-3 mb-6">
+                                        {challenge.sources.map((source) => (
+                                            <div key={source.id} className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
+                                                <div className="flex items-start gap-3">
+                                                    <span className="font-bold text-blue-600 text-lg">Source {source.id}:</span>
+                                                    <p className="text-gray-700 flex-1">{source.text}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3 mb-6">
+                                        {challenge.sources.map((source, idx) => (
+                                            <div key={idx} className="bg-purple-50 border-2 border-purple-300 rounded-lg p-4">
+                                                {typeof source === 'string' ? (
+                                                    <p className="text-gray-700 italic">"{source}"</p>
+                                                ) : (
+                                                    <p className="text-gray-700">
+                                                        <span className="font-bold text-purple-600">{source.author}:</span> {source.claim}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Challenge Area */}
+                            {currentRound === 'warmup' ? (
+                                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800 mb-4">
+                                        🔗 Find the Connections
+                                    </h3>
+                                    <p className="text-gray-700 mb-4">{challenge.question || "Click on ALL pairs of sources that are related to each other:"}</p>
+                                    
+                                    <div className="grid grid-cols-3 gap-3 mb-6">
+                                        {challenge.sources.map((s1, i) => (
+                                            challenge.sources.slice(i + 1).map((s2, j) => {
+                                                const pairKey = [s1.id, s2.id].sort().join('-');
+                                                const isSelected = selectedConnections.some(pair => 
+                                                    [...pair].sort().join('-') === pairKey
+                                                );
+                                                return (
+                                                    <button
+                                                        key={`${s1.id}-${s2.id}`}
+                                                        onClick={() => !showFeedback && toggleConnection(s1.id, s2.id)}
+                                                        disabled={showFeedback}
+                                                        className={`p-4 rounded-lg border-2 font-bold transition-all ${
+                                                            isSelected
+                                                                ? 'bg-indigo-100 border-indigo-500 text-indigo-700'
+                                                                : 'bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100'
+                                                        } ${showFeedback ? 'cursor-not-allowed' : 'cursor-pointer hover:scale-105'}`}
+                                                    >
+                                                        {s1.id} ↔ {s2.id}
+                                                    </button>
+                                                );
+                                            })
+                                        ))}
+                                    </div>
+
+                                    {!showFeedback && (
+                                        <button
+                                            onClick={handleSubmitWarmup}
+                                            disabled={selectedConnections.length === 0}
+                                            className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 rounded-lg font-bold hover:from-indigo-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            Check My Answer
+                                        </button>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                                    <h3 className="text-xl font-bold text-gray-800 mb-4">
+                                        ✍️ Your Synthesis
+                                    </h3>
+                                    <p className="text-gray-700 mb-4">{challenge.prompt}</p>
+                                    
+                                    <textarea
+                                        value={userAnswer}
+                                        onChange={(e) => setUserAnswer(e.target.value)}
+                                        placeholder="Write your synthesis here..."
+                                        className="w-full h-40 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-indigo-500 focus:outline-none resize-none mb-3"
+                                        disabled={showFeedback && isCorrect}
+                                    />
+                                    
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="text-sm text-gray-500">
+                                            {userAnswer.split(' ').filter(w => w).length} words
+                                        </span>
+                                        {!showFeedback && (
+                                            <button
+                                                onClick={handleSubmitWriting}
+                                                disabled={userAnswer.trim().length < 20}
+                                                className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-8 py-2 rounded-lg font-bold hover:from-indigo-600 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                Submit
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Show example after submission */}
+                                    {showFeedback && challenge.goodExample && (
+                                        <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4 mb-4">
+                                            <p className="font-bold text-green-700 mb-2">✅ Example of Good Synthesis:</p>
+                                            <p className="text-gray-700 italic">"{challenge.goodExample}"</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Hint Button */}
+                            {!showFeedback && challenge.hints && (
+                                <div className="text-center mb-4">
+                                    <button
+                                        onClick={() => setShowHint(!showHint)}
+                                        className="text-indigo-600 hover:text-indigo-700 font-semibold flex items-center gap-2 mx-auto"
+                                    >
+                                        <Lightbulb className="w-5 h-5" />
+                                        {showHint ? 'Hide Hints' : '💡 Need Help?'}
+                                    </button>
+                                    {showHint && (
+                                        <div className="mt-3 bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-300 rounded-lg p-4 max-w-md mx-auto">
+                                            <p className="font-semibold text-yellow-800 mb-2">💡 Hints:</p>
+                                            <ul className="text-left space-y-2">
+                                                {challenge.hints.map((hint, idx) => (
+                                                    <li key={idx} className="text-yellow-700 text-sm">
+                                                        {idx + 1}. {hint}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Feedback */}
+                            {showFeedback && (
+                                <div className="bg-white rounded-lg shadow-lg p-6">
+                                    {isCorrect ? (
+                                        <div className="text-center">
+                                            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                                            <h3 className="text-2xl font-bold text-green-700 mb-2">🎉 Excellent Synthesis!</h3>
+                                            <p className="text-gray-700 mb-4">
+                                                You successfully connected the sources! +{currentRound === 'warmup' ? '20' : currentRound === 'beginner' ? '30' : currentRound === 'intermediate' ? '50' : '75'} points!
+                                            </p>
+                                            {challenge.explanation && (
+                                                <div className="bg-gradient-to-r from-green-50 to-teal-50 border-l-4 border-green-500 p-4 mb-4 rounded text-left">
+                                                    <p className="font-semibold text-green-900 mb-2">💡 Why this works:</p>
+                                                    <p className="text-gray-700">{challenge.explanation}</p>
+                                                </div>
+                                            )}
+                                            <button
+                                                onClick={handleNext}
+                                                className="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 rounded-lg font-bold hover:from-green-600 hover:to-teal-700 transition-all transform hover:scale-105"
+                                            >
+                                                {currentRound === 'advanced' && currentChallenge === advancedChallenges.length - 1
+                                                    ? '🏆 See Your Results!'
+                                                    : currentChallenge === getAllChallenges().length - 1
+                                                    ? '➡️ Next Round'
+                                                    : '➡️ Next Challenge'}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center">
+                                            <XCircle className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+                                            <h3 className="text-2xl font-bold text-orange-700 mb-2">Not Quite There</h3>
+                                            <p className="text-gray-700 mb-4">
+                                                {currentRound === 'warmup' 
+                                                    ? "That's not quite the right connection. Look for sources that discuss related topics!"
+                                                    : "Your synthesis needs more development. Try connecting the sources more explicitly."}
+                                            </p>
+                                            {challenge.explanation && (
+                                                <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-4">
+                                                    <p className="font-semibold text-blue-800 mb-2">💡 Hint:</p>
+                                                    <p className="text-blue-700 text-sm">{challenge.explanation}</p>
+                                                </div>
+                                            )}
+                                            <button
+                                                onClick={() => {
+                                                    setShowFeedback(false);
+                                                    setUserAnswer('');
+                                                    setSelectedConnections([]);
+                                                }}
+                                                className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white py-3 rounded-lg font-bold hover:from-orange-600 hover:to-red-700 transition-all"
+                                            >
+                                                Try Again
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Quick Tips */}
+                            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-300 rounded-lg p-4 mt-6">
+                                <p className="font-semibold text-indigo-900 mb-2">💡 Synthesis Tips:</p>
+                                <div className="grid md:grid-cols-2 gap-3 text-sm">
+                                    <div className="bg-white p-3 rounded">
+                                        <strong className="text-indigo-700">Connect:</strong> Show how sources relate
+                                    </div>
+                                    <div className="bg-white p-3 rounded">
+                                        <strong className="text-purple-700">Compare:</strong> Note similarities/differences
+                                    </div>
+                                    <div className="bg-white p-3 rounded">
+                                        <strong className="text-pink-700">Explain:</strong> Add your insight
+                                    </div>
+                                    <div className="bg-white p-3 rounded">
+                                        <strong className="text-indigo-700">Weave:</strong> Don't just list sources
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+
+            } catch (error) {
+                console.error("Render error:", error);
+                return (
+                    <div className="min-h-screen bg-red-100 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md">
+                            <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Module</h2>
+                            <p className="text-gray-700 mb-4">Something went wrong. Please refresh the page.</p>
+                            <p className="text-sm text-gray-500">Error: {error.message}</p>
+                        </div>
+                    </div>
+                );
+            }
+        };
+
+        // Render
+        try {
+            console.log("Mounting React app...");
+            ReactDOM.render(<SynthesisModule />, document.getElementById('root'));
+            console.log("React app mounted successfully!");
+        } catch (error) {
+            console.error("Failed to mount React app:", error);
+            document.getElementById('root').innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                    <h2 style="color: red;">Module Failed to Load</h2>
+                    <p>Please check the browser console for errors.</p>
+                    <p style="font-size: 12px; color: #666;">${error.message}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

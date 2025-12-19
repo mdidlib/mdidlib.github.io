@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citation Builder - MDID Digital Skills</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out;
+        }
+        .animate-slideIn {
+            animation: slideIn 0.4s ease-out;
+        }
+        .animate-pulse-slow {
+            animation: pulse 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Icon components
+        const BookOpen = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+        );
+
+        const CheckCircle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+        );
+
+        const XCircle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="m15 9-6 6"/>
+                <path d="m9 9 6 6"/>
+            </svg>
+        );
+
+        const Trophy = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+                <path d="M4 22h16"/>
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+            </svg>
+        );
+
+        const RefreshCw = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                <path d="M8 16H3v5"/>
+            </svg>
+        );
+
+        const AlertTriangle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+        );
+
+        // Shuffle function
+        const shuffleArray = (array) => {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        };
+
+        const CitationModule = () => {
+            const [currentScreen, setCurrentScreen] = useState('welcome');
+            const [currentPhase, setCurrentPhase] = useState('warmup');
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [selectedElements, setSelectedElements] = useState([]);
+            const [score, setScore] = useState(0);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [attempts, setAttempts] = useState(0);
+            const [shuffledElements, setShuffledElements] = useState([]);
+            const [selectedAnswer, setSelectedAnswer] = useState(null);
+
+            // MLA Core Elements for reference
+            const coreElements = [
+                { num: 1, name: "Author", desc: "Who created the source" },
+                { num: 2, name: "Title of Source", desc: "Name of the specific work" },
+                { num: 3, name: "Title of Container", desc: "Larger work it's part of (journal, website, anthology)" },
+                { num: 4, name: "Contributor", desc: "Editors, translators, etc." },
+                { num: 5, name: "Version", desc: "Edition, director's cut, etc." },
+                { num: 6, name: "Number", desc: "Volume, issue, episode number" },
+                { num: 7, name: "Publisher", desc: "Organization that produced it" },
+                { num: 8, name: "Publication Date", desc: "When it was published" },
+                { num: 9, name: "Location", desc: "Page numbers, DOI, URL" }
+            ];
+
+            // All 9 MLA Core Elements for warmup clickable buttons
+            const allCoreElementButtons = [
+                { id: 1, label: "Author." },
+                { id: 2, label: "Title of Source." },
+                { id: 3, label: "Title of Container," },
+                { id: 4, label: "Contributor," },
+                { id: 5, label: "Version," },
+                { id: 6, label: "Number," },
+                { id: 7, label: "Publisher," },
+                { id: 8, label: "Publication Date," },
+                { id: 9, label: "Location." }
+            ];
+
+            // ROUND 1: Warm-up - Select correct Core Elements in order for different source types
+            const warmups = [
+                {
+                    id: 1,
+                    title: "MLA Core Elements: The Basics",
+                    sourceType: "A print book:",
+                    exampleCitation: "Harari, Yuval Noah. Sapiens: A Brief History of Humankind. Harper, 2015.",
+                    correct: ["Author.", "Title of Source.", "Publisher,", "Publication Date,"],
+                    explanation: "A print book uses 4 core elements in order: Author, Title of Source (the book title), Publisher, and Publication Date. Skip elements that don't apply!"
+                },
+                {
+                    id: 2,
+                    title: "MLA Core Elements: Print Journal Article",
+                    sourceType: "A print journal article:",
+                    exampleCitation: 'Chen, Sarah. "The Psychology of Learning." Educational Research Quarterly, vol. 42, no. 3, 2023, pp. 112-128.',
+                    correct: ["Author.", "Title of Source.", "Title of Container,", "Number,", "Publication Date,", "Location."],
+                    explanation: "A print journal article uses: Author, Title of Source (article title), Title of Container (journal name), Number (vol. and no.), Publication Date, and Location (page numbers). The journal is the 'container' holding the article."
+                },
+                {
+                    id: 3,
+                    title: "MLA Core Elements: Online Article",
+                    sourceType: "An online article:",
+                    exampleCitation: 'Rodriguez, Maria. "Understanding Climate Science." NASA Climate, 15 Jan. 2024, climate.nasa.gov/science.',
+                    correct: ["Author.", "Title of Source.", "Title of Container,", "Publication Date,", "Location."],
+                    explanation: "An online article uses: Author, Title of Source (article title), Title of Container (website name), Publication Date, and Location (URL). The website is the 'container' holding the article."
+                }
+            ];
+
+            // ROUND 2: Knockout - Build easier citations
+            const knockoutRound = [
+                {
+                    id: 1,
+                    title: "Book - Single Author",
+                    sourceInfo: {
+                        Author: "Yuval Noah Harari",
+                        Title: "Sapiens: A Brief History of Humankind",
+                        Publisher: "Harper",
+                        Year: "2015"
+                    },
+                    elements: ["Harari, Yuval Noah.", "Sapiens: A Brief History of Humankind.", "Harper,", "2015."],
+                    correct: ["Harari, Yuval Noah.", "Sapiens: A Brief History of Humankind.", "Harper,", "2015."],
+                    explanation: "MLA book format: Author Last, First. Title in Italics. Publisher, Year."
+                },
+                {
+                    id: 2,
+                    title: "Book - Two Authors",
+                    sourceInfo: {
+                        Authors: "William Strunk Jr. and E. B. White",
+                        Title: "The Elements of Style",
+                        Publisher: "Pearson",
+                        Year: "2019"
+                    },
+                    elements: ["Strunk, William, Jr., and E. B. White.", "The Elements of Style.", "Pearson,", "2019."],
+                    correct: ["Strunk, William, Jr., and E. B. White.", "The Elements of Style.", "Pearson,", "2019."],
+                    explanation: "Two authors: First Author Last, First, and Second Author First Last. Use 'and' (not &) between names."
+                },
+                {
+                    id: 3,
+                    title: "Print Journal Article",
+                    sourceInfo: {
+                        Author: "Sarah Chen",
+                        "Article Title": "The Psychology of Learning",
+                        Journal: "Educational Research Quarterly",
+                        Volume: "42",
+                        Issue: "3",
+                        Year: "2023",
+                        Pages: "112-128"
+                    },
+                    elements: ['"The Psychology of Learning."', "Chen, Sarah.", "Educational Research Quarterly,", "vol. 42, no. 3,", "2023,", "pp. 112-128."],
+                    correct: ["Chen, Sarah.", '"The Psychology of Learning."', "Educational Research Quarterly,", "vol. 42, no. 3,", "2023,", "pp. 112-128."],
+                    explanation: "Journal article: Author. \"Article Title.\" Journal Title, vol. #, no. #, Year, pp. ##-##. Article titles go in quotes; journal titles are italicized."
+                },
+                {
+                    id: 4,
+                    title: "Website Article",
+                    sourceInfo: {
+                        Author: "Maria Rodriguez",
+                        "Article Title": "Understanding Climate Science",
+                        Website: "NASA Climate",
+                        Date: "15 Jan. 2024",
+                        URL: "climate.nasa.gov/science"
+                    },
+                    elements: ["Rodriguez, Maria.", '"Understanding Climate Science."', "NASA Climate,", "15 Jan. 2024,", "climate.nasa.gov/science."],
+                    correct: ["Rodriguez, Maria.", '"Understanding Climate Science."', "NASA Climate,", "15 Jan. 2024,", "climate.nasa.gov/science."],
+                    explanation: "Website: Author. \"Article Title.\" Website Name, Date, URL. Note: MLA uses day-month-year format (15 Jan. 2024)."
+                },
+                {
+                    id: 5,
+                    title: "Online News Article",
+                    sourceInfo: {
+                        Author: "James Wilson",
+                        "Article Title": "New Study Links Sleep to Memory",
+                        Publication: "The New York Times",
+                        Date: "3 Mar. 2024",
+                        URL: "www.nytimes.com/2024/03/03/sleep-study"
+                    },
+                    elements: ["Wilson, James.", '"New Study Links Sleep to Memory."', "The New York Times,", "3 Mar. 2024,", "www.nytimes.com/2024/03/03/sleep-study."],
+                    correct: ["Wilson, James.", '"New Study Links Sleep to Memory."', "The New York Times,", "3 Mar. 2024,", "www.nytimes.com/2024/03/03/sleep-study."],
+                    explanation: "Online news: Author. \"Article Title.\" Publication Name, Date, URL. Newspaper names are italicized as containers."
+                }
+            ];
+
+            // ROUND 3: Winner Takes All - Challenging citations
+            const finalRound = [
+                {
+                    id: 1,
+                    title: "Journal Article from JSTOR Database",
+                    sourceInfo: {
+                        Author: "Emily Park",
+                        "Article Title": "Digital Literacy in Modern Classrooms",
+                        Journal: "Education Review",
+                        Volume: "78",
+                        Issue: "2",
+                        Year: "2024",
+                        Pages: "45-62",
+                        Database: "JSTOR"
+                    },
+                    elements: ["Park, Emily.", '"Digital Literacy in Modern Classrooms."', "Education Review,", "vol. 78, no. 2,", "2024,", "pp. 45-62.", "JSTOR."],
+                    correct: ["Park, Emily.", '"Digital Literacy in Modern Classrooms."', "Education Review,", "vol. 78, no. 2,", "2024,", "pp. 45-62.", "JSTOR."],
+                    explanation: "Database article: Add the database name as a second container at the end. JSTOR, ProQuest, etc. are containers that hold the journal."
+                },
+                {
+                    id: 2,
+                    title: "YouTube Video",
+                    sourceInfo: {
+                        Creator: "Crash Course",
+                        "Video Title": "The Agricultural Revolution",
+                        Platform: "YouTube",
+                        "Upload Date": "26 Jan. 2012",
+                        URL: "www.youtube.com/watch?v=Yocja_N5s1I"
+                    },
+                    elements: ["Crash Course.", '"The Agricultural Revolution."', "YouTube,", "26 Jan. 2012,", "www.youtube.com/watch?v=Yocja_N5s1I."],
+                    correct: ["Crash Course.", '"The Agricultural Revolution."', "YouTube,", "26 Jan. 2012,", "www.youtube.com/watch?v=Yocja_N5s1I."],
+                    explanation: "YouTube video: Creator/Channel Name. \"Video Title.\" YouTube, Upload Date, URL. The channel name acts as the author."
+                },
+                {
+                    id: 3,
+                    title: "TikTok Video",
+                    sourceInfo: {
+                        Username: "@ScienceWithSam",
+                        "Post Description": "How black holes actually work",
+                        Platform: "TikTok",
+                        Date: "8 Feb. 2024",
+                        URL: "www.tiktok.com/@sciencewithsam/video/123456"
+                    },
+                    elements: ["@ScienceWithSam.", '"How black holes actually work."', "TikTok,", "8 Feb. 2024,", "www.tiktok.com/@sciencewithsam/video/123456."],
+                    correct: ["@ScienceWithSam.", '"How black holes actually work."', "TikTok,", "8 Feb. 2024,", "www.tiktok.com/@sciencewithsam/video/123456."],
+                    explanation: "TikTok: @Username. \"Description or first words.\" TikTok, Date, URL. Use the @ symbol as part of the username."
+                },
+                {
+                    id: 4,
+                    title: "Instagram Post",
+                    sourceInfo: {
+                        Username: "@NationalGeographic",
+                        Caption: "Stunning aurora captured over Iceland",
+                        Platform: "Instagram",
+                        Date: "12 Dec. 2023",
+                        URL: "www.instagram.com/p/abc123/"
+                    },
+                    elements: ["@NationalGeographic.", '"Stunning aurora captured over Iceland."', "Instagram,", "12 Dec. 2023,", "www.instagram.com/p/abc123/."],
+                    correct: ["@NationalGeographic.", '"Stunning aurora captured over Iceland."', "Instagram,", "12 Dec. 2023,", "www.instagram.com/p/abc123/."],
+                    explanation: "Instagram: @Username. \"Caption or description.\" Instagram, Date, URL. If caption is long, use the first sentence or a shortened version."
+                },
+                {
+                    id: 5,
+                    title: "Generative AI (ChatGPT)",
+                    sourceInfo: {
+                        "AI Tool": "ChatGPT",
+                        Version: "GPT-4",
+                        Company: "OpenAI",
+                        Prompt: "Explain photosynthesis for middle school students",
+                        Date: "15 Nov. 2024"
+                    },
+                    elements: ['"Explain photosynthesis for middle school students" prompt.', "ChatGPT,", "GPT-4 version,", "OpenAI,", "15 Nov. 2024."],
+                    correct: ['"Explain photosynthesis for middle school students" prompt.', "ChatGPT,", "GPT-4 version,", "OpenAI,", "15 Nov. 2024."],
+                    explanation: "AI citation: \"Prompt text\" prompt. Tool Name, Version, Company, Date. MLA treats the prompt as the title since AI doesn't have traditional authors."
+                }
+            ];
+
+            // ROUND 4: Bonus - Et Al. (3+ Authors)
+            const bonusRound = [
+                {
+                    id: 1,
+                    title: "Journal Article - Three Authors",
+                    instruction: "When a source has 3 or more authors, list only the first author followed by 'et al.' (Latin for 'and others').",
+                    sourceInfo: {
+                        Authors: "Sarah Chen, Michael Rodriguez, and Emily Park",
+                        "Article Title": "Climate Change and Coastal Communities",
+                        Journal: "Environmental Studies Quarterly",
+                        Volume: "34",
+                        Issue: "2",
+                        Year: "2024",
+                        Pages: "156-178"
+                    },
+                    elements: ["Chen, Sarah, et al.", '"Climate Change and Coastal Communities."', "Environmental Studies Quarterly,", "vol. 34, no. 2,", "2024,", "pp. 156-178."],
+                    correct: ["Chen, Sarah, et al.", '"Climate Change and Coastal Communities."', "Environmental Studies Quarterly,", "vol. 34, no. 2,", "2024,", "pp. 156-178."],
+                    explanation: "With 3+ authors, use only the first author's name followed by 'et al.' (no comma before et al.). This keeps citations manageable while still giving credit."
+                },
+                {
+                    id: 2,
+                    title: "Book - Four Authors",
+                    sourceInfo: {
+                        Authors: "James Wilson, Maria Santos, David Kim, and Lisa Thompson",
+                        Title: "Introduction to Data Science",
+                        Publisher: "Tech Press",
+                        Year: "2023"
+                    },
+                    elements: ["Wilson, James, et al.", "Introduction to Data Science.", "Tech Press,", "2023."],
+                    correct: ["Wilson, James, et al.", "Introduction to Data Science.", "Tech Press,", "2023."],
+                    explanation: "Even with 4 authors, you still only list the first author + et al. The rule applies to any source with 3 or more authors."
+                },
+                {
+                    id: 3,
+                    title: "Website Article - Multiple Authors",
+                    sourceInfo: {
+                        Authors: "Dr. Amanda Foster, Dr. Robert Chang, and Dr. Nina Patel",
+                        "Article Title": "Understanding Vaccine Development",
+                        Website: "CDC Health Information",
+                        Date: "8 Mar. 2024",
+                        URL: "www.cdc.gov/vaccines/development"
+                    },
+                    elements: ["Foster, Amanda, et al.", '"Understanding Vaccine Development."', "CDC Health Information,", "8 Mar. 2024,", "www.cdc.gov/vaccines/development."],
+                    correct: ["Foster, Amanda, et al.", '"Understanding Vaccine Development."', "CDC Health Information,", "8 Mar. 2024,", "www.cdc.gov/vaccines/development."],
+                    explanation: "The et al. rule works for all source types - books, articles, websites, etc. Don't include titles like 'Dr.' in citations; use first and last names only."
+                }
+            ];
+
+            // ROUND 5: Bonus 2 - Works Cited Page Order (Alphabetical)
+            const bonus2Round = [
+                {
+                    id: 1,
+                    title: "Works Cited: Alphabetical Order",
+                    instruction: "Arrange these Works Cited entries in correct alphabetical order by the first word of each entry:",
+                    entries: [
+                        { short: "Rodriguez, Maria...", full: 'Rodriguez, Maria. "Understanding Climate Science." NASA Climate, 15 Jan. 2024.' },
+                        { short: "Chen, Sarah...", full: 'Chen, Sarah. "The Psychology of Learning." Educational Research Quarterly, vol. 42, no. 3, 2023.' },
+                        { short: "Harari, Yuval Noah...", full: 'Harari, Yuval Noah. Sapiens: A Brief History of Humankind. Harper, 2015.' },
+                        { short: "Wilson, James...", full: 'Wilson, James. "New Study Links Sleep to Memory." The New York Times, 3 Mar. 2024.' }
+                    ],
+                    elements: ["Rodriguez, Maria...", "Chen, Sarah...", "Harari, Yuval Noah...", "Wilson, James..."],
+                    correct: ["Chen, Sarah...", "Harari, Yuval Noah...", "Rodriguez, Maria...", "Wilson, James..."],
+                    explanation: "Works Cited entries are arranged alphabetically by the first word (usually author's last name). C-H-R-W: Chen → Harari → Rodriguez → Wilson."
+                }
+            ];
+
+            // ROUND 6: Bonus 3 - In-Text Citations
+            const bonus3Round = [
+                {
+                    id: 1,
+                    title: "In-Text Citation: Author Named in Sentence",
+                    instruction: "Based on this Works Cited entry, which in-text citation is correct when the author's name appears in your sentence?",
+                    worksCitedEntry: 'Harari, Yuval Noah. Sapiens: A Brief History of Humankind. Harper, 2015.',
+                    exampleSentence: 'Harari argues that agriculture was "history\'s biggest fraud" (_______).',
+                    options: [
+                        { id: "a", text: "(Harari 79)" },
+                        { id: "b", text: "(79)" },
+                        { id: "c", text: "(Sapiens 79)" },
+                        { id: "d", text: "(Harari, 79)" }
+                    ],
+                    correctAnswer: "b",
+                    explanation: "When the author's name already appears in your sentence, only include the page number in parentheses: (79). No comma is needed, and don't repeat the author's name."
+                },
+                {
+                    id: 2,
+                    title: "In-Text Citation: Author NOT in Sentence",
+                    instruction: "Based on this Works Cited entry, which in-text citation is correct when the author's name does NOT appear in your sentence?",
+                    worksCitedEntry: 'Chen, Sarah. "The Psychology of Learning." Educational Research Quarterly, vol. 42, no. 3, 2023, pp. 112-128.',
+                    exampleSentence: 'Studies show that spaced repetition improves long-term memory retention (_______).',
+                    options: [
+                        { id: "a", text: "(Chen, 115)" },
+                        { id: "b", text: "(Chen 115)" },
+                        { id: "c", text: '("The Psychology of Learning" 115)' },
+                        { id: "d", text: "(Sarah Chen, p. 115)" }
+                    ],
+                    correctAnswer: "b",
+                    explanation: "When the author's name is NOT in your sentence, include the author's last name and page number with NO comma between them: (Chen 115). Don't use 'p.' before page numbers in MLA."
+                },
+                {
+                    id: 3,
+                    title: "In-Text Citation: Three or More Authors",
+                    instruction: "Based on this Works Cited entry, which in-text citation is correct?",
+                    worksCitedEntry: 'Chen, Sarah, et al. "Climate Change and Coastal Communities." Environmental Studies Quarterly, vol. 34, no. 2, 2024, pp. 156-178.',
+                    exampleSentence: 'Rising sea levels threaten millions of coastal residents (_______).',
+                    options: [
+                        { id: "a", text: "(Chen, Rodriguez, and Park 160)" },
+                        { id: "b", text: "(Chen et al. 160)" },
+                        { id: "c", text: "(Chen, et al. 160)" },
+                        { id: "d", text: "(et al. 160)" }
+                    ],
+                    correctAnswer: "b",
+                    explanation: "For 3+ authors, use the first author's last name followed by 'et al.' with NO comma before 'et al.': (Chen et al. 160). This matches how it appears in your Works Cited."
+                },
+                {
+                    id: 4,
+                    title: "In-Text Citation: No Page Numbers (Web Source)",
+                    instruction: "Based on this Works Cited entry, which in-text citation is correct for a web source without page numbers?",
+                    worksCitedEntry: 'Rodriguez, Maria. "Understanding Climate Science." NASA Climate, 15 Jan. 2024, climate.nasa.gov/science.',
+                    exampleSentence: 'NASA explains that global temperatures have risen significantly since the Industrial Revolution (_______).',
+                    options: [
+                        { id: "a", text: "(Rodriguez, NASA Climate)" },
+                        { id: "b", text: "(Rodriguez)" },
+                        { id: "c", text: '("Understanding Climate Science")' },
+                        { id: "d", text: "(Rodriguez, 2024)" }
+                    ],
+                    correctAnswer: "b",
+                    explanation: "When a source has no page numbers (common for websites), just include the author's last name: (Rodriguez). Don't add dates, URLs, or website names to in-text citations."
+                },
+                {
+                    id: 5,
+                    title: "In-Text Citation: No Author",
+                    instruction: "Based on this Works Cited entry (no author listed), which in-text citation is correct?",
+                    worksCitedEntry: '"The Impact of Global Warming in North America." Global Warming: Early Signs, 1999, www.climatehotmap.org/.',
+                    exampleSentence: 'Climate change effects are particularly visible in North American regions (_______).',
+                    options: [
+                        { id: "a", text: "(Global Warming: Early Signs)" },
+                        { id: "b", text: '("The Impact of Global Warming")' },
+                        { id: "c", text: '("Impact")' },
+                        { id: "d", text: "(www.climatehotmap.org)" }
+                    ],
+                    correctAnswer: "c",
+                    explanation: "When there's no author, use a shortened version of the title. Shorten to a noun phrase: (\"Impact\"). Use quotation marks for article titles. Never cite URLs in-text."
+                }
+            ];
+
+            // ROUND 7: Cool-down - Identify problems
+            const cooldownRound = [
+                {
+                    id: 1,
+                    title: "What's Missing?",
+                    citation: 'Chen, Lisa. "The Future of Renewable Energy." Environmental Science Today, vol. 15, no. 4, pp. 78-92.',
+                    problem: "missing_date",
+                    options: [
+                        { id: "missing_author", text: "Missing author name" },
+                        { id: "missing_date", text: "Missing publication date" },
+                        { id: "missing_title", text: "Missing article title" },
+                        { id: "wrong_punctuation", text: "Incorrect punctuation" }
+                    ],
+                    explanation: "This citation is missing the publication date (year). It should read: Chen, Lisa. \"The Future of Renewable Energy.\" Environmental Science Today, vol. 15, no. 4, 2023, pp. 78-92."
+                },
+                {
+                    id: 2,
+                    title: "Find the Punctuation Error",
+                    citation: 'Martinez, Juan, "Understanding Machine Learning." Tech Weekly, 22 Aug. 2024, www.techweekly.com/ml-guide.',
+                    problem: "wrong_punctuation",
+                    options: [
+                        { id: "missing_date", text: "Missing publication date" },
+                        { id: "missing_url", text: "Missing URL" },
+                        { id: "wrong_punctuation", text: "Incorrect punctuation after author" },
+                        { id: "missing_publisher", text: "Missing publisher" }
+                    ],
+                    explanation: "The author name should end with a period, not a comma: Martinez, Juan. \"Understanding Machine Learning.\" (period after the author name, then the title begins)"
+                },
+                {
+                    id: 3,
+                    title: "What's the Problem?",
+                    citation: '@NASA. "First Webb Telescope Images Released." Twitter, 12 July 2022.',
+                    problem: "missing_url",
+                    options: [
+                        { id: "missing_author", text: "Missing author name" },
+                        { id: "missing_url", text: "Missing URL/location" },
+                        { id: "wrong_format", text: "Wrong date format" },
+                        { id: "missing_container", text: "Missing container title" }
+                    ],
+                    explanation: "Social media citations need the URL as the location element. Without it, readers can't find the original post. Add the full URL at the end."
+                }
+            ];
+
+            // Initialize shuffled elements
+            const initializeChallenge = (elements) => {
+                setShuffledElements(shuffleArray([...elements]));
+            };
+
+            const handleElementClick = (element) => {
+                if (!showFeedback) {
+                    if (currentPhase === 'warmup') {
+                        // For warmup, only add if not already selected
+                        if (!selectedElements.includes(element)) {
+                            setSelectedElements([...selectedElements, element]);
+                        }
+                    } else {
+                        setSelectedElements([...selectedElements, element]);
+                    }
+                }
+            };
+
+            const handleRemoveElement = (index) => {
+                setSelectedElements(selectedElements.filter((_, i) => i !== index));
+            };
+
+            const checkAnswer = () => {
+                let correctElements;
+                if (currentPhase === 'warmup') {
+                    correctElements = warmups[currentIndex].correct;
+                } else if (currentPhase === 'knockout') {
+                    correctElements = knockoutRound[currentIndex].correct;
+                } else if (currentPhase === 'final') {
+                    correctElements = finalRound[currentIndex].correct;
+                } else if (currentPhase === 'bonus') {
+                    correctElements = bonusRound[currentIndex].correct;
+                } else if (currentPhase === 'bonus2') {
+                    correctElements = bonus2Round[currentIndex].correct;
+                } else if (currentPhase === 'bonus3') {
+                    return selectedAnswer === bonus3Round[currentIndex].correctAnswer;
+                }
+                return JSON.stringify(selectedElements) === JSON.stringify(correctElements);
+            };
+
+            const handleSubmit = () => {
+                if (currentPhase === 'cooldown') {
+                    const correct = selectedAnswer === cooldownRound[currentIndex].problem;
+                    setShowFeedback(true);
+                    setAttempts(attempts + 1);
+                    if (correct) {
+                        setScore(score + (attempts === 0 ? 50 : 30));
+                    }
+                } else if (currentPhase === 'bonus3') {
+                    const correct = checkAnswer();
+                    setShowFeedback(true);
+                    setAttempts(attempts + 1);
+                    if (correct) {
+                        setScore(score + (attempts === 0 ? 40 : 25));
+                    }
+                } else {
+                    const correct = checkAnswer();
+                    setShowFeedback(true);
+                    setAttempts(attempts + 1);
+                    if (correct) {
+                        if (currentPhase === 'warmup') {
+                            setScore(score + 20);
+                        } else if (currentPhase === 'knockout') {
+                            setScore(score + (attempts === 0 ? 30 : 20));
+                        } else if (currentPhase === 'final') {
+                            setScore(score + (attempts === 0 ? 75 : 50));
+                        } else if (currentPhase === 'bonus') {
+                            setScore(score + (attempts === 0 ? 40 : 25));
+                        } else if (currentPhase === 'bonus2') {
+                            setScore(score + (attempts === 0 ? 50 : 30));
+                        }
+                    }
+                }
+            };
+
+            const handleNext = () => {
+                if (currentPhase === 'warmup') {
+                    if (currentIndex < warmups.length - 1) {
+                        setCurrentIndex(currentIndex + 1);
+                        setSelectedElements([]);
+                        setShowFeedback(false);
+                        setAttempts(0);
+                        // Warmup doesn't use shuffled elements - uses fixed core element buttons
+                    } else {
+                        setCurrentPhase('knockout');
+                        setCurrentIndex(0);
+                        setSelectedElements([]);
+                        setShowFeedback(false);
+                        setAttempts(0);
+                        initializeChallenge(knockoutRound[0].elements);
+                    }
+                } else if (currentPhase === 'knockout') {
+                    if (currentIndex < knockoutRound.length - 1) {
+                        setCurrentIndex(currentIndex + 1);
+                        setSelectedElements([]);
+                        setShowFeedback(false);
+                        setAttempts(0);
+                        initializeChallenge(knockoutRound[currentIndex + 1].elements);
+                    } else {
+                        setCurrentPhase('final');
+                        setCurrentIndex(0);
+                        setSelectedElements([]);
+                        setShowFeedback(false);
+                        setAttempts(0);
+                        initializeChallenge(finalRound[0].elements);
+                    }
+                } else if (currentPhase === 'final') {
+                    if (currentIndex < finalRound.length - 1) {
+                        setCurrentIndex(currentIndex + 1);
+                        setSelectedElements([]);
+                        setShowFeedback(false);
+                        setAttempts(0);
+                        initializeChallenge(finalRound[currentIndex + 1].elements);
+                    } else {
+                        setCurrentPhase('bonus');
+                        setCurrentIndex(0);
+                        setSelectedElements([]);
+                        setShowFeedback(false);
+                        setAttempts(0);
+                        initializeChallenge(bonusRound[0].elements);
+                    }
+                } else if (currentPhase === 'bonus') {
+                    if (currentIndex < bonusRound.length - 1) {
+                        setCurrentIndex(currentIndex + 1);
+                        setSelectedElements([]);
+                        setShowFeedback(false);
+                        setAttempts(0);
+                        initializeChallenge(bonusRound[currentIndex + 1].elements);
+                    } else {
+                        setCurrentPhase('bonus2');
+                        setCurrentIndex(0);
+                        setSelectedElements([]);
+                        setShowFeedback(false);
+                        setAttempts(0);
+                        initializeChallenge(bonus2Round[0].elements);
+                    }
+                } else if (currentPhase === 'bonus2') {
+                    if (currentIndex < bonus2Round.length - 1) {
+                        setCurrentIndex(currentIndex + 1);
+                        setSelectedElements([]);
+                        setShowFeedback(false);
+                        setAttempts(0);
+                        initializeChallenge(bonus2Round[currentIndex + 1].elements);
+                    } else {
+                        setCurrentPhase('bonus3');
+                        setCurrentIndex(0);
+                        setSelectedElements([]);
+                        setSelectedAnswer(null);
+                        setShowFeedback(false);
+                        setAttempts(0);
+                    }
+                } else if (currentPhase === 'bonus3') {
+                    if (currentIndex < bonus3Round.length - 1) {
+                        setCurrentIndex(currentIndex + 1);
+                        setSelectedAnswer(null);
+                        setShowFeedback(false);
+                        setAttempts(0);
+                    } else {
+                        setCurrentPhase('cooldown');
+                        setCurrentIndex(0);
+                        setSelectedAnswer(null);
+                        setShowFeedback(false);
+                        setAttempts(0);
+                    }
+                } else if (currentPhase === 'cooldown') {
+                    if (currentIndex < cooldownRound.length - 1) {
+                        setCurrentIndex(currentIndex + 1);
+                        setSelectedAnswer(null);
+                        setShowFeedback(false);
+                        setAttempts(0);
+                    } else {
+                        setCurrentScreen('completion');
+                    }
+                }
+            };
+
+            const restart = () => {
+                setCurrentScreen('welcome');
+                setCurrentPhase('warmup');
+                setCurrentIndex(0);
+                setSelectedElements([]);
+                setScore(0);
+                setShowFeedback(false);
+                setAttempts(0);
+                setSelectedAnswer(null);
+            };
+
+            const WelcomeScreen = () => (
+                <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 flex items-center justify-center p-4">
+                    <div className="absolute top-4 left-4">
+                        <a href="./" className="bg-white/90 text-blue-700 px-4 py-2 rounded-lg font-semibold hover:bg-white transition-all shadow-lg backdrop-blur-sm">
+                            ← Back to Modules
+                        </a>
+                    </div>
+                    
+                    <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-3xl w-full animate-fadeIn">
+                        <div className="text-center">
+                            <div className="inline-block p-4 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mb-4 shadow-lg">
+                                <BookOpen className="w-16 h-16 text-white" />
+                            </div>
+                            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                                Citation Builder
+                            </h1>
+                            <p className="text-sm font-semibold text-blue-500 tracking-wider uppercase mb-4">
+                                MDID Digital Skills
+                            </p>
+                            <p className="text-xl text-gray-600 mb-6">
+                                Master MLA Citations
+                            </p>
+
+                            {/* Core Elements Preview */}
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-5 mb-6 text-left">
+                                <h3 className="font-bold text-blue-800 mb-3 text-center">📚 MLA 9 Core Elements</h3>
+                                <div className="grid grid-cols-3 gap-2 text-sm">
+                                    {coreElements.map((el) => (
+                                        <div key={el.num} className="bg-white rounded-lg p-2 border border-blue-100">
+                                            <span className="font-bold text-blue-600">{el.num}.</span> {el.name}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 rounded-xl p-6 mb-6">
+                                <h3 className="font-bold text-gray-800 mb-3">🏆 The Challenge:</h3>
+                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 text-left">
+                                    <div className="bg-white p-3 rounded-lg border-2 border-green-400">
+                                        <p className="font-bold text-green-700 mb-1">🔥 Round 1: Warm-Up</p>
+                                        <p className="text-sm text-gray-600">Select core elements for each source type</p>
+                                        <p className="text-xs text-green-600 mt-1">3 challenges • 20 pts each</p>
+                                    </div>
+                                    <div className="bg-white p-3 rounded-lg border-2 border-orange-400">
+                                        <p className="font-bold text-orange-700 mb-1">💪 Round 2: Knockout</p>
+                                        <p className="text-sm text-gray-600">Build book, article & website citations</p>
+                                        <p className="text-xs text-orange-600 mt-1">5 challenges • 30 pts each</p>
+                                    </div>
+                                    <div className="bg-white p-3 rounded-lg border-2 border-purple-400">
+                                        <p className="font-bold text-purple-700 mb-1">👑 Round 3: Winner Takes All</p>
+                                        <p className="text-sm text-gray-600">Database, TikTok, YouTube & AI</p>
+                                        <p className="text-xs text-purple-600 mt-1">5 challenges • 75 pts each</p>
+                                    </div>
+                                    <div className="bg-white p-3 rounded-lg border-2 border-pink-400">
+                                        <p className="font-bold text-pink-700 mb-1">🌟 Bonus: Et Al.</p>
+                                        <p className="text-sm text-gray-600">Master "et al." for 3+ authors</p>
+                                        <p className="text-xs text-pink-600 mt-1">3 challenges • 40 pts each</p>
+                                    </div>
+                                    <div className="bg-white p-3 rounded-lg border-2 border-amber-400">
+                                        <p className="font-bold text-amber-700 mb-1">📋 Bonus: Works Cited</p>
+                                        <p className="text-sm text-gray-600">Alphabetical order & in-text citations</p>
+                                        <p className="text-xs text-amber-600 mt-1">6 challenges • 40-50 pts each</p>
+                                    </div>
+                                    <div className="bg-white p-3 rounded-lg border-2 border-teal-400">
+                                        <p className="font-bold text-teal-700 mb-1">❄️ Cool-Down</p>
+                                        <p className="text-sm text-gray-600">Spot the missing element or error</p>
+                                        <p className="text-xs text-teal-600 mt-1">3 challenges • 50 pts each</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p className="text-gray-600 mb-6">
+                                25 Total Challenges • <strong>35-45 minutes</strong> • Up to 1,105 points
+                            </p>
+                            <button
+                                onClick={() => {
+                                    setCurrentScreen('activity');
+                                }}
+                                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-10 py-4 rounded-xl text-xl font-bold hover:from-blue-600 hover:to-purple-700 transform hover:scale-105 transition-all shadow-lg hover:shadow-2xl"
+                            >
+                                🚀 Start Building!
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const ActivityScreen = () => {
+                let challenge, totalInPhase, phaseTitle, phaseColor, phaseEmoji;
+                
+                if (currentPhase === 'warmup') {
+                    challenge = warmups[currentIndex];
+                    totalInPhase = warmups.length;
+                    phaseTitle = "Warm-Up Round";
+                    phaseColor = "green";
+                    phaseEmoji = "🔥";
+                } else if (currentPhase === 'knockout') {
+                    challenge = knockoutRound[currentIndex];
+                    totalInPhase = knockoutRound.length;
+                    phaseTitle = "Knockout Round";
+                    phaseColor = "orange";
+                    phaseEmoji = "💪";
+                } else if (currentPhase === 'final') {
+                    challenge = finalRound[currentIndex];
+                    totalInPhase = finalRound.length;
+                    phaseTitle = "Winner Takes All";
+                    phaseColor = "purple";
+                    phaseEmoji = "👑";
+                } else if (currentPhase === 'bonus') {
+                    challenge = bonusRound[currentIndex];
+                    totalInPhase = bonusRound.length;
+                    phaseTitle = "Bonus: Et Al.";
+                    phaseColor = "pink";
+                    phaseEmoji = "🌟";
+                } else if (currentPhase === 'bonus2') {
+                    challenge = bonus2Round[currentIndex];
+                    totalInPhase = bonus2Round.length;
+                    phaseTitle = "Bonus: Works Cited Order";
+                    phaseColor = "amber";
+                    phaseEmoji = "📋";
+                } else if (currentPhase === 'bonus3') {
+                    challenge = bonus3Round[currentIndex];
+                    totalInPhase = bonus3Round.length;
+                    phaseTitle = "Bonus: In-Text Citations";
+                    phaseColor = "amber";
+                    phaseEmoji = "📝";
+                } else {
+                    challenge = cooldownRound[currentIndex];
+                    totalInPhase = cooldownRound.length;
+                    phaseTitle = "Cool-Down Round";
+                    phaseColor = "teal";
+                    phaseEmoji = "❄️";
+                }
+
+                const correctElements = (currentPhase !== 'cooldown' && currentPhase !== 'bonus3') ? challenge.correct || challenge.elements : null;
+                const availableElements = (currentPhase !== 'cooldown' && currentPhase !== 'warmup' && currentPhase !== 'bonus3') ? shuffledElements.filter(el => !selectedElements.includes(el)) : [];
+
+                const bgColors = {
+                    green: "from-green-400 to-green-600",
+                    orange: "from-orange-400 to-orange-600",
+                    purple: "from-purple-400 to-purple-600",
+                    pink: "from-pink-400 to-rose-600",
+                    amber: "from-amber-400 to-orange-600",
+                    teal: "from-teal-400 to-teal-600"
+                };
+
+                return (
+                    <div className="min-h-screen bg-gray-100 p-4 py-8">
+                        <div className="max-w-5xl mx-auto">
+                            <div className="mb-4">
+                                <a href="./" className="inline-block bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-all shadow-md">
+                                    ← Back to Modules
+                                </a>
+                            </div>
+
+                            {/* Progress */}
+                            <div className="bg-white rounded-lg shadow p-4 mb-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-2xl">{phaseEmoji}</span>
+                                        <span className={`text-lg font-bold text-${phaseColor}-600`}>{phaseTitle}</span>
+                                        <span className="text-sm font-semibold text-gray-500 ml-2">
+                                            {currentIndex + 1} of {totalInPhase}
+                                        </span>
+                                    </div>
+                                    <span className="text-lg font-bold text-blue-600">
+                                        {score} points
+                                    </span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-3">
+                                    <div 
+                                        className={`bg-gradient-to-r ${bgColors[phaseColor]} h-3 rounded-full transition-all duration-500`}
+                                        style={{ width: `${((currentIndex + 1) / totalInPhase) * 100}%` }}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* WARMUP PHASE - Special layout with Core Elements Chart */}
+                            {currentPhase === 'warmup' && (
+                                <div className="grid lg:grid-cols-3 gap-6">
+                                    {/* Left: Core Elements Chart */}
+                                    <div className="lg:col-span-1">
+                                        <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200 sticky top-4">
+                                            <h3 className="font-bold text-blue-800 mb-3 text-center">📖 MLA Core Elements</h3>
+                                            <div className="bg-white border-2 border-blue-300 rounded-lg p-3 text-sm">
+                                                <div className="space-y-1.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">1</span>
+                                                        <span className="border border-gray-300 rounded-full px-2 py-0.5 flex-1 text-xs">Author.</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="bg-blue-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">2</span>
+                                                        <span className="border border-gray-300 rounded-full px-2 py-0.5 flex-1 text-xs">Title of Source.</span>
+                                                    </div>
+                                                    <div className="border-l-4 border-blue-200 ml-2 pl-2 mt-2">
+                                                        <p className="text-xs text-blue-600 font-semibold mb-1">CONTAINER 1</p>
+                                                        <div className="space-y-1">
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold">3</span>
+                                                                <span className="border border-gray-300 rounded-full px-2 py-0.5 flex-1 text-xs">Title of Container,</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold">4</span>
+                                                                <span className="border border-gray-300 rounded-full px-2 py-0.5 flex-1 text-xs">Contributor,</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold">5</span>
+                                                                <span className="border border-gray-300 rounded-full px-2 py-0.5 flex-1 text-xs">Version,</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold">6</span>
+                                                                <span className="border border-gray-300 rounded-full px-2 py-0.5 flex-1 text-xs">Number,</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold">7</span>
+                                                                <span className="border border-gray-300 rounded-full px-2 py-0.5 flex-1 text-xs">Publisher,</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold">8</span>
+                                                                <span className="border border-gray-300 rounded-full px-2 py-0.5 flex-1 text-xs">Publication Date,</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="bg-blue-600 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs font-bold">9</span>
+                                                                <span className="border border-gray-300 rounded-full px-2 py-0.5 flex-1 text-xs">Location.</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="border-l-4 border-purple-200 ml-2 pl-2 mt-2">
+                                                        <p className="text-xs text-purple-600 font-semibold">CONTAINER 2</p>
+                                                        <p className="text-xs text-gray-500 italic">(for databases, etc.)</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-2 text-center italic">Use elements that apply, skip the rest</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Right: Challenge Area */}
+                                    <div className="lg:col-span-2">
+                                        <div className="bg-white rounded-lg shadow-lg p-6 mb-6 animate-fadeIn">
+                                            <h2 className="text-2xl font-bold text-gray-800 mb-2">{challenge.title}</h2>
+                                            
+                                            {/* Example Citation */}
+                                            <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4 mb-4">
+                                                <p className="font-semibold text-green-800 mb-2">{challenge.sourceType}</p>
+                                                <p className="text-gray-800 font-mono bg-white p-3 rounded border text-sm">{challenge.exampleCitation}</p>
+                                            </div>
+
+                                            <p className="text-gray-600 mb-4 font-medium">
+                                                Click the core elements used in this citation, <span className="text-green-600 font-bold">in the correct order</span>:
+                                            </p>
+
+                                            {/* Selected Elements */}
+                                            <div className="bg-gradient-to-r from-green-50 to-teal-50 border-2 border-green-300 rounded-lg p-4 mb-4 min-h-20">
+                                                <p className="text-sm text-gray-600 mb-2 font-semibold">Your selection (in order):</p>
+                                                <div className="bg-white rounded-lg p-3 min-h-12">
+                                                    {selectedElements.length === 0 ? (
+                                                        <p className="text-gray-400 italic">Click elements below...</p>
+                                                    ) : (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {selectedElements.map((element, index) => (
+                                                                <div key={index} className="inline-flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full animate-slideIn">
+                                                                    <span className="text-xs font-bold mr-1">{index + 1}.</span>
+                                                                    <span>{element}</span>
+                                                                    {!showFeedback && (
+                                                                        <button
+                                                                            onClick={() => handleRemoveElement(index)}
+                                                                            className="ml-2 text-red-500 hover:text-red-700 font-bold"
+                                                                        >
+                                                                            ×
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Clickable Core Elements */}
+                                            {!showFeedback && (
+                                                <div className="mb-4">
+                                                    <p className="text-sm font-semibold text-gray-700 mb-3">Click elements in order (skip those that don't apply):</p>
+                                                    <div className="grid grid-cols-3 gap-2">
+                                                        {allCoreElementButtons.map((el) => (
+                                                            <button
+                                                                key={el.id}
+                                                                onClick={() => handleElementClick(el.label)}
+                                                                disabled={selectedElements.includes(el.label)}
+                                                                className={`px-3 py-2 rounded-lg border-2 font-medium text-sm transition-all ${
+                                                                    selectedElements.includes(el.label)
+                                                                        ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                                                        : 'bg-white hover:bg-green-50 text-green-800 border-green-300 hover:border-green-500 hover:scale-105'
+                                                                }`}
+                                                            >
+                                                                <span className="font-bold text-green-600 mr-1">{el.id}.</span> {el.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Action Buttons */}
+                                            {!showFeedback && (
+                                                <div className="flex gap-3 justify-center mt-6">
+                                                    <button
+                                                        onClick={() => setSelectedElements([])}
+                                                        className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-all"
+                                                    >
+                                                        Clear All
+                                                    </button>
+                                                    <button
+                                                        onClick={handleSubmit}
+                                                        disabled={selectedElements.length === 0}
+                                                        className="px-8 py-2 bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-lg font-bold hover:from-green-600 hover:to-teal-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                                                    >
+                                                        Check Answer
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* Warmup Feedback */}
+                                            {showFeedback && (
+                                                <div className="mt-6">
+                                                    {checkAnswer() ? (
+                                                        <div className="text-center bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                                                            <div className="text-5xl mb-3">🎉</div>
+                                                            <h3 className="text-2xl font-bold text-green-700 mb-2">Perfect!</h3>
+                                                            <p className="text-lg text-gray-700 mb-4">+20 points!</p>
+                                                            <div className="bg-white border-l-4 border-green-500 p-4 mb-4 rounded text-left">
+                                                                <p className="font-semibold text-green-900 mb-2">💡 Why this works:</p>
+                                                                <p className="text-gray-700 text-sm">{challenge.explanation}</p>
+                                                            </div>
+                                                            <button
+                                                                onClick={handleNext}
+                                                                className="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 rounded-lg font-bold hover:from-green-600 hover:to-teal-700 transition-all"
+                                                            >
+                                                                {currentIndex < warmups.length - 1 ? '➡️ Next Challenge' : '💪 Start Knockout Round!'}
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-center bg-red-50 border-2 border-red-300 rounded-lg p-6">
+                                                            <div className="text-5xl mb-3">🤔</div>
+                                                            <h3 className="text-2xl font-bold text-red-700 mb-2">Not Quite Right</h3>
+                                                            <p className="text-gray-700 mb-4">Check which elements apply and their order.</p>
+                                                            <div className="bg-white border-l-4 border-blue-500 p-4 mb-4 rounded text-left">
+                                                                <p className="font-semibold text-blue-900 mb-2">💡 Hint:</p>
+                                                                <p className="text-gray-700 text-sm">{challenge.explanation}</p>
+                                                                <p className="text-gray-600 text-sm mt-2"><strong>Correct elements:</strong> {challenge.correct.join(' → ')}</p>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => {
+                                                                    setShowFeedback(false);
+                                                                    setSelectedElements([]);
+                                                                }}
+                                                                className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white py-3 rounded-lg font-bold hover:from-orange-600 hover:to-red-700 transition-all"
+                                                            >
+                                                                Try Again
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* KNOCKOUT, FINAL, BONUS (Et Al.), BONUS2 (Works Cited Order) PHASES */}
+                            {(currentPhase === 'knockout' || currentPhase === 'final' || currentPhase === 'bonus' || currentPhase === 'bonus2') && (
+                                <>
+                                    {/* Challenge Title & Info */}
+                                    <div className="bg-white rounded-lg shadow-lg p-6 mb-6 animate-fadeIn">
+                                        <h2 className="text-2xl font-bold text-gray-800 mb-2">{challenge.title}</h2>
+                                        
+                                        {currentPhase === 'bonus' && challenge.instruction && (
+                                            <div className="bg-pink-50 border-2 border-pink-300 rounded-lg p-4 mt-2 mb-4">
+                                                <p className="text-pink-800 font-medium">💡 {challenge.instruction}</p>
+                                            </div>
+                                        )}
+
+                                        {currentPhase === 'bonus2' && challenge.instruction && (
+                                            <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4 mt-2 mb-4">
+                                                <p className="text-amber-800 font-medium">📋 {challenge.instruction}</p>
+                                                <div className="mt-3 space-y-2">
+                                                    {challenge.entries.map((entry, idx) => (
+                                                        <div key={idx} className="bg-white p-2 rounded border text-sm font-mono">
+                                                            {entry.full}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {challenge.sourceInfo && (
+                                            <div className="bg-blue-50 rounded-lg p-4 mt-4">
+                                                <p className="font-semibold text-blue-900 mb-2">📚 Source Information:</p>
+                                                <div className="grid md:grid-cols-2 gap-2">
+                                                    {Object.entries(challenge.sourceInfo).map(([key, value]) => (
+                                                        <div key={key} className="text-sm">
+                                                            <span className="font-semibold text-gray-700">{key}:</span>
+                                                            <span className="text-gray-600 ml-2">{value}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Build Area */}
+                                    <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                                        <h3 className="text-xl font-bold text-gray-800 mb-4">
+                                            {currentPhase === 'bonus2' ? '📋 Build Your Works Cited (alphabetical order):' : '🔨 Build Your Citation:'}
+                                        </h3>
+                                        
+                                        <div className={`bg-gradient-to-r ${currentPhase === 'bonus2' ? 'from-amber-50 to-orange-50 border-amber-300' : 'from-blue-50 to-indigo-50 border-blue-300'} border-2 rounded-lg p-4 mb-6 min-h-24`}>
+                                            <p className="text-sm text-gray-600 mb-3 font-semibold">
+                                                {currentPhase === 'bonus2' ? 'Works Cited (in order):' : 'Your Citation (click elements in order):'}
+                                            </p>
+                                            <div className="bg-white rounded-lg p-4 min-h-16">
+                                                {selectedElements.length === 0 ? (
+                                                    <p className="text-gray-400 italic">Click elements below...</p>
+                                                ) : (
+                                                    <div className={currentPhase === 'bonus2' ? 'space-y-2' : 'flex flex-wrap gap-1 items-center'}>
+                                                        {selectedElements.map((element, index) => (
+                                                            <div key={index} className={`animate-slideIn ${currentPhase === 'bonus2' ? 'flex items-center gap-2' : 'inline-flex items-center'}`}>
+                                                                <span className="text-gray-800">{element}</span>
+                                                                {!showFeedback && (
+                                                                    <button
+                                                                        onClick={() => handleRemoveElement(index)}
+                                                                        className="text-red-500 hover:text-red-700 ml-1 font-bold text-lg"
+                                                                    >
+                                                                        ×
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Available Elements */}
+                                        {!showFeedback && (
+                                            <div className="mb-4">
+                                                <p className="text-sm font-semibold text-gray-700 mb-3">Available elements:</p>
+                                                <div className={currentPhase === 'bonus2' ? 'space-y-2' : 'flex flex-wrap gap-2'}>
+                                                    {availableElements.map((element, index) => (
+                                                        <button
+                                                            key={index}
+                                                            onClick={() => handleElementClick(element)}
+                                                            className={`${currentPhase === 'bonus2' ? 'w-full text-left' : ''} px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-800 rounded-lg border-2 border-blue-300 font-medium transition-all hover:scale-105 hover:shadow-md`}
+                                                        >
+                                                            {element}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Action Buttons */}
+                                        {!showFeedback && (
+                                            <div className="flex gap-3 justify-center mt-6">
+                                                <button
+                                                    onClick={() => setSelectedElements([])}
+                                                    className="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition-all"
+                                                >
+                                                    Clear All
+                                                </button>
+                                                <button
+                                                    onClick={handleSubmit}
+                                                    disabled={selectedElements.length !== correctElements.length}
+                                                    className="px-8 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg font-bold hover:from-blue-600 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+                                                >
+                                                    {currentPhase === 'bonus2' ? 'Check Order' : 'Check Citation'}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Feedback for Build Phases */}
+                                    {showFeedback && (
+                                        <div className="bg-white rounded-lg shadow-lg p-6 animate-fadeIn">
+                                            {checkAnswer() ? (
+                                                <div className="text-center">
+                                                    <div className="text-6xl mb-3">🎉</div>
+                                                    <h3 className="text-3xl font-bold text-green-700 mb-2">Perfect!</h3>
+                                                    <p className="text-lg text-gray-700 mb-4">
+                                                        {currentPhase === 'knockout' && (attempts === 1 ? '+30 points!' : '+20 points!')}
+                                                        {currentPhase === 'final' && (attempts === 1 ? '+75 points! 👑' : '+50 points!')}
+                                                        {currentPhase === 'bonus' && (attempts === 1 ? '+40 points! 🌟' : '+25 points!')}
+                                                        {currentPhase === 'bonus2' && (attempts === 1 ? '+50 points! 📋' : '+30 points!')}
+                                                    </p>
+                                                    <div className="bg-gradient-to-r from-green-50 to-teal-50 border-l-4 border-green-500 p-4 mb-6 rounded text-left">
+                                                        <p className="font-semibold text-green-900 mb-2">💡 Why this works:</p>
+                                                        <p className="text-gray-700">{challenge.explanation}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={handleNext}
+                                                        className="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 rounded-lg font-bold hover:from-green-600 hover:to-teal-700 transition-all transform hover:scale-102 shadow-lg"
+                                                    >
+                                                        {currentPhase === 'knockout' && currentIndex < knockoutRound.length - 1 && '➡️ Next Challenge'}
+                                                        {currentPhase === 'knockout' && currentIndex === knockoutRound.length - 1 && '👑 Enter Winner Takes All!'}
+                                                        {currentPhase === 'final' && currentIndex < finalRound.length - 1 && '➡️ Next Challenge'}
+                                                        {currentPhase === 'final' && currentIndex === finalRound.length - 1 && '🌟 Bonus: Et Al.!'}
+                                                        {currentPhase === 'bonus' && currentIndex < bonusRound.length - 1 && '➡️ Next Challenge'}
+                                                        {currentPhase === 'bonus' && currentIndex === bonusRound.length - 1 && '📋 Bonus: Works Cited Order!'}
+                                                        {currentPhase === 'bonus2' && currentIndex < bonus2Round.length - 1 && '➡️ Next Challenge'}
+                                                        {currentPhase === 'bonus2' && currentIndex === bonus2Round.length - 1 && '📝 Bonus: In-Text Citations!'}
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center">
+                                                    <div className="text-5xl mb-3">🤔</div>
+                                                    <h3 className="text-2xl font-bold text-red-700 mb-2">Not Quite Right</h3>
+                                                    <p className="text-gray-700 mb-4">The elements aren't in the correct order. Check the format and try again!</p>
+                                                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4 rounded text-left">
+                                                        <p className="font-semibold text-blue-900 mb-2">💡 Remember:</p>
+                                                        <p className="text-gray-700 text-sm">{challenge.explanation}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowFeedback(false);
+                                                            setSelectedElements([]);
+                                                        }}
+                                                        className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white py-3 rounded-lg font-bold hover:from-orange-600 hover:to-red-700 transition-all"
+                                                    >
+                                                        Try Again
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            {/* BONUS3 PHASE - In-Text Citations (Multiple Choice) */}
+                            {currentPhase === 'bonus3' && (
+                                <>
+                                    <div className="bg-white rounded-lg shadow-lg p-6 mb-6 animate-fadeIn">
+                                        <h2 className="text-2xl font-bold text-gray-800 mb-4">{challenge.title}</h2>
+                                        <p className="text-gray-600 mb-4">{challenge.instruction}</p>
+                                        
+                                        <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-4">
+                                            <p className="font-semibold text-blue-800 mb-2">📚 Works Cited Entry:</p>
+                                            <p className="text-gray-800 font-mono bg-white p-3 rounded border text-sm">{challenge.worksCitedEntry}</p>
+                                        </div>
+
+                                        <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4">
+                                            <p className="font-semibold text-amber-800 mb-2">✍️ Your sentence:</p>
+                                            <p className="text-gray-800 bg-white p-3 rounded border">{challenge.exampleSentence}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                                        <h3 className="text-xl font-bold text-gray-800 mb-4">Which in-text citation is correct?</h3>
+                                        
+                                        {!showFeedback && (
+                                            <div className="space-y-3 mb-6">
+                                                {challenge.options.map((option) => (
+                                                    <button
+                                                        key={option.id}
+                                                        onClick={() => setSelectedAnswer(option.id)}
+                                                        className={`w-full p-4 rounded-lg border-2 text-left font-medium transition-all ${
+                                                            selectedAnswer === option.id
+                                                                ? 'border-amber-500 bg-amber-50 text-amber-800'
+                                                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                                        }`}
+                                                    >
+                                                        <span className="font-bold mr-2">{option.id.toUpperCase()}.</span>
+                                                        {option.text}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {!showFeedback && (
+                                            <div className="flex justify-center">
+                                                <button
+                                                    onClick={handleSubmit}
+                                                    disabled={!selectedAnswer}
+                                                    className="px-8 py-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-lg font-bold hover:from-amber-600 hover:to-orange-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                                                >
+                                                    Check Answer
+                                                </button>
+                                            </div>
+                                        )}
+
+                                        {/* Feedback for Bonus 3 */}
+                                        {showFeedback && (
+                                            <div className="mt-6">
+                                                {checkAnswer() ? (
+                                                    <div className="text-center bg-green-50 border-2 border-green-300 rounded-lg p-6">
+                                                        <div className="text-5xl mb-3">🎉</div>
+                                                        <h3 className="text-2xl font-bold text-green-700 mb-2">Correct!</h3>
+                                                        <p className="text-lg text-gray-700 mb-4">
+                                                            {attempts === 1 ? '+40 points!' : '+25 points!'}
+                                                        </p>
+                                                        <div className="bg-white border-l-4 border-green-500 p-4 mb-4 rounded text-left">
+                                                            <p className="font-semibold text-green-900 mb-2">💡 Why this works:</p>
+                                                            <p className="text-gray-700">{challenge.explanation}</p>
+                                                        </div>
+                                                        <button
+                                                            onClick={handleNext}
+                                                            className="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 rounded-lg font-bold hover:from-green-600 hover:to-teal-700 transition-all"
+                                                        >
+                                                            {currentIndex < bonus3Round.length - 1 ? '➡️ Next Challenge' : '❄️ Start Cool-Down!'}
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center bg-red-50 border-2 border-red-300 rounded-lg p-6">
+                                                        <div className="text-5xl mb-3">🤔</div>
+                                                        <h3 className="text-2xl font-bold text-red-700 mb-2">Not Quite Right</h3>
+                                                        <div className="bg-white border-l-4 border-blue-500 p-4 mb-4 rounded text-left">
+                                                            <p className="font-semibold text-blue-900 mb-2">💡 The correct answer is {challenge.correctAnswer.toUpperCase()}:</p>
+                                                            <p className="text-gray-700">{challenge.explanation}</p>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => {
+                                                                setShowFeedback(false);
+                                                                setSelectedAnswer(null);
+                                                            }}
+                                                            className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white py-3 rounded-lg font-bold"
+                                                        >
+                                                            Try Again
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+
+                            {/* COOLDOWN PHASE - Multiple Choice */}
+                            {currentPhase === 'cooldown' && (
+                                <>
+                                    <div className="bg-white rounded-lg shadow-lg p-6 mb-6 animate-fadeIn">
+                                        <h2 className="text-2xl font-bold text-gray-800 mb-2">{challenge.title}</h2>
+                                        <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4 mt-4">
+                                            <p className="font-semibold text-yellow-800 mb-2">🔍 Examine this citation:</p>
+                                            <p className="text-gray-800 font-mono text-lg bg-white p-3 rounded border">{challenge.citation}</p>
+                                        </div>
+                                    </div>
+
+                                    {!showFeedback && (
+                                        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                                            <h3 className="text-xl font-bold text-gray-800 mb-4">
+                                                What's the problem with this citation?
+                                            </h3>
+                                            <div className="space-y-3">
+                                                {challenge.options.map((option) => (
+                                                    <button
+                                                        key={option.id}
+                                                        onClick={() => setSelectedAnswer(option.id)}
+                                                        className={`w-full p-4 rounded-lg border-2 text-left font-medium transition-all ${
+                                                            selectedAnswer === option.id
+                                                                ? 'border-teal-500 bg-teal-50 text-teal-800'
+                                                                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                                        }`}
+                                                    >
+                                                        {option.text}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <div className="flex justify-center mt-6">
+                                                <button
+                                                    onClick={handleSubmit}
+                                                    disabled={!selectedAnswer}
+                                                    className="px-8 py-3 bg-gradient-to-r from-teal-500 to-blue-600 text-white rounded-lg font-bold hover:from-teal-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                                                >
+                                                    Check Answer
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Cooldown Feedback */}
+                                    {showFeedback && (
+                                        <div className="bg-white rounded-lg shadow-lg p-6 animate-fadeIn">
+                                            {selectedAnswer === challenge.problem ? (
+                                                <div className="text-center">
+                                                    <div className="text-6xl mb-3">🎉</div>
+                                                    <h3 className="text-3xl font-bold text-green-700 mb-2">Perfect!</h3>
+                                                    <p className="text-lg text-gray-700 mb-4">
+                                                        {attempts === 1 ? '+50 points!' : '+30 points!'}
+                                                    </p>
+                                                    <div className="bg-gradient-to-r from-green-50 to-teal-50 border-l-4 border-green-500 p-4 mb-6 rounded text-left">
+                                                        <p className="font-semibold text-green-900 mb-2">💡 Why this works:</p>
+                                                        <p className="text-gray-700">{challenge.explanation}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={handleNext}
+                                                        className="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 rounded-lg font-bold hover:from-green-600 hover:to-teal-700 transition-all"
+                                                    >
+                                                        {currentIndex < cooldownRound.length - 1 ? '➡️ Next Challenge' : '🏆 See Your Results!'}
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="text-center">
+                                                    <div className="text-5xl mb-3">🤔</div>
+                                                    <h3 className="text-2xl font-bold text-red-700 mb-2">Not Quite Right</h3>
+                                                    <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4 rounded text-left">
+                                                        <p className="font-semibold text-blue-900 mb-2">💡 The correct answer:</p>
+                                                        <p className="text-gray-700">{challenge.explanation}</p>
+                                                    </div>
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowFeedback(false);
+                                                            setSelectedAnswer(null);
+                                                        }}
+                                                        className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white py-3 rounded-lg font-bold"
+                                                    >
+                                                        Try Again
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            {/* MLA Quick Reference */}
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-lg p-6 mt-6">
+                                <p className="font-semibold text-blue-900 mb-3">📖 MLA Quick Reference:</p>
+                                <div className="grid md:grid-cols-3 gap-4 text-sm">
+                                    <div className="bg-white p-4 rounded-lg">
+                                        <p className="font-bold text-blue-700 mb-1">Core Elements:</p>
+                                        <p className="text-xs text-gray-500 mb-2 italic">(Use the elements that apply, ignore the rest)</p>
+                                        <div className="text-gray-700 space-y-0.5">
+                                            <p>Author.</p>
+                                            <p>Title of Source.</p>
+                                            <p>Title of Container,</p>
+                                            <p>Contributor, Version, Number,</p>
+                                            <p>Publisher, Publication Date, Location.</p>
+                                            <p className="text-xs text-gray-500 mt-1">(Location = page or URL)</p>
+                                        </div>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-lg">
+                                        <p className="font-bold text-blue-700 mb-2">Key Formatting:</p>
+                                        <ul className="text-gray-700 space-y-1">
+                                            <li>• Author: Last, First.</li>
+                                            <li>• Articles: "in quotes."</li>
+                                            <li>• Books/Containers: <em>Italics</em></li>
+                                            <li>• Date: Day Month Year</li>
+                                            <li className="text-xs text-gray-600 mt-2">• Month abbreviations: Jan., Feb., Mar., Apr., Aug., Sept., Oct., Nov., Dec.</li>
+                                        </ul>
+                                    </div>
+                                    <div className="bg-white p-4 rounded-lg">
+                                        <p className="font-bold text-pink-700 mb-2">"Et al." Rule:</p>
+                                        <ul className="text-gray-700 space-y-1">
+                                            <li>• 1-2 authors: List all</li>
+                                            <li className="text-xs text-gray-600 ml-3">Example: Dobson, Kit, and Smaro Kamboureli.</li>
+                                            <li>• 3+ authors: First author + et al.</li>
+                                            <li className="text-xs text-gray-600 ml-3">Example: Smith, John, et al.</li>
+                                            <li>• "et al." = "and others"</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            const CompletionScreen = () => {
+                const maxScore = (warmups.length * 20) + (knockoutRound.length * 30) + (finalRound.length * 75) + (bonusRound.length * 40) + (bonus2Round.length * 50) + (bonus3Round.length * 40) + (cooldownRound.length * 50);
+                const percentage = Math.round((score / maxScore) * 100);
+                let badge, emoji, message;
+
+                if (percentage >= 90) {
+                    badge = "Citation Champion";
+                    emoji = "🏆";
+                    message = "Outstanding! You've mastered MLA citations!";
+                } else if (percentage >= 75) {
+                    badge = "Citation Expert";
+                    emoji = "⭐";
+                    message = "Excellent work! You really know your citations!";
+                } else if (percentage >= 60) {
+                    badge = "Citation Scholar";
+                    emoji = "📚";
+                    message = "Great job! You're getting the hang of this!";
+                } else {
+                    badge = "Citation Learner";
+                    emoji = "✏️";
+                    message = "Keep practicing! You're making progress!";
+                }
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-blue-500 via-indigo-600 to-purple-700 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full animate-fadeIn">
+                            <div className="text-center">
+                                <div className="text-8xl mb-4 animate-pulse-slow">{emoji}</div>
+                                <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                                    Challenge Complete!
+                                </h1>
+                                <p className="text-sm font-semibold text-blue-500 tracking-wider uppercase mb-4">
+                                    MDID Digital Skills
+                                </p>
+                                <div className="text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
+                                    {score}
+                                </div>
+                                <p className="text-gray-600 mb-2">out of {maxScore} points ({percentage}%)</p>
+                                <p className="text-2xl text-gray-700 mb-6">{message}</p>
+                                
+                                <div className="bg-gradient-to-r from-blue-100 via-indigo-100 to-purple-100 rounded-xl p-6 mb-6 border-4 border-blue-300">
+                                    <p className="text-5xl mb-2">{emoji}</p>
+                                    <p className="text-xl font-bold text-gray-800 mb-1">{badge}</p>
+                                </div>
+                                
+                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 mb-6 text-left rounded">
+                                    <p className="font-semibold text-blue-900 mb-2">🎓 What You Mastered:</p>
+                                    <ul className="space-y-2 text-gray-700 text-sm">
+                                        <li>✓ MLA 9 Core Elements for different source types</li>
+                                        <li>✓ Books (single & multiple authors)</li>
+                                        <li>✓ Journal articles and websites</li>
+                                        <li>✓ Database sources (JSTOR)</li>
+                                        <li>✓ Social media (TikTok, Instagram, YouTube)</li>
+                                        <li>✓ AI tool citations (ChatGPT)</li>
+                                        <li>✓ Using "et al." for 3+ authors</li>
+                                        <li>✓ Works Cited alphabetical ordering</li>
+                                        <li>✓ MLA in-text citations</li>
+                                        <li>✓ Spotting citation errors</li>
+                                    </ul>
+                                </div>
+
+                                <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 mb-6">
+                                    <p className="text-gray-700 text-sm">
+                                        <strong className="text-yellow-700">💡 Pro Tip:</strong> When in doubt, remember the MLA core elements order: Author → Title → Container → (Other info) → Publisher → Date → Location. Use Purdue OWL for reference!
+                                    </p>
+                                </div>
+                                
+                                <div className="flex gap-4 justify-center flex-wrap">
+                                    <button
+                                        onClick={restart}
+                                        className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-8 py-3 rounded-xl font-bold hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105 transition-all flex items-center gap-2 shadow-lg"
+                                    >
+                                        <RefreshCw className="w-5 h-5" />
+                                        Practice Again
+                                    </button>
+                                    <button
+                                        onClick={() => window.location.href = '/'}
+                                        className="bg-gradient-to-r from-green-400 to-teal-500 text-white px-8 py-3 rounded-xl font-bold hover:from-green-500 hover:to-teal-600 transition-all transform hover:scale-105 shadow-lg"
+                                    >
+                                        More Modules
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            return (
+                <div>
+                    {currentScreen === 'welcome' && <WelcomeScreen />}
+                    {currentScreen === 'activity' && <ActivityScreen />}
+                    {currentScreen === 'completion' && <CompletionScreen />}
+                </div>
+            );
+        };
+
+        ReactDOM.render(<CitationModule />, document.getElementById('root'));
+    </script>
+</body>
+</html>

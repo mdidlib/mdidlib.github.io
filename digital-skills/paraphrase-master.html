@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paraphrase Master - MDID Digital Skills</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-out;
+        }
+        .text-highlight-red {
+            background-color: #fee2e2;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Icon components defined OUTSIDE the main component
+        const Edit = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+        );
+
+        const CheckCircle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+        );
+
+        const XCircle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="m15 9-6 6"/>
+                <path d="m9 9 6 6"/>
+            </svg>
+        );
+
+        const AlertTriangle = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+        );
+
+        const Lightbulb = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+                <path d="M9 18h6"/>
+                <path d="M10 22h4"/>
+            </svg>
+        );
+
+        const RefreshCw = ({ className }) => (
+            <svg className={className} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                <path d="M8 16H3v5"/>
+            </svg>
+        );
+
+        // Challenges data defined OUTSIDE the component
+        const challenges = [
+            {
+                id: 1,
+                level: "Beginner",
+                original: "The honeybee population has declined by 40% over the past decade due to pesticides, habitat loss, and disease.",
+                keyPhrases: ["honeybee population", "declined by 40%", "past decade", "pesticides", "habitat loss", "disease"],
+                goodExample: "In the last ten years, nearly half of all honeybees have died because of chemicals used in farming, loss of places to live, and illnesses.",
+                badExample: "The honeybee population has decreased by 40% in the last ten years because of pesticides, habitat loss, and disease.",
+                hints: [
+                    "Change the sentence structure - start differently",
+                    "Use different words: 'declined' could be 'decreased', 'dropped', 'fallen'",
+                    "Break the long sentence into smaller ones",
+                    "Express the percentage differently: '40%' = 'nearly half'"
+                ]
+            },
+            {
+                id: 2,
+                level: "Beginner",
+                original: "Social media algorithms are designed to keep users engaged by showing them content similar to what they've liked before, creating echo chambers.",
+                keyPhrases: ["social media algorithms", "keep users engaged", "content similar", "liked before", "creating echo chambers"],
+                goodExample: "Apps like Instagram and TikTok show you more of what you already like to keep you scrolling, which means you mostly see opinions you already agree with.",
+                badExample: "Social media algorithms keep users engaged by displaying content similar to what they previously liked, which creates echo chambers.",
+                hints: [
+                    "Use specific examples instead of general terms: name actual apps",
+                    "Explain 'echo chambers' in simpler words",
+                    "Change passive voice to active",
+                    "Make it more conversational"
+                ]
+            },
+            {
+                id: 3,
+                level: "Intermediate",
+                original: "Research indicates that regular physical exercise significantly improves cognitive function, particularly in areas related to memory and executive function.",
+                keyPhrases: ["research indicates", "regular physical exercise", "significantly improves", "cognitive function", "memory", "executive function"],
+                goodExample: "Studies show that working out consistently makes your brain work better, especially with remembering things and making decisions.",
+                badExample: "Studies show that regular physical exercise significantly enhances cognitive function, especially in memory and executive function areas.",
+                hints: [
+                    "Simplify academic language: 'cognitive function' → 'how your brain works'",
+                    "Break into 2-3 shorter sentences",
+                    "Use everyday words: 'executive function' → 'making decisions'",
+                    "Explain the concepts more clearly"
+                ]
+            },
+            {
+                id: 4,
+                level: "Intermediate",
+                original: "The Industrial Revolution, which began in Britain in the late 18th century, fundamentally transformed society by shifting from agrarian economies to industrial manufacturing.",
+                keyPhrases: ["Industrial Revolution", "late 18th century", "Britain", "transformed society", "agrarian economies", "industrial manufacturing"],
+                goodExample: "Starting in the 1700s in Britain, factories replaced farms as the main way people made a living. This major shift completely changed how society was organized.",
+                badExample: "The Industrial Revolution started in Britain in the late 1700s and fundamentally changed society by moving from farming economies to factory manufacturing.",
+                hints: [
+                    "Reorder the information - start with when/where",
+                    "Use simpler words: 'agrarian' → 'farming'",
+                    "Show cause and effect more clearly",
+                    "Break the long sentence apart"
+                ]
+            },
+            {
+                id: 5,
+                level: "Advanced",
+                original: "Contemporary neuroscientific research utilizing functional magnetic resonance imaging has demonstrated that multilingual individuals exhibit enhanced executive control and cognitive flexibility compared to monolingual subjects.",
+                keyPhrases: ["neuroscientific research", "functional magnetic resonance imaging", "multilingual individuals", "enhanced executive control", "cognitive flexibility", "monolingual subjects"],
+                goodExample: "Brain scans show that people who speak multiple languages are better at controlling their thoughts and adapting to new situations than people who only speak one language.",
+                badExample: "Recent brain research using fMRI shows that multilingual people have better executive control and cognitive flexibility than monolingual people.",
+                hints: [
+                    "Translate technical jargon into everyday language",
+                    "Break the super-long sentence into 2-3 sentences",
+                    "Explain what the findings mean",
+                    "Focus on the main point: multilingual = better brain skills"
+                ]
+            }
+        ];
+
+        // Analysis function defined OUTSIDE the component
+        // Check if text is topically relevant to the original
+        const checkTopicRelevance = (original, userText) => {
+            const originalLower = original.toLowerCase();
+            const userLower = userText.toLowerCase();
+            
+            // Extract key content words from original (nouns, verbs - words >4 chars that aren't common)
+            const commonWords = ['the', 'and', 'that', 'this', 'with', 'have', 'been', 'from', 'they', 'their', 'which', 'about', 'would', 'there', 'could', 'other', 'than', 'into', 'more', 'some', 'very', 'when', 'what', 'your'];
+            
+            const getContentWords = (text) => {
+                return text.split(/\s+/)
+                    .map(w => w.replace(/[.,!?;:'"]/g, ''))
+                    .filter(w => w.length > 4 && !commonWords.includes(w));
+            };
+            
+            const originalContentWords = getContentWords(originalLower);
+            const userContentWords = getContentWords(userLower);
+            
+            // Check if user text shares any topic-related words
+            let topicMatches = 0;
+            originalContentWords.forEach(word => {
+                // Check for exact matches or related forms (plural, etc.)
+                if (userContentWords.some(uWord => 
+                    uWord === word || 
+                    uWord.includes(word.slice(0, -1)) || 
+                    word.includes(uWord.slice(0, -1))
+                )) {
+                    topicMatches++;
+                }
+            });
+            
+            // If less than 10% of original content words have any form of match, it's likely off-topic
+            const relevanceRatio = topicMatches / Math.max(originalContentWords.length, 1);
+            return relevanceRatio >= 0.1;
+        };
+
+        const analyzeParaphrase = (original, userText, challenge) => {
+            const trimmedText = userText.trim();
+            const wordCount = trimmedText.split(/\s+/).filter(w => w.length > 0).length;
+            
+            if (!trimmedText || wordCount < 1) {
+                return { score: 0, issues: ['empty'], matchedPhrases: [], quality: 'none' };
+            }
+
+            if (wordCount < 8) {
+                return { 
+                    score: 0, 
+                    issues: ['too_short'], 
+                    matchedPhrases: [], 
+                    quality: 'poor',
+                    message: `You only wrote ${wordCount} word${wordCount === 1 ? '' : 's'}. A good paraphrase needs at least 8-10 words to capture the full meaning.`
+                };
+            }
+
+            const originalLower = original.toLowerCase();
+            const userLower = trimmedText.toLowerCase();
+            const goodExampleLower = (challenge.goodExample || '').toLowerCase();
+
+            // Check if user copied the example
+            const exampleWords = goodExampleLower.split(/\s+/).filter(w => w.length > 3);
+            const userWords = trimmedText.toLowerCase().split(/\s+/).filter(w => w.length > 3);
+            let exampleMatchCount = 0;
+            exampleWords.forEach(word => {
+                if (userWords.includes(word)) exampleMatchCount++;
+            });
+            const exampleSimilarity = exampleMatchCount / Math.max(exampleWords.length, 1);
+            
+            if (exampleSimilarity > 0.6) {
+                return {
+                    score: 0,
+                    issues: ['copied_example'],
+                    matchedPhrases: [],
+                    quality: 'fail',
+                    message: "This is too similar to the provided example. Try writing your own unique paraphrase!"
+                };
+            }
+            
+            // Check topic relevance
+            if (!checkTopicRelevance(original, trimmedText)) {
+                return {
+                    score: 0,
+                    issues: ['off_topic'],
+                    matchedPhrases: [],
+                    quality: 'poor',
+                    message: "Your paraphrase doesn't seem to be about the same topic. Make sure to capture the main ideas from the original text."
+                };
+            }
+
+            if (userLower === originalLower) {
+                return { score: 0, issues: ['exact_copy'], matchedPhrases: [], quality: 'fail' };
+            }
+
+            const originalWords = original.toLowerCase().split(/\s+/);
+            
+            let matchingWords = 0;
+            userWords.forEach(word => {
+                if (originalWords.includes(word) && word.length > 3) {
+                    matchingWords++;
+                }
+            });
+            const similarityRatio = matchingWords / userWords.length;
+
+            const matchedPhrases = [];
+            for (let i = 0; i < userWords.length - 2; i++) {
+                for (let j = 0; j < originalWords.length - 2; j++) {
+                    const userPhrase = userWords.slice(i, i + 3).join(' ');
+                    const origPhrase = originalWords.slice(j, j + 3).join(' ');
+                    if (userPhrase === origPhrase && userPhrase.length > 10) {
+                        const displayPhrase = trimmedText.split(/\s+/).slice(i, i + 3).join(' ');
+                        if (!matchedPhrases.includes(displayPhrase)) {
+                            matchedPhrases.push(displayPhrase);
+                        }
+                    }
+                }
+            }
+
+            const keyPhrasesUsed = challenge.keyPhrases.filter(phrase => 
+                userLower.includes(phrase.toLowerCase())
+            );
+
+            let quality = 'excellent';
+            let scoreValue = 100;
+            let issues = [];
+
+            if (matchedPhrases.length > 2) {
+                quality = 'poor';
+                scoreValue = 30;
+                issues.push('too_similar');
+            } else if (matchedPhrases.length > 0) {
+                quality = 'okay';
+                scoreValue = 60;
+                issues.push('some_phrases');
+            }
+
+            if (keyPhrasesUsed.length > challenge.keyPhrases.length * 0.5) {
+                if (quality === 'excellent') quality = 'okay';
+                scoreValue = Math.min(scoreValue, 70);
+                issues.push('too_many_original_words');
+            }
+
+            if (similarityRatio > 0.7) {
+                quality = 'poor';
+                scoreValue = Math.min(scoreValue, 40);
+                issues.push('too_similar');
+            } else if (similarityRatio > 0.5 && quality === 'excellent') {
+                quality = 'good';
+                scoreValue = 80;
+            }
+
+            if (matchedPhrases.length === 0 && similarityRatio < 0.4 && wordCount >= 10) {
+                quality = 'excellent';
+                scoreValue = 100;
+            } else if (matchedPhrases.length === 0 && similarityRatio < 0.5 && wordCount >= 8) {
+                if (quality !== 'poor') {
+                    quality = 'good';
+                    scoreValue = Math.max(scoreValue, 80);
+                }
+            }
+
+            return {
+                score: scoreValue,
+                quality,
+                matchedPhrases,
+                keyPhrasesUsed: keyPhrasesUsed.length,
+                wordCount,
+                similarityRatio: Math.round(similarityRatio * 100),
+                issues
+            };
+        };
+
+        const ParaphraseModule = () => {
+            const [currentScreen, setCurrentScreen] = useState('welcome');
+            const [currentChallenge, setCurrentChallenge] = useState(0);
+            const [userText, setUserText] = useState('');
+            const [score, setScore] = useState(0);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [analysis, setAnalysis] = useState(null);
+            const [showHint, setShowHint] = useState(false);
+            const [showExample, setShowExample] = useState(false);
+
+            const challenge = challenges[currentChallenge];
+
+            const handleSubmit = () => {
+                const result = analyzeParaphrase(challenge.original, userText, challenge);
+                setAnalysis(result);
+                setShowFeedback(true);
+                if (result.quality === 'excellent' || result.quality === 'good') {
+                    setScore(score + result.score);
+                }
+            };
+
+            const nextChallenge = () => {
+                if (currentChallenge < challenges.length - 1) {
+                    setCurrentChallenge(currentChallenge + 1);
+                    setUserText('');
+                    setShowFeedback(false);
+                    setAnalysis(null);
+                    setShowHint(false);
+                    setShowExample(false);
+                } else {
+                    setCurrentScreen('completion');
+                }
+            };
+
+            const restart = () => {
+                setCurrentScreen('welcome');
+                setCurrentChallenge(0);
+                setUserText('');
+                setScore(0);
+                setShowFeedback(false);
+                setAnalysis(null);
+                setShowHint(false);
+                setShowExample(false);
+            };
+
+            // WELCOME SCREEN
+            if (currentScreen === 'welcome') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 flex items-center justify-center p-4">
+                        <div className="absolute top-4 left-4">
+                            <a href="./" className="bg-white text-orange-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md">
+                                ← Back to Modules
+                            </a>
+                        </div>
+                        
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full animate-fadeIn">
+                            <div className="text-center">
+                                <div className="inline-block p-4 bg-gradient-to-br from-orange-400 to-red-500 rounded-full mb-4">
+                                    <Edit className="w-16 h-16 text-white" />
+                                </div>
+                                <h1 className="text-5xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2">
+                                    Paraphrase Master
+                                </h1>
+                                <p className="text-sm font-semibold text-orange-500 tracking-wider uppercase mb-4">
+                                    MDID Digital Skills
+                                </p>
+                                <p className="text-xl text-gray-600 mb-6">
+                                    Avoid Plagiarism Challenge
+                                </p>
+                                <div className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300 rounded-xl p-6 mb-6 text-left">
+                                    <p className="text-gray-700 mb-4">
+                                        <strong className="text-orange-600">🎯 Your Mission:</strong> Learn to paraphrase correctly by putting information into your own words without copying!
+                                    </p>
+                                    <div className="bg-white rounded-lg p-4">
+                                        <p className="font-semibold text-gray-800 mb-2">What you'll master:</p>
+                                        <ul className="space-y-2 text-gray-700 text-sm">
+                                            <li>✔ How to put ideas in your own words</li>
+                                            <li>✔ Avoiding plagiarism</li>
+                                            <li>✔ The "Read, Cover, Write" method</li>
+                                            <li>✔ Getting instant feedback!</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div className="bg-yellow-50 border-2 border-yellow-300 rounded-xl p-4 mb-6">
+                                    <p className="text-gray-700">
+                                        <strong className="text-yellow-700">💡 Remember:</strong> Good paraphrasing means changing BOTH the words AND the sentence structure!
+                                    </p>
+                                </div>
+                                <p className="text-gray-600 mb-6">
+                                    5 Challenges • <strong>20 minutes</strong> • Beginner to Advanced
+                                </p>
+                                <button
+                                    onClick={() => setCurrentScreen('activity')}
+                                    className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-10 py-4 rounded-xl text-xl font-bold hover:from-orange-600 hover:to-red-700 transform hover:scale-105 transition-all shadow-lg"
+                                >
+                                    🚀 Start Practicing!
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // COMPLETION SCREEN
+            if (currentScreen === 'completion') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full">
+                            <div className="text-center">
+                                <div className="text-6xl mb-4">🏆</div>
+                                <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-4">
+                                    Congratulations!
+                                </h1>
+                                <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                                    You're a Paraphrasing Pro!
+                                </h2>
+                                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border-2 border-yellow-400 rounded-xl p-6 mb-6">
+                                    <p className="text-5xl font-bold text-orange-600 mb-2">{score}</p>
+                                    <p className="text-xl text-gray-700">Total Points</p>
+                                </div>
+                                <div className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-300 rounded-xl p-6 mb-6 text-left">
+                                    <p className="font-semibold text-orange-900 mb-3">✅ Remember These Rules:</p>
+                                    <ul className="space-y-2 text-gray-700 text-sm">
+                                        <li>✔ Change both words AND sentence structure</li>
+                                        <li>✔ Use the "Read, Cover, Write" method</li>
+                                        <li>✔ Avoid copying 3+ words in a row</li>
+                                        <li>✔ Always cite your sources!</li>
+                                    </ul>
+                                </div>
+                                <div className="flex gap-4 justify-center">
+                                    <button
+                                        onClick={restart}
+                                        className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-8 py-3 rounded-xl font-bold hover:from-orange-600 hover:to-red-700 flex items-center gap-2"
+                                    >
+                                        <RefreshCw className="w-5 h-5" />
+                                        Practice Again
+                                    </button>
+                                    <button
+                                        onClick={() => window.location.href = '/'}
+                                        className="bg-gradient-to-r from-blue-400 to-indigo-500 text-white px-8 py-3 rounded-xl font-bold"
+                                    >
+                                        More Modules
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // ACTIVITY SCREEN (default)
+            return (
+                <div className="min-h-screen bg-gray-100 p-4 py-8">
+                    <div className="max-w-4xl mx-auto mb-4">
+                        <a href="./" className="inline-block bg-white text-orange-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md">
+                            ← Back to Modules
+                        </a>
+                    </div>
+                    
+                    <div className="max-w-4xl mx-auto">
+                        {/* Progress Header */}
+                        <div className="bg-white rounded-lg shadow p-4 mb-6">
+                            <div className="flex items-center justify-between mb-2">
+                                <div>
+                                    <span className="text-sm font-semibold text-gray-600">
+                                        Challenge {currentChallenge + 1} of {challenges.length}
+                                    </span>
+                                    <span className={`ml-3 px-3 py-1 rounded-full text-xs font-bold ${
+                                        challenge.level === 'Beginner' ? 'bg-green-100 text-green-700' :
+                                        challenge.level === 'Intermediate' ? 'bg-yellow-100 text-yellow-700' :
+                                        'bg-red-100 text-red-700'
+                                    }`}>
+                                        {challenge.level}
+                                    </span>
+                                </div>
+                                <span className="text-sm font-semibold text-orange-600">
+                                    Score: {score} points
+                                </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-3">
+                                <div 
+                                    className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 h-3 rounded-full transition-all duration-500"
+                                    style={{ width: `${((currentChallenge + 1) / challenges.length) * 100}%` }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Original Text */}
+                        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                            <h3 className="text-xl font-bold text-gray-800 mb-3">📖 Original Text</h3>
+                            <div className="bg-gray-50 border-2 border-gray-300 rounded-lg p-4">
+                                <p className="text-gray-800 leading-relaxed italic">"{challenge.original}"</p>
+                            </div>
+                            <p className="text-sm text-gray-500 mt-2">
+                                ⬆️ Read this carefully, then write it in your own words below!
+                            </p>
+                        </div>
+
+                        {/* User Input */}
+                        <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+                            <h3 className="text-xl font-bold text-gray-800 mb-3">✍️ Your Paraphrase</h3>
+                            <textarea
+                                value={userText}
+                                onChange={(e) => setUserText(e.target.value)}
+                                placeholder="Write the same idea in your own words here..."
+                                className="w-full h-32 px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none resize-none"
+                                disabled={showFeedback && analysis && analysis.quality === 'excellent'}
+                            />
+                            <div className="flex items-center justify-between mt-3">
+                                <p className="text-sm text-gray-500">
+                                    {userText.split(/\s+/).filter(w => w).length} words
+                                </p>
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={!userText.trim() || (showFeedback && analysis && (analysis.quality === 'excellent' || analysis.quality === 'good'))}
+                                    className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-6 py-2 rounded-lg font-bold hover:from-orange-600 hover:to-red-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    Check My Work
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Help Buttons */}
+                        {!showFeedback && (
+                            <div className="flex gap-3 justify-center mb-6">
+                                <button
+                                    onClick={() => setShowHint(!showHint)}
+                                    className="text-orange-600 hover:text-orange-700 font-semibold flex items-center gap-2"
+                                >
+                                    <Lightbulb className="w-5 h-5" />
+                                    {showHint ? 'Hide Hints' : '💡 Need Hints?'}
+                                </button>
+                                <button
+                                    onClick={() => setShowExample(!showExample)}
+                                    className="text-blue-600 hover:text-blue-700 font-semibold"
+                                >
+                                    {showExample ? 'Hide Examples' : '👀 See Examples?'}
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Hints */}
+                        {showHint && !showFeedback && (
+                            <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-300 rounded-lg p-4 mb-6">
+                                <p className="font-semibold text-orange-800 mb-2">💡 Hints:</p>
+                                <ul className="space-y-2">
+                                    {challenge.hints.map((hint, idx) => (
+                                        <li key={idx} className="text-orange-700 text-sm">{idx + 1}. {hint}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        {/* Examples */}
+                        {showExample && !showFeedback && (
+                            <div className="grid md:grid-cols-2 gap-4 mb-6">
+                                <div className="bg-gradient-to-br from-red-50 to-pink-50 border-2 border-red-300 rounded-lg p-4">
+                                    <p className="font-bold text-red-700 mb-2">❌ Bad Example:</p>
+                                    <p className="text-sm text-gray-700 italic">"{challenge.badExample}"</p>
+                                    <p className="text-xs text-red-600 mt-2">Too close to the original!</p>
+                                </div>
+                                <div className="bg-gradient-to-br from-green-50 to-teal-50 border-2 border-green-300 rounded-lg p-4">
+                                    <p className="font-bold text-green-700 mb-2">✅ Good Example:</p>
+                                    <p className="text-sm text-gray-700 italic">"{challenge.goodExample}"</p>
+                                    <p className="text-xs text-green-600 mt-2">New words AND structure!</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Feedback */}
+                        {showFeedback && analysis && (
+                            <div className="bg-white rounded-lg shadow-lg p-6">
+                                {analysis.quality === 'excellent' && (
+                                    <div className="text-center">
+                                        <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                                        <h3 className="text-2xl font-bold text-green-700 mb-2">🎉 Excellent!</h3>
+                                        <p className="text-gray-700 mb-4">Your paraphrase is great! +100 points!</p>
+                                        <button onClick={nextChallenge} className="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 rounded-lg font-bold">
+                                            {currentChallenge < challenges.length - 1 ? '➡️ Next Challenge' : '🏆 See Results!'}
+                                        </button>
+                                    </div>
+                                )}
+                                {analysis.quality === 'good' && (
+                                    <div className="text-center">
+                                        <CheckCircle className="w-16 h-16 text-blue-500 mx-auto mb-4" />
+                                        <h3 className="text-2xl font-bold text-blue-700 mb-2">👍 Good Job!</h3>
+                                        <p className="text-gray-700 mb-4">Nice paraphrasing! +{analysis.score} points!</p>
+                                        <button onClick={nextChallenge} className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white py-3 rounded-lg font-bold">
+                                            {currentChallenge < challenges.length - 1 ? '➡️ Next Challenge' : '🏆 See Results!'}
+                                        </button>
+                                    </div>
+                                )}
+                                {(analysis.quality === 'okay' || analysis.quality === 'poor') && (
+                                    <div className="text-center">
+                                        <AlertTriangle className="w-16 h-16 text-orange-500 mx-auto mb-4" />
+                                        <h3 className="text-2xl font-bold text-orange-700 mb-2">
+                                            {analysis.issues?.includes('too_short') ? '📏 Too Short!' : 
+                                             analysis.issues?.includes('off_topic') ? '🎯 Off Topic!' : 'Almost There!'}
+                                        </h3>
+                                        <p className="text-gray-700 mb-4">
+                                            {analysis.message || "Your paraphrase is too similar to the original. Try changing the sentence structure more!"}
+                                        </p>
+                                        {analysis.matchedPhrases && analysis.matchedPhrases.length > 0 && (
+                                            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                                                <p className="text-sm font-semibold text-red-700 mb-1">Copied phrases:</p>
+                                                <div className="flex flex-wrap gap-2 justify-center">
+                                                    {analysis.matchedPhrases.map((phrase, idx) => (
+                                                        <span key={idx} className="text-xs bg-red-200 text-red-800 px-2 py-1 rounded">"{phrase}"</span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                        <button onClick={() => { setShowFeedback(false); setAnalysis(null); }} className="w-full bg-gradient-to-r from-orange-500 to-red-600 text-white py-3 rounded-lg font-bold">
+                                            Try Again
+                                        </button>
+                                    </div>
+                                )}
+                                {analysis.quality === 'fail' && (
+                                    <div className="text-center">
+                                        <XCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+                                        <h3 className="text-2xl font-bold text-red-700 mb-2">
+                                            {analysis.issues?.includes('copied_example') ? '📋 Don\'t Copy the Example!' : 'That\'s Plagiarism!'}
+                                        </h3>
+                                        <p className="text-gray-700 mb-4">
+                                            {analysis.message || 'You copied the original exactly. Use your own words!'}
+                                        </p>
+                                        <button onClick={() => { setShowFeedback(false); setAnalysis(null); setUserText(''); }} className="w-full bg-gradient-to-r from-red-500 to-pink-600 text-white py-3 rounded-lg font-bold">
+                                            Start Over
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<ParaphraseModule />, document.getElementById('root'));
+    </script>
+</body>
+</html>
