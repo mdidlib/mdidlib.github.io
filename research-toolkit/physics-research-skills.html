@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Skills for Science - Physics</title>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #faf9f7; }
+        .font-serif { font-family: 'Instrument Serif', Georgia, serif; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out; }
+        .animate-slideIn { animation: slideIn 0.3s ease-out; }
+        .progress-bar { transition: width 0.5s ease-out; }
+        .option-btn { transition: all 0.2s ease; }
+        .option-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState } = React;
+
+        const ChevronRight = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>;
+        const ChevronLeft = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>;
+        const CheckCircle = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+        const XCircle = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 9l-6 6M9 9l6 6" /></svg>;
+        const Atom = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2" strokeWidth={2} /><ellipse cx="12" cy="12" rx="10" ry="4" strokeWidth={2} /><ellipse cx="12" cy="12" rx="10" ry="4" strokeWidth={2} transform="rotate(60 12 12)" /><ellipse cx="12" cy="12" rx="10" ry="4" strokeWidth={2} transform="rotate(120 12 12)" /></svg>;
+        const RefreshCw = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>;
+        const Lightbulb = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>;
+        const Target = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth={2} /><circle cx="12" cy="12" r="6" strokeWidth={2} /><circle cx="12" cy="12" r="2" strokeWidth={2} /></svg>;
+        const AlertTriangle = ({ className }) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>;
+
+        const PhysicsResearchModule = () => {
+            const [screen, setScreen] = useState('welcome');
+            const [currentStep, setCurrentStep] = useState(0);
+            const [score, setScore] = useState(0);
+            const [selectedAnswer, setSelectedAnswer] = useState(null);
+            const [showFeedback, setShowFeedback] = useState(false);
+            const [isCorrect, setIsCorrect] = useState(false);
+            const [attempts, setAttempts] = useState(0);
+            const [showHint, setShowHint] = useState(false);
+            const [triedAnswers, setTriedAnswers] = useState([]);
+            const [completedSteps, setCompletedSteps] = useState([]);
+
+            const totalPoints = 150;
+
+            const steps = [
+                // SECTION 1: SOURCE RELIABILITY
+                {
+                    id: 'reliable-1',
+                    section: 'Source Reliability',
+                    type: 'content',
+                    title: 'What Makes a Source Reliable?',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                When you're researching for a science assignment, not every website or article 
+                                you find is worth using. Some sources are <span className="font-semibold text-cyan-700">reliable</span> (trustworthy), 
+                                while others are <span className="font-semibold text-red-600">unreliable</span> (not trustworthy).
+                            </p>
+                            <div className="bg-cyan-50 border-l-4 border-cyan-500 p-5 rounded-r-lg">
+                                <p className="font-semibold text-cyan-800 mb-2">🔍 A reliable source has:</p>
+                                <ul className="space-y-2 text-cyan-700">
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-cyan-500" />
+                                        <span><strong>A known author</strong> — you can find out who wrote it and their qualifications</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-cyan-500" />
+                                        <span><strong>Evidence and sources</strong> — claims are backed up with data or references</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-cyan-500" />
+                                        <span><strong>Balanced information</strong> — presents facts, not just one strong opinion</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-cyan-500" />
+                                        <span><strong>Recent information</strong> — especially important for science topics</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div className="bg-red-50 border border-red-200 rounded-xl p-5">
+                                <p className="font-semibold text-red-800 mb-2">⚠️ Warning signs of an unreliable source:</p>
+                                <ul className="space-y-1 text-red-700 text-sm">
+                                    <li>• No author name or anonymous</li>
+                                    <li>• Very emotional language ("SHOCKING!" "They don't want you to know!")</li>
+                                    <li>• No sources or evidence provided</li>
+                                    <li>• Trying to sell you something</li>
+                                    <li>• Only presents one extreme viewpoint</li>
+                                </ul>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'reliable-2',
+                    section: 'Source Reliability',
+                    type: 'content',
+                    title: 'A Real Example: The Solar Power Assignment',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Let's say you're writing a paper about <span className="font-semibold text-cyan-700">solar energy</span>. 
+                                You search online and find these two sources:
+                            </p>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="bg-red-50 border-2 border-red-300 rounded-xl p-5">
+                                    <div className="text-2xl mb-2">❌</div>
+                                    <h4 className="font-semibold text-red-800 mb-2">Source A: "Solar Panels Are a SCAM!"</h4>
+                                    <ul className="text-red-700 text-sm space-y-1">
+                                        <li>• Written by "Anonymous Energy Truth Seeker"</li>
+                                        <li>• Uses phrases like "the government is LYING"</li>
+                                        <li>• No data or scientific references</li>
+                                        <li>• Ends with "Buy my book to learn the REAL truth"</li>
+                                    </ul>
+                                    <p className="mt-3 text-red-800 font-medium text-sm">🚫 This is NOT a good source!</p>
+                                </div>
+                                <div className="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-5">
+                                    <div className="text-2xl mb-2">✅</div>
+                                    <h4 className="font-semibold text-emerald-800 mb-2">Source B: "Solar Panel Efficiency Study"</h4>
+                                    <ul className="text-emerald-700 text-sm space-y-1">
+                                        <li>• Written by Dr. Sarah Chen, Energy Research Institute</li>
+                                        <li>• Published in <em>Journal of Renewable Energy</em></li>
+                                        <li>• Includes data tables and graphs</li>
+                                        <li>• Discusses both benefits AND limitations</li>
+                                    </ul>
+                                    <p className="mt-3 text-emerald-800 font-medium text-sm">✓ This IS a good source!</p>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <p className="text-amber-800">
+                                    <strong>💡 Key lesson:</strong> Just because a website mentions your topic (like "solar power") 
+                                    doesn't mean it's a good source. You need to check WHO wrote it, WHETHER they provide evidence, 
+                                    and IF they're trying to inform you or convince you of an extreme opinion.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-1',
+                    section: 'Source Reliability',
+                    type: 'quiz',
+                    title: 'Spot the Reliable Source',
+                    question: 'You\'re researching hydroelectric power for physics class. Which source should you use?',
+                    options: [
+                        { id: 'a', text: 'A blog post titled "10 Reasons Why Dams Are DESTROYING Our Planet" with no author listed' },
+                        { id: 'b', text: 'An article from the U.S. Department of Energy explaining how hydroelectric plants work, with diagrams and data' },
+                        { id: 'c', text: 'A YouTube comment saying "my uncle worked at a dam and he said they\'re really efficient"' },
+                        { id: 'd', text: 'A website selling solar panels that says "hydroelectric is outdated — buy our panels instead!"' }
+                    ],
+                    correct: 'b',
+                    explanation: 'The Department of Energy article is the best choice because it\'s from an official government source, has a clear author/organization, includes data and diagrams, and is designed to inform rather than sell or persuade emotionally.',
+                    wrongFeedback: 'Look for sources from established organizations, with clear authors, that include data and evidence. Be wary of sources with no author, emotional language, or that are trying to sell something.',
+                    hint: 'Which source comes from an established organization and includes actual data?',
+                    points: 15
+                },
+                {
+                    id: 'reliable-3',
+                    section: 'Source Reliability',
+                    type: 'content',
+                    title: 'Quick Checklist: Is This Source Good?',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Before you use ANY source, run through this quick checklist:
+                            </p>
+                            <div className="bg-white border-2 border-cyan-200 rounded-xl p-6">
+                                <h4 className="font-semibold text-cyan-800 mb-4 text-lg">🔎 The 5-Point Source Check</h4>
+                                <div className="space-y-4">
+                                    {[
+                                        { q: 'Who wrote this?', good: 'Named expert or organization', bad: 'Anonymous or unknown' },
+                                        { q: 'Why was it written?', good: 'To inform or educate', bad: 'To sell something or push an agenda' },
+                                        { q: 'Is there evidence?', good: 'Data, studies, references', bad: 'Just opinions, no proof' },
+                                        { q: 'Is it balanced?', good: 'Shows multiple perspectives', bad: 'Only one extreme view' },
+                                        { q: 'Is it current?', good: 'Recent (for science topics)', bad: 'Very outdated information' }
+                                    ].map((item, i) => (
+                                        <div key={i} className="flex items-start gap-4 p-3 bg-gray-50 rounded-lg">
+                                            <div className="w-8 h-8 bg-cyan-500 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0">
+                                                {i + 1}
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-medium text-gray-900">{item.q}</p>
+                                                <div className="flex gap-4 mt-1 text-sm">
+                                                    <span className="text-emerald-600">✓ {item.good}</span>
+                                                    <span className="text-red-600">✗ {item.bad}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )
+                },
+                // SECTION 2: SCIENTIFIC SOURCES
+                {
+                    id: 'science-1',
+                    section: 'Scientific Sources',
+                    type: 'content',
+                    title: 'What Makes a Source "Scientific"?',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                For a physics paper, you need more than just "reliable" sources — you need 
+                                <span className="font-semibold text-indigo-700"> scientific sources</span>. These are a special 
+                                category of sources that have been checked by other scientists.
+                            </p>
+                            <div className="bg-indigo-50 border-l-4 border-indigo-500 p-5 rounded-r-lg">
+                                <p className="font-semibold text-indigo-800 mb-2">🔬 What is Peer Review?</p>
+                                <p className="text-indigo-700">
+                                    Before a scientific paper is published in a journal, other scientists (the "peers") 
+                                    read it carefully to check if the methods are correct and the conclusions make sense. 
+                                    This is called <strong>peer review</strong>, and it's like having your work checked by experts 
+                                    before it gets published.
+                                </p>
+                            </div>
+                            <div className="bg-white border border-gray-200 rounded-xl p-6">
+                                <h4 className="font-semibold text-gray-800 mb-4">Types of Scientific Sources (Best → Okay → Not Scientific)</h4>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                                        <span className="text-2xl">🥇</span>
+                                        <div>
+                                            <p className="font-semibold text-emerald-800">Peer-Reviewed Journals</p>
+                                            <p className="text-emerald-700 text-sm">The gold standard. Examples: <em>Physical Review Letters</em>, <em>Nature Physics</em></p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                        <span className="text-2xl">🥈</span>
+                                        <div>
+                                            <p className="font-semibold text-blue-800">Government & University Sources</p>
+                                            <p className="text-blue-700 text-sm">NASA, CERN, MIT — official research institutions</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                                        <span className="text-2xl">🥉</span>
+                                        <div>
+                                            <p className="font-semibold text-amber-800">Science News (with caution)</p>
+                                            <p className="text-amber-700 text-sm">Scientific American, New Scientist — okay for background, but check the original study</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                                        <span className="text-2xl">🚫</span>
+                                        <div>
+                                            <p className="font-semibold text-red-800">NOT Scientific Sources</p>
+                                            <p className="text-red-700 text-sm">Wikipedia (for final paper), random blogs, social media, "alternative science" websites</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'science-2',
+                    section: 'Scientific Sources',
+                    type: 'content',
+                    title: 'Where to Find Scientific Sources',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                You can't just Google "physics stuff" and expect to find peer-reviewed papers. 
+                                Here's where to actually look:
+                            </p>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="text-2xl mb-2">🎓</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">Google Scholar</h4>
+                                    <p className="text-gray-600 text-sm">scholar.google.com — searches only academic sources. Free and easy to use!</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="text-2xl mb-2">📚</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">Your School Library</h4>
+                                    <p className="text-gray-600 text-sm">Access to databases like ProQuest — ask your librarian for help!</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="text-2xl mb-2">🚀</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">NASA & Government Sites</h4>
+                                    <p className="text-gray-600 text-sm">nasa.gov, energy.gov — reliable for physics and energy topics</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+                                    <div className="text-2xl mb-2">⚛️</div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">Physics Organizations</h4>
+                                    <p className="text-gray-600 text-sm">CERN, American Physical Society — official physics research</p>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <p className="text-amber-800">
+                                    <strong>💡 Wikipedia tip:</strong> Wikipedia itself isn't a scientific source for your paper, 
+                                    BUT you can use it to understand a topic and then look at the references at the bottom — 
+                                    those often link to real scientific sources!
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-2',
+                    section: 'Scientific Sources',
+                    type: 'quiz',
+                    title: 'Scientific or Not?',
+                    question: 'Which of these would be the BEST source for a physics paper about black holes?',
+                    options: [
+                        { id: 'a', text: 'A peer-reviewed article from The Astrophysical Journal' },
+                        { id: 'b', text: 'A Wikipedia article about black holes' },
+                        { id: 'c', text: 'A YouTube video titled "BLACK HOLES: What Scientists Won\'t Tell You!"' },
+                        { id: 'd', text: 'A post on Reddit\'s r/space forum' }
+                    ],
+                    correct: 'a',
+                    explanation: 'The Astrophysical Journal is a peer-reviewed scientific journal — the best type of source for a science paper. Wikipedia is good for learning but shouldn\'t be cited. YouTube and Reddit are not scientific sources.',
+                    wrongFeedback: 'For a scientific paper, you need peer-reviewed sources. These are articles that have been checked by other scientists before publication.',
+                    hint: 'Remember: peer-reviewed journals are the "gold standard" for scientific sources.',
+                    points: 15
+                },
+                {
+                    id: 'quiz-3',
+                    section: 'Scientific Sources',
+                    type: 'quiz',
+                    title: 'Understanding Peer Review',
+                    question: 'What does "peer-reviewed" mean?',
+                    options: [
+                        { id: 'a', text: 'The article was reviewed by your classmates (peers)' },
+                        { id: 'b', text: 'Other scientists read and checked the research before it was published' },
+                        { id: 'c', text: 'The article got a lot of likes on social media' },
+                        { id: 'd', text: 'The author reviewed their own work carefully' }
+                    ],
+                    correct: 'b',
+                    explanation: 'Peer review means other experts in the field (scientist "peers") carefully examined the research methods, data, and conclusions before the paper was allowed to be published. This helps catch errors and ensures quality.',
+                    wrongFeedback: 'Peer review is a quality check done by other scientists in the same field — not by classmates, social media users, or the author themselves.',
+                    hint: 'Think about who the "peers" would be for a scientist...',
+                    points: 15
+                },
+                // SECTION 3: SCIENCE MYTHS
+                {
+                    id: 'myths-1',
+                    section: 'Science Myths',
+                    type: 'content',
+                    title: 'How to Spot Pseudoscience',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                <span className="font-semibold text-purple-700">Pseudoscience</span> means "fake science" — 
+                                claims that sound scientific but aren't actually based on real evidence. 
+                                As a science student, you need to be able to tell the difference!
+                            </p>
+                            <div className="bg-purple-50 border-l-4 border-purple-500 p-5 rounded-r-lg">
+                                <p className="font-semibold text-purple-800 mb-3">🚨 Red Flags of Pseudoscience:</p>
+                                <div className="space-y-3">
+                                    {[
+                                        { flag: 'Claims to be "censored" or "hidden"', example: '"Scientists don\'t want you to know this!"' },
+                                        { flag: 'No peer-reviewed evidence', example: 'Just testimonials or "my friend tried it"' },
+                                        { flag: 'Violates basic physics laws', example: '"Free energy machine!" (violates thermodynamics)' },
+                                        { flag: 'One person against all experts', example: '"Only I have discovered the truth!"' },
+                                        { flag: 'Uses scientific words incorrectly', example: '"Quantum healing vibrations"' }
+                                    ].map((item, i) => (
+                                        <div key={i} className="flex items-start gap-3 bg-white p-3 rounded-lg">
+                                            <AlertTriangle className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                                            <div>
+                                                <p className="font-medium text-purple-800">{item.flag}</p>
+                                                <p className="text-purple-600 text-sm italic">{item.example}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'myths-2',
+                    section: 'Science Myths',
+                    type: 'content',
+                    title: 'Famous Science Myths (Debunked!)',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                Let's look at some popular myths and why they're wrong:
+                            </p>
+                            <div className="space-y-4">
+                                <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                                    <div className="bg-red-100 px-5 py-3 border-b border-gray-200">
+                                        <span className="font-semibold text-red-800">🌍 Myth: "The Earth is Flat"</span>
+                                    </div>
+                                    <div className="p-5">
+                                        <p className="text-gray-600 text-sm mb-2"><strong>Why it's wrong:</strong> Photos from space, ships disappearing over the horizon bottom-first, different star constellations at different latitudes, and 2,000+ years of scientific evidence.</p>
+                                        <p className="text-gray-600 text-sm"><strong>Red flag:</strong> Claims all space agencies worldwide are lying, with no explanation why.</p>
+                                    </div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                                    <div className="bg-red-100 px-5 py-3 border-b border-gray-200">
+                                        <span className="font-semibold text-red-800">🔋 Myth: "Perpetual Motion Machines Work"</span>
+                                    </div>
+                                    <div className="p-5">
+                                        <p className="text-gray-600 text-sm mb-2"><strong>Why it's wrong:</strong> Violates laws of thermodynamics. Energy cannot be created from nothing — every machine loses energy to friction and heat.</p>
+                                        <p className="text-gray-600 text-sm"><strong>Red flag:</strong> "Free energy" claims always fail under scientific testing.</p>
+                                    </div>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+                                    <div className="bg-red-100 px-5 py-3 border-b border-gray-200">
+                                        <span className="font-semibold text-red-800">💉 Myth: "Vaccines Cause Autism"</span>
+                                    </div>
+                                    <div className="p-5">
+                                        <p className="text-gray-600 text-sm mb-2"><strong>Why it's wrong:</strong> The original study was fraudulent, the doctor lost his license, and dozens of studies with millions of children found NO link.</p>
+                                        <p className="text-gray-600 text-sm"><strong>Red flag:</strong> One discredited study vs. overwhelming scientific consensus.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-4',
+                    section: 'Science Myths',
+                    type: 'quiz',
+                    title: 'Spot the Pseudoscience',
+                    question: 'Which of these is a RED FLAG that suggests something might be pseudoscience?',
+                    options: [
+                        { id: 'a', text: 'The research was published in a peer-reviewed journal' },
+                        { id: 'b', text: 'Multiple independent studies found similar results' },
+                        { id: 'c', text: 'The website claims "scientists are hiding the truth"' },
+                        { id: 'd', text: 'The article explains both the benefits and limitations' }
+                    ],
+                    correct: 'c',
+                    explanation: 'Claims that scientists are "hiding" something is a classic pseudoscience red flag. Real science is published openly in journals for everyone to check. Peer review, multiple studies agreeing, and balanced presentation are signs of GOOD science.',
+                    wrongFeedback: 'Pseudoscience often claims to be "suppressed" or "hidden" by mainstream scientists. Real science is transparent and open to testing.',
+                    hint: 'What would a fake science website say to explain why most scientists disagree with them?',
+                    points: 15
+                },
+                {
+                    id: 'quiz-5',
+                    section: 'Science Myths',
+                    type: 'quiz',
+                    title: 'Why Perpetual Motion is Impossible',
+                    question: 'Someone shows you a video of a "perpetual motion machine" that runs forever without energy input. Why should you be skeptical?',
+                    options: [
+                        { id: 'a', text: 'Because videos can\'t be trusted' },
+                        { id: 'b', text: 'Because it violates the laws of thermodynamics — energy cannot be created from nothing' },
+                        { id: 'c', text: 'Because only scientists can build machines' },
+                        { id: 'd', text: 'Because perpetual motion was already invented 100 years ago' }
+                    ],
+                    correct: 'b',
+                    explanation: 'The laws of thermodynamics tell us that energy cannot be created or destroyed, only converted. Every machine loses some energy to friction and heat. A perpetual motion machine would need to create energy from nothing, which is physically impossible.',
+                    wrongFeedback: 'Think about what you know about energy from physics class. Can energy be created from nothing?',
+                    hint: 'What do the laws of thermodynamics say about energy?',
+                    points: 15
+                },
+                // SECTION 4: MLA CITATIONS
+                {
+                    id: 'mla-1',
+                    section: 'MLA Citations',
+                    type: 'content',
+                    title: 'Why We Cite Sources',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                When you use information from a source in your paper, you need to tell your reader 
+                                where it came from. This is called <span className="font-semibold text-rose-700">citing your sources</span>.
+                            </p>
+                            <div className="bg-rose-50 border-l-4 border-rose-500 p-5 rounded-r-lg">
+                                <p className="font-semibold text-rose-800 mb-3">📝 Why cite? Three big reasons:</p>
+                                <div className="space-y-2 text-rose-700">
+                                    <div className="flex items-start gap-2">
+                                        <span className="font-bold">1.</span>
+                                        <span><strong>Give credit</strong> — The original author did the work. Acknowledge them!</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <span className="font-bold">2.</span>
+                                        <span><strong>Prove it's real</strong> — Your reader can check your sources themselves</span>
+                                    </div>
+                                    <div className="flex items-start gap-2">
+                                        <span className="font-bold">3.</span>
+                                        <span><strong>Avoid plagiarism</strong> — Using others' work without credit is a serious offense</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                                <p className="text-amber-800">
+                                    <strong>⚠️ What is plagiarism?</strong> Plagiarism is using someone else's words or ideas 
+                                    and pretending they're your own. Even if you paraphrase (rewrite in your own words), 
+                                    you still need to cite the source of the idea!
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'mla-2',
+                    section: 'MLA Citations',
+                    type: 'content',
+                    title: 'The Two Parts of MLA Citation',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                MLA citation has <span className="font-semibold text-rose-700">TWO parts</span> that work together. 
+                                You need BOTH!
+                            </p>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="bg-blue-50 border-2 border-blue-300 rounded-xl p-5">
+                                    <div className="text-3xl mb-2">1️⃣</div>
+                                    <h4 className="font-semibold text-blue-800 text-lg mb-2">In-Text Citation</h4>
+                                    <p className="text-blue-700 mb-3">A short note IN your paper, right after you use information from a source.</p>
+                                    <div className="bg-white rounded-lg p-3 text-sm">
+                                        <p className="text-gray-700">Example:</p>
+                                        <p className="text-gray-800 mt-1">
+                                            Black holes can have a mass millions of times greater than our sun 
+                                            <span className="bg-blue-200 px-1 rounded">(NASA)</span>.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="bg-emerald-50 border-2 border-emerald-300 rounded-xl p-5">
+                                    <div className="text-3xl mb-2">2️⃣</div>
+                                    <h4 className="font-semibold text-emerald-800 text-lg mb-2">Works Cited Page</h4>
+                                    <p className="text-emerald-700 mb-3">A complete list at the END of your paper with full details of every source.</p>
+                                    <div className="bg-white rounded-lg p-3 text-sm">
+                                        <p className="text-gray-700">Example entry:</p>
+                                        <p className="text-gray-800 mt-1">
+                                            NASA. "Black Holes." <em>NASA Science</em>, 2024, science.nasa.gov/black-holes.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-rose-50 border border-rose-200 rounded-xl p-5">
+                                <p className="font-semibold text-rose-800 mb-2">🔗 The Connection:</p>
+                                <p className="text-rose-700">
+                                    The in-text citation <span className="bg-rose-200 px-1 rounded">(NASA)</span> is like a signpost that says 
+                                    "go look at the Works Cited page for more details." Every in-text citation 
+                                    must match an entry on your Works Cited page!
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'mla-3',
+                    section: 'MLA Citations',
+                    type: 'content',
+                    title: 'How to Write In-Text Citations',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                In-text citations are simple: <span className="font-semibold text-rose-700">(Author's Last Name + Page Number)</span>
+                            </p>
+                            <div className="space-y-4">
+                                <div className="bg-white border border-gray-200 rounded-xl p-5">
+                                    <p className="font-semibold text-gray-800 mb-3">📖 If the source has an author:</p>
+                                    <div className="bg-gray-50 rounded-lg p-4">
+                                        <p className="text-gray-700">
+                                            The speed of light is approximately 300,000 km/s 
+                                            <span className="bg-rose-100 px-1 rounded">(Smith 42)</span>.
+                                        </p>
+                                    </div>
+                                    <p className="text-gray-500 text-sm mt-2">→ Author's last name + page number, NO comma</p>
+                                </div>
+                                <div className="bg-white border border-gray-200 rounded-xl p-5">
+                                    <p className="font-semibold text-gray-800 mb-3">🏢 If it's an organization (no individual author):</p>
+                                    <div className="bg-gray-50 rounded-lg p-4">
+                                        <p className="text-gray-700">
+                                            Black holes were first predicted by Einstein's theory 
+                                            <span className="bg-rose-100 px-1 rounded">(NASA)</span>.
+                                        </p>
+                                    </div>
+                                    <p className="text-gray-500 text-sm mt-2">→ Just the organization name (no page number for websites)</p>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-6',
+                    section: 'MLA Citations',
+                    type: 'quiz',
+                    title: 'In-Text Citation Practice',
+                    question: 'You\'re citing page 87 of a book by Dr. James Wong. Which is the correct MLA in-text citation?',
+                    options: [
+                        { id: 'a', text: '(Wong, 87)' },
+                        { id: 'b', text: '(Wong 87)' },
+                        { id: 'c', text: '(Dr. Wong, p. 87)' },
+                        { id: 'd', text: '(James Wong 87)' }
+                    ],
+                    correct: 'b',
+                    explanation: 'MLA format uses (Last Name Page Number) with NO comma and NO "p." for page. First names and titles like "Dr." are not used in in-text citations.',
+                    wrongFeedback: 'MLA in-text citations are simple: just the last name and page number, no comma between them, no "p." or "pg."',
+                    hint: 'MLA keeps it simple: last name + page number, nothing else.',
+                    points: 15
+                },
+                {
+                    id: 'quiz-7',
+                    section: 'MLA Citations',
+                    type: 'quiz',
+                    title: 'Connecting In-Text and Works Cited',
+                    question: 'You see this in-text citation: (Martinez 23). What should you find on the Works Cited page?',
+                    options: [
+                        { id: 'a', text: 'Nothing — in-text citations are separate from Works Cited' },
+                        { id: 'b', text: 'A complete entry for a source by someone with the last name Martinez' },
+                        { id: 'c', text: 'Only the page number 23' },
+                        { id: 'd', text: 'A website called "Martinez"' }
+                    ],
+                    correct: 'b',
+                    explanation: 'Every in-text citation must match an entry on your Works Cited page! The "(Martinez 23)" tells readers to look for a source by Martinez in the Works Cited, where they\'ll find the full details.',
+                    wrongFeedback: 'In-text citations and Works Cited entries are connected — they work together!',
+                    hint: 'The in-text citation is like a shortcut that points to the full information somewhere...',
+                    points: 15
+                },
+                // SECTION 5: AI IN RESEARCH
+                {
+                    id: 'ai-1',
+                    section: 'AI in Research',
+                    type: 'content',
+                    title: 'AI Tools: Helpful but Limited',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                AI tools like ChatGPT and Claude can be <span className="font-semibold text-teal-700">genuinely helpful</span> for 
+                                learning — but they have serious limitations you need to understand.
+                            </p>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                                    <p className="font-semibold text-emerald-800 mb-3">✅ AI CAN help with:</p>
+                                    <ul className="space-y-2 text-emerald-700 text-sm">
+                                        <li>• Explaining difficult concepts in simple terms</li>
+                                        <li>• Brainstorming ideas for your paper</li>
+                                        <li>• Checking your grammar and writing</li>
+                                        <li>• Suggesting what to search for</li>
+                                        <li>• Helping you understand what you've read</li>
+                                    </ul>
+                                </div>
+                                <div className="bg-red-50 border border-red-200 rounded-xl p-5">
+                                    <p className="font-semibold text-red-800 mb-3">❌ AI CANNOT reliably:</p>
+                                    <ul className="space-y-2 text-red-700 text-sm">
+                                        <li>• Give you accurate citations (often made up!)</li>
+                                        <li>• Tell you current facts (knowledge cutoff)</li>
+                                        <li>• Replace doing your own research</li>
+                                        <li>• Guarantee any fact is correct</li>
+                                        <li>• Write your paper for you (that's cheating!)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="bg-amber-50 border-l-4 border-amber-500 p-5 rounded-r-lg">
+                                <p className="font-semibold text-amber-800 mb-2">⚠️ The Big Problem: AI Makes Stuff Up!</p>
+                                <p className="text-amber-700">
+                                    AI tools sometimes "hallucinate" — they generate information that sounds real but is 
+                                    completely false. They can invent fake citations, fake studies, and fake facts. 
+                                    <strong> Always verify everything AI tells you!</strong>
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'ai-2',
+                    section: 'AI in Research',
+                    type: 'content',
+                    title: 'NEVER Trust AI Citations',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                This is so important it gets its own section: 
+                                <span className="font-semibold text-red-700"> AI tools frequently make up fake citations!</span>
+                            </p>
+                            <div className="bg-red-50 border-2 border-red-300 rounded-xl p-6">
+                                <div className="flex items-start gap-4">
+                                    <AlertTriangle className="w-8 h-8 text-red-500 flex-shrink-0" />
+                                    <div>
+                                        <p className="font-semibold text-red-800 text-lg mb-2">Real Example of AI Hallucination</p>
+                                        <p className="text-red-700 mb-3">
+                                            If you ask ChatGPT for a source about black holes, it might generate:
+                                        </p>
+                                        <div className="bg-white rounded-lg p-4 border border-red-200">
+                                            <p className="text-gray-800 text-sm font-mono">
+                                                Johnson, M. & Williams, K. (2022). "Gravitational Effects of Supermassive Black Holes." 
+                                                <em>Journal of Astrophysical Research</em>, 45(3), 234-251.
+                                            </p>
+                                        </div>
+                                        <p className="text-red-700 mt-3 font-medium">
+                                            ⚠️ This looks real, but the authors, journal, and article might ALL be completely invented!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                                <p className="font-semibold text-emerald-800 mb-2">✅ What to do instead:</p>
+                                <ol className="space-y-2 text-emerald-700">
+                                    <li><strong>1.</strong> Use Google Scholar or databases to find REAL sources</li>
+                                    <li><strong>2.</strong> If AI mentions a source, search for it yourself to verify it exists</li>
+                                    <li><strong>3.</strong> Only cite sources you have actually found and read</li>
+                                </ol>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-8',
+                    section: 'AI in Research',
+                    type: 'quiz',
+                    title: 'AI Citation Warning',
+                    question: 'You ask ChatGPT to give you sources for a physics paper, and it provides a detailed citation. What should you do?',
+                    options: [
+                        { id: 'a', text: 'Use it directly in your paper — AI is always accurate' },
+                        { id: 'b', text: 'Search for that source in Google Scholar to verify it actually exists before using it' },
+                        { id: 'c', text: 'Trust it because it has specific details like page numbers' },
+                        { id: 'd', text: 'Ask the AI if the source is real (it will tell you honestly)' }
+                    ],
+                    correct: 'b',
+                    explanation: 'AI often invents fake citations that look real! The only way to know if a source is real is to search for it yourself in Google Scholar or a database. If you can\'t find it, it probably doesn\'t exist.',
+                    wrongFeedback: 'Remember: AI frequently "hallucinates" fake citations. Specific details don\'t mean it\'s real — you must verify!',
+                    hint: 'How can you prove a source actually exists?',
+                    points: 15
+                },
+                {
+                    id: 'ai-3',
+                    section: 'AI in Research',
+                    type: 'content',
+                    title: 'Using AI Ethically',
+                    content: (
+                        <div className="space-y-6">
+                            <p className="text-lg text-gray-700 leading-relaxed">
+                                AI can be a useful tool, but you need to use it <span className="font-semibold text-teal-700">honestly</span>:
+                            </p>
+                            <div className="space-y-4">
+                                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                                    <p className="font-semibold text-emerald-800 mb-3">✅ Acceptable Uses:</p>
+                                    <ul className="space-y-2 text-emerald-700">
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-emerald-500" />
+                                            <span>"Explain Newton's Third Law in simple terms" — <em>Learning help</em></span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-emerald-500" />
+                                            <span>"What are good search terms for renewable energy?" — <em>Research guidance</em></span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <CheckCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-emerald-500" />
+                                            <span>"Check my paragraph for grammar errors" — <em>Proofreading</em></span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div className="bg-red-50 border border-red-200 rounded-xl p-5">
+                                    <p className="font-semibold text-red-800 mb-3">❌ NOT Acceptable (Cheating!):</p>
+                                    <ul className="space-y-2 text-red-700">
+                                        <li className="flex items-start gap-2">
+                                            <XCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" />
+                                            <span>"Write my physics paper about black holes" — <em>Having AI do your work</em></span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <XCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" />
+                                            <span>"Give me citations for my paper" — <em>Using potentially fake sources</em></span>
+                                        </li>
+                                        <li className="flex items-start gap-2">
+                                            <XCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" />
+                                            <span>Copying AI text without saying so — <em>Plagiarism</em></span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div className="bg-teal-50 border border-teal-200 rounded-xl p-5">
+                                <p className="text-teal-800">
+                                    <strong>🎯 The simple test:</strong> Are YOU doing the learning and thinking? 
+                                    If AI is just helping you understand, that's fine. If AI is doing the actual work, that's cheating.
+                                </p>
+                            </div>
+                        </div>
+                    )
+                },
+                {
+                    id: 'quiz-9',
+                    section: 'AI in Research',
+                    type: 'quiz',
+                    title: 'Ethical AI Use',
+                    question: 'Which is an ACCEPTABLE way to use AI for a physics assignment?',
+                    options: [
+                        { id: 'a', text: 'Ask AI to write your conclusion paragraph' },
+                        { id: 'b', text: 'Ask AI to explain a concept, then write about it in your own words' },
+                        { id: 'c', text: 'Copy AI text into your paper without citation' },
+                        { id: 'd', text: 'Ask AI to give you all your sources and citations' }
+                    ],
+                    correct: 'b',
+                    explanation: 'Using AI to help you understand something is like asking a tutor — that\'s fine! The key is that YOU then do the writing and thinking. Having AI write your paper or using AI citations are forms of cheating.',
+                    wrongFeedback: 'AI should help you learn, not do your work for you. Which option involves YOU doing the learning and writing?',
+                    hint: 'Which option involves YOU doing the actual learning and writing?',
+                    points: 15
+                }
+            ];
+
+            const currentStepData = steps[currentStep];
+            const totalSteps = steps.length;
+            const progressPercent = ((currentStep + 1) / totalSteps) * 100;
+
+            const getSectionColor = () => {
+                if (!currentStepData) return 'cyan';
+                const section = currentStepData.section;
+                if (section === 'Source Reliability') return 'cyan';
+                if (section === 'Scientific Sources') return 'indigo';
+                if (section === 'Science Myths') return 'purple';
+                if (section === 'MLA Citations') return 'rose';
+                if (section === 'AI in Research') return 'teal';
+                return 'cyan';
+            };
+
+            const sectionColor = getSectionColor();
+
+            const resetQuiz = () => {
+                setSelectedAnswer(null);
+                setShowFeedback(false);
+                setIsCorrect(false);
+                setAttempts(0);
+                setShowHint(false);
+                setTriedAnswers([]);
+            };
+
+            const handleNext = () => {
+                if (currentStep < totalSteps - 1) {
+                    setCurrentStep(currentStep + 1);
+                    resetQuiz();
+                } else {
+                    setScreen('complete');
+                }
+            };
+
+            const handlePrev = () => {
+                if (currentStep > 0) {
+                    setCurrentStep(currentStep - 1);
+                    resetQuiz();
+                }
+            };
+
+            const handleAnswerSelect = (id) => {
+                if (showFeedback) return;
+                if (triedAnswers.includes(id)) return;
+                setSelectedAnswer(id);
+            };
+
+            const checkAnswer = () => {
+                if (!selectedAnswer) return;
+                const correct = selectedAnswer === currentStepData.correct;
+                setIsCorrect(correct);
+                setShowFeedback(true);
+                
+                if (correct) {
+                    let earnedPoints;
+                    if (attempts === 0) earnedPoints = currentStepData.points;
+                    else if (attempts === 1) earnedPoints = Math.floor(currentStepData.points * 0.75);
+                    else if (attempts === 2) earnedPoints = Math.floor(currentStepData.points * 0.5);
+                    else earnedPoints = Math.floor(currentStepData.points * 0.25);
+                    setScore(score + earnedPoints);
+                    setCompletedSteps([...completedSteps, currentStepData.id]);
+                } else {
+                    setTriedAnswers([...triedAnswers, selectedAnswer]);
+                    setAttempts(attempts + 1);
+                }
+            };
+
+            const handleTryAgain = () => {
+                setShowFeedback(false);
+                setSelectedAnswer(null);
+                setShowHint(true);
+            };
+
+            const restart = () => {
+                setScreen('welcome');
+                setCurrentStep(0);
+                setScore(0);
+                setSelectedAnswer(null);
+                setShowFeedback(false);
+                setIsCorrect(false);
+                setAttempts(0);
+                setShowHint(false);
+                setTriedAnswers([]);
+                setCompletedSteps([]);
+            };
+
+            if (screen === 'welcome') {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-cyan-600 via-teal-600 to-emerald-700 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 lg:p-12 max-w-3xl w-full animate-fadeIn">
+                            <div className="text-center">
+                                <div className="w-20 h-20 bg-cyan-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                                    <Atom className="w-10 h-10 text-cyan-600" />
+                                </div>
+                                <p className="text-sm font-semibold text-cyan-600 uppercase tracking-wider mb-2">Physics Class</p>
+                                <h1 className="text-4xl lg:text-5xl font-serif text-gray-900 mb-4">Research Skills for Science</h1>
+                                <p className="text-xl text-gray-600 mb-8 leading-relaxed">
+                                    Learn to find reliable sources, spot pseudoscience, cite correctly, 
+                                    and use AI tools responsibly for your physics assignments.
+                                </p>
+                                
+                                <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
+                                    <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                        <Target className="w-5 h-5 text-cyan-600" />
+                                        What you'll learn:
+                                    </h3>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        {[
+                                            { n: '1', title: 'Source Reliability', desc: 'Evaluate trustworthiness', color: 'cyan' },
+                                            { n: '2', title: 'Scientific Sources', desc: 'Find peer-reviewed research', color: 'indigo' },
+                                            { n: '3', title: 'Science Myths', desc: 'Spot pseudoscience', color: 'purple' },
+                                            { n: '4', title: 'MLA Citations', desc: 'In-text & Works Cited', color: 'rose' },
+                                            { n: '5', title: 'AI in Research', desc: 'Use AI ethically', color: 'teal' }
+                                        ].map((item) => (
+                                            <div key={item.n} className="flex items-start gap-3">
+                                                <div className={`w-8 h-8 bg-${item.color}-100 rounded-lg flex items-center justify-center flex-shrink-0`}>
+                                                    <span className={`text-${item.color}-700 font-bold text-sm`}>{item.n}</span>
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-gray-900 text-sm">{item.title}</p>
+                                                    <p className="text-gray-500 text-xs">{item.desc}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                <div className="flex items-center justify-center gap-6 text-sm text-gray-500 mb-8">
+                                    <span className="flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        ~45 minutes
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                        9 quizzes
+                                    </span>
+                                    <span className="flex items-center gap-2">
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                        {totalPoints} points
+                                    </span>
+                                </div>
+                                
+                                <button onClick={() => setScreen('learn')} className="bg-cyan-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-cyan-700 transition-all transform hover:scale-105 shadow-lg inline-flex items-center gap-2">
+                                    Start Learning
+                                    <ChevronRight className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            if (screen === 'complete') {
+                const percentage = Math.round((score / totalPoints) * 100);
+                let badge, emoji, message;
+                if (percentage >= 90) { badge = "Science Research Expert"; emoji = "🏆"; message = "Outstanding! You've mastered these research skills."; }
+                else if (percentage >= 75) { badge = "Skilled Researcher"; emoji = "⭐"; message = "Great work! You have solid research skills."; }
+                else if (percentage >= 60) { badge = "Developing Scientist"; emoji = "📚"; message = "Good progress! Review tricky sections."; }
+                else { badge = "Research Apprentice"; emoji = "🌱"; message = "Keep practicing!"; }
+
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-cyan-600 via-teal-600 to-emerald-700 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 lg:p-12 max-w-2xl w-full animate-fadeIn">
+                            <div className="text-center">
+                                <div className="text-7xl mb-4">{emoji}</div>
+                                <p className="text-sm font-semibold text-cyan-600 uppercase tracking-wider mb-2">Module Complete!</p>
+                                <h1 className="text-4xl font-serif text-gray-900 mb-2">Research Skills for Science</h1>
+                                <div className="my-8">
+                                    <div className="text-6xl font-bold text-cyan-600">{score}<span className="text-2xl text-gray-400">/{totalPoints}</span></div>
+                                    <p className="text-gray-500 mt-1">{percentage}% Score</p>
+                                </div>
+                                <div className="bg-cyan-50 rounded-xl p-6 mb-6 inline-block">
+                                    <p className="text-cyan-800 font-semibold text-lg">{badge}</p>
+                                    <p className="text-cyan-600 text-sm mt-1">{message}</p>
+                                </div>
+                                <div className="bg-gray-50 rounded-xl p-6 mb-8 text-left">
+                                    <h3 className="font-semibold text-gray-900 mb-4">🎓 What you learned:</h3>
+                                    <ul className="space-y-2 text-gray-700">
+                                        <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-cyan-500 flex-shrink-0 mt-0.5" /><span>How to identify reliable vs. unreliable sources</span></li>
+                                        <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-cyan-500 flex-shrink-0 mt-0.5" /><span>What makes a source "scientific" (peer review!)</span></li>
+                                        <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-cyan-500 flex-shrink-0 mt-0.5" /><span>How to spot pseudoscience and science myths</span></li>
+                                        <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-cyan-500 flex-shrink-0 mt-0.5" /><span>MLA in-text citations and Works Cited pages</span></li>
+                                        <li className="flex items-start gap-2"><CheckCircle className="w-5 h-5 text-cyan-500 flex-shrink-0 mt-0.5" /><span>How to use AI tools ethically in research</span></li>
+                                    </ul>
+                                </div>
+                                <div className="flex gap-4 justify-center flex-wrap">
+                                    <button onClick={restart} className="flex items-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-colors">
+                                        <RefreshCw className="w-5 h-5" />
+                                        Try Again
+                                    </button>
+                                    <a href="https://mdid.info/library" className="flex items-center gap-2 px-6 py-3 bg-cyan-600 text-white rounded-xl font-semibold hover:bg-cyan-700 transition-colors">
+                                        Visit Library
+                                        <ChevronRight className="w-5 h-5" />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+                        <div className="max-w-4xl mx-auto px-4 py-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                    <button onClick={() => setScreen('welcome')} className="text-gray-400 hover:text-gray-600"><ChevronLeft className="w-5 h-5" /></button>
+                                    <div>
+                                        <p className="text-xs text-gray-500 uppercase tracking-wider">Physics Research Skills</p>
+                                        <h1 className="font-semibold text-gray-900">{currentStepData?.section}</h1>
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-sm font-semibold text-cyan-600">{score} pts</p>
+                                    <p className="text-xs text-gray-500">of {totalPoints}</p>
+                                </div>
+                            </div>
+                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div className="h-full progress-bar rounded-full bg-cyan-500" style={{ width: `${progressPercent}%` }}></div>
+                            </div>
+                            <div className="flex justify-between mt-1">
+                                <span className="text-xs text-gray-500">Step {currentStep + 1} of {totalSteps}</span>
+                                <span className="text-xs text-gray-500">{Math.round(progressPercent)}%</span>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="max-w-4xl mx-auto px-4 py-8">
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 lg:p-8 animate-fadeIn" key={currentStep}>
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className={`text-xs font-semibold px-3 py-1 rounded-full ${currentStepData?.type === 'quiz' ? 'bg-amber-100 text-amber-700' : 'bg-cyan-100 text-cyan-700'}`}>
+                                    {currentStepData?.type === 'quiz' ? '✏️ Quiz' : '📖 Learn'}
+                                </span>
+                            </div>
+                            <h2 className="text-2xl lg:text-3xl font-serif text-gray-900 mb-6">{currentStepData?.title}</h2>
+
+                            {currentStepData?.type === 'content' ? (
+                                <div>{currentStepData.content}</div>
+                            ) : (
+                                <div className="space-y-6">
+                                    <p className="text-lg text-gray-700">{currentStepData?.question}</p>
+                                    {showHint && currentStepData?.hint && (
+                                        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3 animate-slideIn">
+                                            <Lightbulb className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                                            <p className="text-amber-800 text-sm"><strong>Hint:</strong> {currentStepData.hint}</p>
+                                        </div>
+                                    )}
+                                    <div className="space-y-3">
+                                        {currentStepData?.options?.map((option) => {
+                                            const isTriedAnswer = triedAnswers.includes(option.id);
+                                            const isCurrentWrongAnswer = showFeedback && option.id === selectedAnswer && !isCorrect;
+                                            let btnClass = "w-full text-left p-4 rounded-xl border-2 transition-all option-btn ";
+                                            if (isTriedAnswer && !showFeedback) btnClass += "border-gray-200 bg-gray-100 opacity-60 cursor-not-allowed";
+                                            else if (isCurrentWrongAnswer) btnClass += "border-red-500 bg-red-50";
+                                            else if (showFeedback && isCorrect && option.id === selectedAnswer) btnClass += "border-emerald-500 bg-emerald-50";
+                                            else if (showFeedback) btnClass += "border-gray-200 opacity-50";
+                                            else if (selectedAnswer === option.id) btnClass += "border-cyan-500 bg-cyan-50";
+                                            else btnClass += "border-gray-200 hover:border-gray-300 hover:bg-gray-50";
+                                            
+                                            return (
+                                                <button key={option.id} onClick={() => handleAnswerSelect(option.id)} disabled={showFeedback || isTriedAnswer} className={btnClass}>
+                                                    <div className="flex items-start gap-3">
+                                                        <span className={`w-7 h-7 rounded-full border-2 flex items-center justify-center flex-shrink-0 text-sm font-semibold ${
+                                                            isTriedAnswer && !showFeedback ? 'bg-gray-400 border-gray-400 text-white' :
+                                                            isCurrentWrongAnswer ? 'bg-red-500 border-red-500 text-white' :
+                                                            showFeedback && isCorrect && option.id === selectedAnswer ? 'bg-emerald-500 border-emerald-500 text-white' :
+                                                            selectedAnswer === option.id ? 'bg-cyan-500 border-cyan-500 text-white' : 'border-gray-300 text-gray-500'
+                                                        }`}>{option.id.toUpperCase()}</span>
+                                                        <span className={`pt-0.5 ${isTriedAnswer && !showFeedback ? 'text-gray-400 line-through' : 'text-gray-700'}`}>{option.text}</span>
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    {!showFeedback && selectedAnswer && (
+                                        <button onClick={checkAnswer} className="bg-cyan-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-cyan-700">Check Answer</button>
+                                    )}
+                                    {showFeedback && isCorrect && (
+                                        <div className="p-5 rounded-xl animate-fadeIn bg-emerald-50 border border-emerald-200">
+                                            <div className="flex items-start gap-3">
+                                                <CheckCircle className="w-6 h-6 text-emerald-500 flex-shrink-0" />
+                                                <div>
+                                                    <p className="font-semibold text-emerald-800">Correct!</p>
+                                                    <p className="mt-1 text-sm text-emerald-700">{currentStepData.explanation}</p>
+                                                    <p className="mt-2 text-emerald-600 font-semibold text-sm">
+                                                        +{attempts === 0 ? currentStepData.points : attempts === 1 ? Math.floor(currentStepData.points * 0.75) : attempts === 2 ? Math.floor(currentStepData.points * 0.5) : Math.floor(currentStepData.points * 0.25)} points
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {showFeedback && !isCorrect && (
+                                        <div className="p-5 rounded-xl animate-fadeIn bg-red-50 border border-red-200">
+                                            <div className="flex items-start gap-3">
+                                                <XCircle className="w-6 h-6 text-red-500 flex-shrink-0" />
+                                                <div className="flex-1">
+                                                    <p className="font-semibold text-red-800">Not quite right</p>
+                                                    <p className="mt-1 text-sm text-red-700">{currentStepData.wrongFeedback}</p>
+                                                    <button onClick={handleTryAgain} className="mt-3 flex items-center gap-2 bg-red-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-red-700">
+                                                        <RefreshCw className="w-4 h-4" />Try Again
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
+                                <button onClick={handlePrev} disabled={currentStep === 0} className={`flex items-center gap-2 px-4 py-2 rounded-lg ${currentStep === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}>
+                                    <ChevronLeft className="w-5 h-5" />Previous
+                                </button>
+                                <button onClick={handleNext} disabled={currentStepData?.type === 'quiz' && !(showFeedback && isCorrect)} className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold ${currentStepData?.type === 'quiz' && !(showFeedback && isCorrect) ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-cyan-600 text-white hover:bg-cyan-700'}`}>
+                                    {currentStep === totalSteps - 1 ? 'Complete' : 'Continue'}<ChevronRight className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<PhysicsResearchModule />, document.getElementById('root'));
+    </script>
+</body>
+</html>
