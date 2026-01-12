@@ -109,6 +109,13 @@
             const [attempts, setAttempts] = useState(0);
             const [shuffledElements, setShuffledElements] = useState([]);
             const [selectedAnswer, setSelectedAnswer] = useState(null);
+            
+            // Final challenge state
+            const [finalChallengePartAInputs, setFinalChallengePartAInputs] = useState(['', '', '', '']);
+            const [finalChallengePartAResults, setFinalChallengePartAResults] = useState([null, null, null, null]);
+            const [finalChallengePartBInputs, setFinalChallengePartBInputs] = useState(['', '', '']);
+            const [finalChallengePartBResults, setFinalChallengePartBResults] = useState([null, null, null]);
+            const [finalChallengeSubPhase, setFinalChallengeSubPhase] = useState('partA'); // 'partA' or 'partB'
 
             // MLA Core Elements for reference
             const coreElements = [
@@ -503,6 +510,97 @@
                 }
             ];
 
+            // ROUND 8: Final Challenge - Type your own citations
+            // Part A: In-text citations in context (4 blanks)
+            // Part B: Build Works Cited entries (3 entries)
+            const finalChallengeRound = {
+                partA: {
+                    title: "Final Challenge Part A: In-Text Citations",
+                    instruction: "Read the paragraph below and type the correct in-text citation in each blank. Use the Works Cited entries at the bottom as your reference.",
+                    paragraph: [
+                        { type: "text", content: "Climate change poses significant threats to coastal communities worldwide. According to recent research, " },
+                        { type: "blank", id: 0, correctAnswer: "Cornwell and Dickens 57" },
+                        { type: "text", content: " rising sea levels could displace millions of people by 2050. Environmental scientists have documented alarming patterns of glacier retreat " },
+                        { type: "blank", id: 1, correctAnswer: "Rodriguez" },
+                        { type: "text", content: ". Some reports suggest that " },
+                        { type: "blank", id: 2, correctAnswer: "\"Global Warming\"" },
+                        { type: "text", content: " the Arctic ice sheet has lost nearly 30% of its volume since 1980. Thompson argues that immediate action is essential, noting that \"we have perhaps a decade to make meaningful changes\" " },
+                        { type: "blank", id: 3, correctAnswer: "142" },
+                        { type: "text", content: "." }
+                    ],
+                    worksCited: [
+                        "Cornwell, Patricia, and Charles Dickens. Climate and Coastal Communities: A Comprehensive Study. Oxford UP, 2023.",
+                        "\"Global Warming and Ice Loss.\" Environmental Watch, 15 Mar. 2024, www.envwatch.org/ice-loss.",
+                        "Rodriguez, Maria. \"Glacier Retreat Patterns in the 21st Century.\" NASA Climate, 8 Jan. 2024, climate.nasa.gov/glaciers.",
+                        "Thompson, James. The Climate Emergency: What We Must Do Now. Penguin, 2023."
+                    ],
+                    hints: [
+                        "Two authors with a page number: Author1 and Author2 Page",
+                        "Web source with author, no page: just the author's last name",
+                        "No author - use shortened title in quotes",
+                        "Author mentioned in sentence - just the page number"
+                    ],
+                    points: 30
+                },
+                partB: {
+                    title: "Final Challenge Part B: Build Works Cited Entries",
+                    instruction: "Using the source information provided, type the complete MLA Works Cited entry. Pay attention to punctuation, italics (use underscores like _Title_ for italics), and the order of elements.",
+                    challenges: [
+                        {
+                            id: 0,
+                            sourceType: "Book with One Author",
+                            sourceInfo: {
+                                Author: "Sandra Mitchell",
+                                Title: "Understanding Digital Privacy",
+                                Publisher: "Tech Press",
+                                Year: "2024"
+                            },
+                            correctAnswer: "Mitchell, Sandra. _Understanding Digital Privacy_. Tech Press, 2024.",
+                            acceptableAnswers: [
+                                "Mitchell, Sandra. _Understanding Digital Privacy_. Tech Press, 2024.",
+                                "Mitchell, Sandra. Understanding Digital Privacy. Tech Press, 2024."
+                            ],
+                            hint: "Format: Last, First. _Title_. Publisher, Year."
+                        },
+                        {
+                            id: 1,
+                            sourceType: "Website Article with Author",
+                            sourceInfo: {
+                                Author: "David Park",
+                                "Article Title": "The Future of Renewable Energy",
+                                Website: "Green Tech Today",
+                                Date: "22 Sept. 2024",
+                                URL: "www.greentechtoday.com/renewable-future"
+                            },
+                            correctAnswer: "Park, David. \"The Future of Renewable Energy.\" _Green Tech Today_, 22 Sept. 2024, www.greentechtoday.com/renewable-future.",
+                            acceptableAnswers: [
+                                "Park, David. \"The Future of Renewable Energy.\" _Green Tech Today_, 22 Sept. 2024, www.greentechtoday.com/renewable-future.",
+                                "Park, David. \"The Future of Renewable Energy.\" Green Tech Today, 22 Sept. 2024, www.greentechtoday.com/renewable-future."
+                            ],
+                            hint: "Format: Last, First. \"Article Title.\" _Website_, Date, URL."
+                        },
+                        {
+                            id: 2,
+                            sourceType: "Book with Two Authors",
+                            sourceInfo: {
+                                Authors: "Jennifer Adams and Michael Torres",
+                                Title: "Social Media and Society",
+                                Publisher: "Cambridge UP",
+                                Year: "2023"
+                            },
+                            correctAnswer: "Adams, Jennifer, and Michael Torres. _Social Media and Society_. Cambridge UP, 2023.",
+                            acceptableAnswers: [
+                                "Adams, Jennifer, and Michael Torres. _Social Media and Society_. Cambridge UP, 2023.",
+                                "Adams, Jennifer and Michael Torres. _Social Media and Society_. Cambridge UP, 2023.",
+                                "Adams, Jennifer, and Michael Torres. Social Media and Society. Cambridge UP, 2023."
+                            ],
+                            hint: "Format: Last, First, and First Last. _Title_. Publisher, Year."
+                        }
+                    ],
+                    points: 50
+                }
+            };
+
             // Initialize shuffled elements
             const initializeChallenge = (elements) => {
                 setShuffledElements(shuffleArray([...elements]));
@@ -674,6 +772,23 @@
                         setShowFeedback(false);
                         setAttempts(0);
                     } else {
+                        setCurrentPhase('finalChallenge');
+                        setCurrentIndex(0);
+                        setShowFeedback(false);
+                        setAttempts(0);
+                        setFinalChallengeSubPhase('partA');
+                        setFinalChallengePartAInputs(['', '', '', '']);
+                        setFinalChallengePartAResults([null, null, null, null]);
+                    }
+                } else if (currentPhase === 'finalChallenge') {
+                    if (finalChallengeSubPhase === 'partA') {
+                        // Move to Part B
+                        setFinalChallengeSubPhase('partB');
+                        setShowFeedback(false);
+                        setFinalChallengePartBInputs(['', '', '']);
+                        setFinalChallengePartBResults([null, null, null]);
+                    } else {
+                        // Done with final challenge
                         setCurrentScreen('completion');
                     }
                 }
@@ -688,12 +803,17 @@
                 setShowFeedback(false);
                 setAttempts(0);
                 setSelectedAnswer(null);
+                setFinalChallengePartAInputs(['', '', '', '']);
+                setFinalChallengePartAResults([null, null, null, null]);
+                setFinalChallengePartBInputs(['', '', '']);
+                setFinalChallengePartBResults([null, null, null]);
+                setFinalChallengeSubPhase('partA');
             };
 
             const WelcomeScreen = () => (
                 <div className="min-h-screen bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 flex items-center justify-center p-4">
                     <div className="absolute top-4 left-4">
-                        <a href="./" className="bg-white/90 text-blue-700 px-4 py-2 rounded-lg font-semibold hover:bg-white transition-all shadow-lg backdrop-blur-sm">
+                        <a href="/" className="bg-white/90 text-blue-700 px-4 py-2 rounded-lg font-semibold hover:bg-white transition-all shadow-lg backdrop-blur-sm">
                             ← Back to Modules
                         </a>
                     </div>
@@ -727,19 +847,19 @@
 
                             <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-300 rounded-xl p-6 mb-6">
                                 <h3 className="font-bold text-gray-800 mb-3">🏆 The Challenge:</h3>
-                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3 text-left">
+                                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3 text-left">
                                     <div className="bg-white p-3 rounded-lg border-2 border-green-400">
-                                        <p className="font-bold text-green-700 mb-1">🔥 Round 1: Warm-Up</p>
+                                        <p className="font-bold text-green-700 mb-1">🔥 Warm-Up</p>
                                         <p className="text-sm text-gray-600">Select core elements for each source type</p>
                                         <p className="text-xs text-green-600 mt-1">3 challenges • 20 pts each</p>
                                     </div>
                                     <div className="bg-white p-3 rounded-lg border-2 border-orange-400">
-                                        <p className="font-bold text-orange-700 mb-1">💪 Round 2: Knockout</p>
+                                        <p className="font-bold text-orange-700 mb-1">💪 Knockout</p>
                                         <p className="text-sm text-gray-600">Build book, article & website citations</p>
                                         <p className="text-xs text-orange-600 mt-1">5 challenges • 30 pts each</p>
                                     </div>
                                     <div className="bg-white p-3 rounded-lg border-2 border-purple-400">
-                                        <p className="font-bold text-purple-700 mb-1">👑 Round 3: Winner Takes All</p>
+                                        <p className="font-bold text-purple-700 mb-1">👑 Winner Takes All</p>
                                         <p className="text-sm text-gray-600">Database, TikTok, YouTube & AI</p>
                                         <p className="text-xs text-purple-600 mt-1">5 challenges • 75 pts each</p>
                                     </div>
@@ -758,11 +878,16 @@
                                         <p className="text-sm text-gray-600">Spot the missing element or error</p>
                                         <p className="text-xs text-teal-600 mt-1">3 challenges • 50 pts each</p>
                                     </div>
+                                    <div className="bg-white p-3 rounded-lg border-2 border-red-400 lg:col-span-2">
+                                        <p className="font-bold text-red-700 mb-1">🎯 Final Challenge</p>
+                                        <p className="text-sm text-gray-600">Type your own in-text citations & Works Cited entries</p>
+                                        <p className="text-xs text-red-600 mt-1">7 challenges • 30-50 pts each</p>
+                                    </div>
                                 </div>
                             </div>
 
                             <p className="text-gray-600 mb-6">
-                                25 Total Challenges • <strong>35-45 minutes</strong> • Up to 1,105 points
+                                32 Total Challenges • <strong>40-50 minutes</strong> • Up to 1,375 points
                             </p>
                             <button
                                 onClick={() => {
@@ -816,6 +941,12 @@
                     phaseTitle = "Bonus: In-Text Citations";
                     phaseColor = "amber";
                     phaseEmoji = "📝";
+                } else if (currentPhase === 'finalChallenge') {
+                    challenge = finalChallengeRound;
+                    totalInPhase = 2; // Part A and Part B
+                    phaseTitle = finalChallengeSubPhase === 'partA' ? "Final Challenge: In-Text Citations" : "Final Challenge: Works Cited";
+                    phaseColor = "red";
+                    phaseEmoji = "🎯";
                 } else {
                     challenge = cooldownRound[currentIndex];
                     totalInPhase = cooldownRound.length;
@@ -824,8 +955,8 @@
                     phaseEmoji = "❄️";
                 }
 
-                const correctElements = (currentPhase !== 'cooldown' && currentPhase !== 'bonus3') ? challenge.correct || challenge.elements : null;
-                const availableElements = (currentPhase !== 'cooldown' && currentPhase !== 'warmup' && currentPhase !== 'bonus3') ? shuffledElements.filter(el => !selectedElements.includes(el)) : [];
+                const correctElements = (currentPhase !== 'cooldown' && currentPhase !== 'bonus3' && currentPhase !== 'finalChallenge') ? challenge.correct || challenge.elements : null;
+                const availableElements = (currentPhase !== 'cooldown' && currentPhase !== 'warmup' && currentPhase !== 'bonus3' && currentPhase !== 'finalChallenge') ? shuffledElements.filter(el => !selectedElements.includes(el)) : [];
 
                 const bgColors = {
                     green: "from-green-400 to-green-600",
@@ -833,14 +964,15 @@
                     purple: "from-purple-400 to-purple-600",
                     pink: "from-pink-400 to-rose-600",
                     amber: "from-amber-400 to-orange-600",
-                    teal: "from-teal-400 to-teal-600"
+                    teal: "from-teal-400 to-teal-600",
+                    red: "from-red-400 to-rose-600"
                 };
 
                 return (
                     <div className="min-h-screen bg-gray-100 p-4 py-8">
                         <div className="max-w-5xl mx-auto">
                             <div className="mb-4">
-                                <a href="./" className="inline-block bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-all shadow-md">
+                                <a href="/" className="inline-block bg-white text-blue-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-50 transition-all shadow-md">
                                     ← Back to Modules
                                 </a>
                             </div>
@@ -1385,7 +1517,7 @@
                                                         onClick={handleNext}
                                                         className="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 rounded-lg font-bold hover:from-green-600 hover:to-teal-700 transition-all"
                                                     >
-                                                        {currentIndex < cooldownRound.length - 1 ? '➡️ Next Challenge' : '🏆 See Your Results!'}
+                                                        {currentIndex < cooldownRound.length - 1 ? '➡️ Next Challenge' : '🎯 Final Challenge!'}
                                                     </button>
                                                 </div>
                                             ) : (
@@ -1405,6 +1537,248 @@
                                                     >
                                                         Try Again
                                                     </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            {/* FINAL CHALLENGE PHASE - Type Your Own Citations */}
+                            {currentPhase === 'finalChallenge' && (
+                                <>
+                                    {/* Part A: In-Text Citations */}
+                                    {finalChallengeSubPhase === 'partA' && (
+                                        <div className="bg-white rounded-lg shadow-lg p-6 mb-6 animate-fadeIn">
+                                            <h2 className="text-2xl font-bold text-gray-800 mb-2">{finalChallengeRound.partA.title}</h2>
+                                            <p className="text-gray-600 mb-4">{finalChallengeRound.partA.instruction}</p>
+                                            
+                                            {/* Paragraph with blanks */}
+                                            <div className="bg-gray-50 border-2 border-gray-200 rounded-lg p-6 mb-6">
+                                                <p className="text-gray-800 leading-relaxed">
+                                                    {finalChallengeRound.partA.paragraph.map((part, idx) => {
+                                                        if (part.type === 'text') {
+                                                            return <span key={idx}>{part.content}</span>;
+                                                        } else {
+                                                            return (
+                                                                <span key={idx} className="inline-flex items-center mx-1">
+                                                                    <span className="text-gray-500">(</span>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={finalChallengePartAInputs[part.id]}
+                                                                        onChange={(e) => {
+                                                                            const newInputs = [...finalChallengePartAInputs];
+                                                                            newInputs[part.id] = e.target.value;
+                                                                            setFinalChallengePartAInputs(newInputs);
+                                                                        }}
+                                                                        disabled={showFeedback}
+                                                                        className={`border-b-2 bg-white px-2 py-1 text-center min-w-32 focus:outline-none focus:border-blue-500 ${
+                                                                            finalChallengePartAResults[part.id] === true ? 'border-green-500 bg-green-50' :
+                                                                            finalChallengePartAResults[part.id] === false ? 'border-red-500 bg-red-50' :
+                                                                            'border-gray-300'
+                                                                        }`}
+                                                                        placeholder={`Blank ${part.id + 1}`}
+                                                                    />
+                                                                    <span className="text-gray-500">)</span>
+                                                                    {showFeedback && finalChallengePartAResults[part.id] === false && (
+                                                                        <span className="ml-1 text-xs text-red-600">→ {part.correctAnswer}</span>
+                                                                    )}
+                                                                </span>
+                                                            );
+                                                        }
+                                                    })}
+                                                </p>
+                                            </div>
+
+                                            {/* Hints */}
+                                            <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 mb-6">
+                                                <p className="font-semibold text-amber-800 mb-2">💡 Hints for each blank:</p>
+                                                <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
+                                                    {finalChallengeRound.partA.hints.map((hint, idx) => (
+                                                        <li key={idx}>{hint}</li>
+                                                    ))}
+                                                </ol>
+                                            </div>
+
+                                            {/* Works Cited Reference */}
+                                            <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-6">
+                                                <p className="font-semibold text-blue-800 mb-2">📚 Works Cited (for reference):</p>
+                                                <div className="bg-white rounded p-4 font-mono text-sm space-y-2">
+                                                    {finalChallengeRound.partA.worksCited.map((entry, idx) => (
+                                                        <p key={idx} className="text-gray-800" style={{ textIndent: '-1.5em', paddingLeft: '1.5em' }}>{entry}</p>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Submit Button */}
+                                            {!showFeedback && (
+                                                <div className="flex justify-center">
+                                                    <button
+                                                        onClick={() => {
+                                                            // Normalize and check answers
+                                                            const normalize = (str) => str.trim().replace(/[""]/g, '"').replace(/['']/g, "'");
+                                                            const results = finalChallengeRound.partA.paragraph
+                                                                .filter(p => p.type === 'blank')
+                                                                .map((blank, idx) => {
+                                                                    const userAnswer = normalize(finalChallengePartAInputs[blank.id]);
+                                                                    const correctAnswer = normalize(blank.correctAnswer);
+                                                                    return userAnswer.toLowerCase() === correctAnswer.toLowerCase();
+                                                                });
+                                                            setFinalChallengePartAResults(results);
+                                                            
+                                                            // Calculate score
+                                                            const correctCount = results.filter(r => r).length;
+                                                            setScore(score + (correctCount * finalChallengeRound.partA.points));
+                                                            setShowFeedback(true);
+                                                        }}
+                                                        disabled={finalChallengePartAInputs.some(input => input.trim() === '')}
+                                                        className="px-8 py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-lg font-bold hover:from-red-600 hover:to-rose-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                                                    >
+                                                        Check All Answers
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* Feedback */}
+                                            {showFeedback && (
+                                                <div className="mt-6">
+                                                    <div className={`text-center p-6 rounded-lg ${
+                                                        finalChallengePartAResults.every(r => r) ? 'bg-green-50 border-2 border-green-300' : 'bg-amber-50 border-2 border-amber-300'
+                                                    }`}>
+                                                        <div className="text-5xl mb-3">
+                                                            {finalChallengePartAResults.every(r => r) ? '🎉' : '📝'}
+                                                        </div>
+                                                        <h3 className={`text-2xl font-bold mb-2 ${
+                                                            finalChallengePartAResults.every(r => r) ? 'text-green-700' : 'text-amber-700'
+                                                        }`}>
+                                                            {finalChallengePartAResults.filter(r => r).length} of 4 Correct!
+                                                        </h3>
+                                                        <p className="text-lg text-gray-700 mb-4">
+                                                            +{finalChallengePartAResults.filter(r => r).length * finalChallengeRound.partA.points} points
+                                                        </p>
+                                                        <button
+                                                            onClick={handleNext}
+                                                            className="w-full bg-gradient-to-r from-red-500 to-rose-600 text-white py-3 rounded-lg font-bold hover:from-red-600 hover:to-rose-700 transition-all"
+                                                        >
+                                                            Continue to Part B: Works Cited →
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Part B: Build Works Cited Entries */}
+                                    {finalChallengeSubPhase === 'partB' && (
+                                        <div className="bg-white rounded-lg shadow-lg p-6 mb-6 animate-fadeIn">
+                                            <h2 className="text-2xl font-bold text-gray-800 mb-2">{finalChallengeRound.partB.title}</h2>
+                                            <p className="text-gray-600 mb-2">{finalChallengeRound.partB.instruction}</p>
+                                            <p className="text-sm text-gray-500 mb-6 italic">Tip: Use underscores for italics, like _Book Title_</p>
+                                            
+                                            {/* Three citation challenges */}
+                                            <div className="space-y-6">
+                                                {finalChallengeRound.partB.challenges.map((challenge, idx) => (
+                                                    <div key={idx} className="border-2 border-gray-200 rounded-lg p-4">
+                                                        <p className="font-bold text-gray-800 mb-2">
+                                                            {idx + 1}. {challenge.sourceType}
+                                                        </p>
+                                                        <div className="bg-blue-50 rounded p-3 mb-3">
+                                                            <p className="text-sm font-semibold text-blue-800 mb-1">Source Information:</p>
+                                                            <div className="grid grid-cols-2 gap-1 text-sm">
+                                                                {Object.entries(challenge.sourceInfo).map(([key, value]) => (
+                                                                    <p key={key}><span className="font-medium">{key}:</span> {value}</p>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        <textarea
+                                                            value={finalChallengePartBInputs[idx]}
+                                                            onChange={(e) => {
+                                                                const newInputs = [...finalChallengePartBInputs];
+                                                                newInputs[idx] = e.target.value;
+                                                                setFinalChallengePartBInputs(newInputs);
+                                                            }}
+                                                            disabled={showFeedback}
+                                                            rows={2}
+                                                            className={`w-full border-2 rounded-lg p-3 font-mono text-sm focus:outline-none focus:border-blue-500 ${
+                                                                finalChallengePartBResults[idx] === true ? 'border-green-500 bg-green-50' :
+                                                                finalChallengePartBResults[idx] === false ? 'border-red-500 bg-red-50' :
+                                                                'border-gray-300'
+                                                            }`}
+                                                            placeholder="Type your Works Cited entry here..."
+                                                        />
+                                                        <p className="text-xs text-gray-500 mt-1">💡 {challenge.hint}</p>
+                                                        {showFeedback && finalChallengePartBResults[idx] === false && (
+                                                            <div className="mt-2 p-2 bg-red-50 rounded border border-red-200">
+                                                                <p className="text-xs text-red-700 font-semibold">Correct format:</p>
+                                                                <p className="text-sm text-red-800 font-mono">{challenge.correctAnswer}</p>
+                                                            </div>
+                                                        )}
+                                                        {showFeedback && finalChallengePartBResults[idx] === true && (
+                                                            <div className="mt-2 p-2 bg-green-50 rounded border border-green-200">
+                                                                <p className="text-sm text-green-700 font-semibold">✓ Correct!</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            {/* Submit Button */}
+                                            {!showFeedback && (
+                                                <div className="flex justify-center mt-6">
+                                                    <button
+                                                        onClick={() => {
+                                                            // Normalize and check answers
+                                                            const normalize = (str) => str.trim()
+                                                                .replace(/[""]/g, '"')
+                                                                .replace(/['']/g, "'")
+                                                                .replace(/\s+/g, ' ');
+                                                            
+                                                            const results = finalChallengeRound.partB.challenges.map((challenge, idx) => {
+                                                                const userAnswer = normalize(finalChallengePartBInputs[idx]);
+                                                                // Check against all acceptable answers
+                                                                return challenge.acceptableAnswers.some(acceptable => 
+                                                                    normalize(acceptable).toLowerCase() === userAnswer.toLowerCase()
+                                                                );
+                                                            });
+                                                            setFinalChallengePartBResults(results);
+                                                            
+                                                            // Calculate score
+                                                            const correctCount = results.filter(r => r).length;
+                                                            setScore(score + (correctCount * finalChallengeRound.partB.points));
+                                                            setShowFeedback(true);
+                                                        }}
+                                                        disabled={finalChallengePartBInputs.some(input => input.trim() === '')}
+                                                        className="px-8 py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-lg font-bold hover:from-red-600 hover:to-rose-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                                                    >
+                                                        Check All Entries
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* Feedback */}
+                                            {showFeedback && (
+                                                <div className="mt-6">
+                                                    <div className={`text-center p-6 rounded-lg ${
+                                                        finalChallengePartBResults.every(r => r) ? 'bg-green-50 border-2 border-green-300' : 'bg-amber-50 border-2 border-amber-300'
+                                                    }`}>
+                                                        <div className="text-5xl mb-3">
+                                                            {finalChallengePartBResults.every(r => r) ? '🏆' : '📝'}
+                                                        </div>
+                                                        <h3 className={`text-2xl font-bold mb-2 ${
+                                                            finalChallengePartBResults.every(r => r) ? 'text-green-700' : 'text-amber-700'
+                                                        }`}>
+                                                            {finalChallengePartBResults.filter(r => r).length} of 3 Correct!
+                                                        </h3>
+                                                        <p className="text-lg text-gray-700 mb-4">
+                                                            +{finalChallengePartBResults.filter(r => r).length * finalChallengeRound.partB.points} points
+                                                        </p>
+                                                        <button
+                                                            onClick={handleNext}
+                                                            className="w-full bg-gradient-to-r from-green-500 to-teal-600 text-white py-3 rounded-lg font-bold hover:from-green-600 hover:to-teal-700 transition-all"
+                                                        >
+                                                            🏆 See Your Final Results!
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
@@ -1456,7 +1830,7 @@
             };
 
             const CompletionScreen = () => {
-                const maxScore = (warmups.length * 20) + (knockoutRound.length * 30) + (finalRound.length * 75) + (bonusRound.length * 40) + (bonus2Round.length * 50) + (bonus3Round.length * 40) + (cooldownRound.length * 50);
+                const maxScore = (warmups.length * 20) + (knockoutRound.length * 30) + (finalRound.length * 75) + (bonusRound.length * 40) + (bonus2Round.length * 50) + (bonus3Round.length * 40) + (cooldownRound.length * 50) + (4 * finalChallengeRound.partA.points) + (3 * finalChallengeRound.partB.points);
                 const percentage = Math.round((score / maxScore) * 100);
                 let badge, emoji, message;
 
@@ -1513,6 +1887,8 @@
                                         <li>✓ Works Cited alphabetical ordering</li>
                                         <li>✓ MLA in-text citations</li>
                                         <li>✓ Spotting citation errors</li>
+                                        <li>✓ Writing in-text citations from scratch</li>
+                                        <li>✓ Building complete Works Cited entries</li>
                                     </ul>
                                 </div>
 
