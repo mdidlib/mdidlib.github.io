@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -95,7 +96,7 @@
             // All available sources database
             const allSources = [
                 { id: 1, title: "The Impact of Social Media on Teen Mental Health", topics: ["social media", "teens", "mental health", "adolescents"], type: "journal" },
-                { id: 2, title: "Teenagers and Instagram: A Study", topics: ["teens", "instagram", "social media", "adolescents"], type: "study" },
+                { id: 2, title: "Teenagers and Instagram: A Study", topics: ["teens", "instagram", "social media", "adolescents", "mental health"], type: "study" },
                 { id: 3, title: "Mental Health in Young Adults", topics: ["mental health", "young adults"], type: "article" },
                 { id: 4, title: "Social Media Marketing Strategies", topics: ["social media", "marketing"], type: "business" },
                 { id: 5, title: "Teen Depression Statistics 2024", topics: ["teens", "depression", "mental health", "adolescents"], type: "statistics" },
@@ -103,7 +104,7 @@
                 { id: 7, title: "Adolescent Psychology Today", topics: ["adolescents", "psychology", "teens"], type: "journal" },
                 { id: 8, title: "The Benefits of Social Media for Businesses", topics: ["social media", "business", "marketing"], type: "article" },
                 { id: 9, title: "Mental Health Treatment Options", topics: ["mental health", "treatment"], type: "medical" },
-                { id: 10, title: "Teen Social Media Usage Patterns", topics: ["teens", "social media", "adolescents", "instagram"], type: "research" },
+                { id: 10, title: "Teen Social Media Usage Patterns", topics: ["teens", "social media", "adolescents", "instagram", "mental health"], type: "research" },
             ];
 
             const challenges = [
@@ -156,19 +157,19 @@
                     title: "Level 3: The NOT Operator",
                     difficulty: "Intermediate",
                     instructions: "Sometimes you want to exclude certain results. Use NOT to remove unwanted topics.",
-                    task: "Find sources about social media, but NOT about marketing or business",
+                    task: "Find sources about social media, but NOT about marketing",
                     hints: [
                         "NOT excludes results containing that term",
                         "Try: social media NOT marketing",
-                        "You can use NOT multiple times"
+                        "NOT removes all results with that topic"
                     ],
-                    correctAnswers: ["social media NOT marketing", "social media NOT business"],
+                    correctAnswers: ["social media NOT marketing"],
                     checkAnswer: (query, results) => {
                         const lower = query.toLowerCase();
                         const hasNot = lower.includes(' not ');
                         const hasSocial = lower.includes('social media');
-                        const excludesMarketing = lower.includes('marketing') || lower.includes('business');
-                        const noMarketingResults = !results.some(r => r.topics.includes('marketing') || r.topics.includes('business'));
+                        const excludesMarketing = lower.includes('marketing');
+                        const noMarketingResults = !results.some(r => r.topics.includes('marketing'));
                         return hasNot && hasSocial && excludesMarketing && noMarketingResults && results.length >= 2;
                     },
                     explanation: "Excellent! NOT helps you filter out irrelevant results. This is useful when a search term has multiple meanings."
@@ -294,11 +295,12 @@
                 
                 setIsCorrect(correct);
                 setShowFeedback(true);
-                setAttempts(attempts + 1);
 
                 if (correct) {
                     setScore(score + (attempts === 0 ? 100 : attempts === 1 ? 75 : 50));
                 }
+                
+                setAttempts(attempts + 1);
             };
 
             const nextLevel = () => {
@@ -325,7 +327,8 @@
                 setIsCorrect(false);
             };
 
-            const WelcomeScreen = () => (
+            // Welcome Screen content
+            const renderWelcomeScreen = () => (
                 <div className="min-h-screen bg-gradient-to-br from-purple-500 via-pink-500 to-red-500 flex items-center justify-center p-4">
                     <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full animate-fadeIn">
                         <div className="text-center">
@@ -386,7 +389,8 @@
                 </div>
             );
 
-            const ActivityScreen = () => {
+            // Activity Screen content
+            const renderActivityScreen = () => {
                 const challenge = challenges[currentLevel];
                 const results = simulateSearch(searchQuery);
 
@@ -523,10 +527,10 @@
                                             </div>
                                             <h3 className="text-3xl font-bold text-green-700 mb-2">🎉 Perfect!</h3>
                                             <p className="text-lg text-gray-700 mb-4">
-                                                You got it {attempts === 0 ? 'on your first try' : attempts === 1 ? 'on your second try' : `in ${attempts + 1} tries`}!
-                                                {attempts === 0 && ' +100 points! 🏆'}
-                                                {attempts === 1 && ' +75 points! ⭐'}
-                                                {attempts > 1 && ' +50 points! 👍'}
+                                                You got it {attempts === 1 ? 'on your first try' : attempts === 2 ? 'on your second try' : `in ${attempts} tries`}!
+                                                {attempts === 1 && ' +100 points! 🏆'}
+                                                {attempts === 2 && ' +75 points! ⭐'}
+                                                {attempts > 2 && ' +50 points! 👍'}
                                             </p>
                                             <div className="bg-gradient-to-r from-green-50 to-teal-50 border-l-4 border-green-500 p-4 mb-4 rounded text-left">
                                                 <p className="font-semibold text-green-900 mb-2">💡 Why This Works:</p>
@@ -592,7 +596,8 @@
                 );
             };
 
-            const CompletionScreen = () => {
+            // Completion Screen content
+            const renderCompletionScreen = () => {
                 const maxScore = 500;
                 const percentage = Math.round((score / maxScore) * 100);
                 let badge = '';
@@ -680,9 +685,9 @@
 
             return (
                 <div>
-                    {currentScreen === 'welcome' && <WelcomeScreen />}
-                    {currentScreen === 'activity' && <ActivityScreen />}
-                    {currentScreen === 'completion' && <CompletionScreen />}
+                    {currentScreen === 'welcome' && renderWelcomeScreen()}
+                    {currentScreen === 'activity' && renderActivityScreen()}
+                    {currentScreen === 'completion' && renderCompletionScreen()}
                 </div>
             );
         };
