@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -91,7 +92,16 @@
                     "Use different words: 'declined' could be 'decreased', 'dropped', 'fallen'",
                     "Break the long sentence into smaller ones",
                     "Express the percentage differently: '40%' = 'nearly half'"
-                ]
+                ],
+                synonyms: {
+                    "honeybee": ["bee", "bees", "honeybees", "pollinators", "insects"],
+                    "population": ["numbers", "count", "amount", "quantity"],
+                    "declined": ["decreased", "dropped", "fallen", "reduced", "shrunk", "died", "dying", "lost", "disappearing", "vanishing"],
+                    "decade": ["years", "time", "period"],
+                    "pesticides": ["chemicals", "sprays", "insecticides", "farming", "poisons"],
+                    "habitat": ["home", "homes", "environment", "living", "places", "nesting"],
+                    "disease": ["illness", "illnesses", "sickness", "infections", "sick"]
+                }
             },
             {
                 id: 2,
@@ -105,7 +115,18 @@
                     "Explain 'echo chambers' in simpler words",
                     "Change passive voice to active",
                     "Make it more conversational"
-                ]
+                ],
+                synonyms: {
+                    "social": ["instagram", "tiktok", "facebook", "twitter", "apps", "platforms", "online", "internet"],
+                    "media": ["apps", "platforms", "sites", "networks"],
+                    "algorithms": ["systems", "programs", "code", "technology"],
+                    "users": ["people", "viewers", "scrollers", "audience"],
+                    "engaged": ["scrolling", "watching", "hooked", "addicted", "interested", "using", "online"],
+                    "content": ["posts", "videos", "pictures", "stories", "stuff", "things"],
+                    "liked": ["enjoyed", "preferred", "agreed", "interested"],
+                    "echo": ["bubble", "same", "similar", "opinions", "views", "agree"],
+                    "chambers": ["bubbles", "circles", "groups"]
+                }
             },
             {
                 id: 3,
@@ -119,7 +140,19 @@
                     "Break into 2-3 shorter sentences",
                     "Use everyday words: 'executive function' → 'making decisions'",
                     "Explain the concepts more clearly"
-                ]
+                ],
+                synonyms: {
+                    "research": ["studies", "science", "scientists", "evidence", "data", "findings"],
+                    "indicates": ["shows", "suggests", "proves", "demonstrates", "found"],
+                    "regular": ["consistent", "daily", "frequent", "routine", "often", "consistently"],
+                    "physical": ["body", "bodily", "working"],
+                    "exercise": ["workout", "workouts", "training", "activity", "gym", "running", "sports", "moving"],
+                    "improves": ["helps", "boosts", "enhances", "better", "benefits", "strengthens"],
+                    "cognitive": ["brain", "mental", "thinking", "mind", "intelligence"],
+                    "function": ["ability", "abilities", "work", "works", "performance", "skills"],
+                    "memory": ["remembering", "recall", "recollection", "remember"],
+                    "executive": ["decision", "decisions", "planning", "focus", "control", "managing"]
+                }
             },
             {
                 id: 4,
@@ -133,7 +166,18 @@
                     "Use simpler words: 'agrarian' → 'farming'",
                     "Show cause and effect more clearly",
                     "Break the long sentence apart"
-                ]
+                ],
+                synonyms: {
+                    "industrial": ["factory", "factories", "manufacturing", "machine", "machines", "mechanized"],
+                    "revolution": ["change", "shift", "transformation", "era", "period", "movement"],
+                    "britain": ["england", "british", "uk", "english"],
+                    "century": ["1700s", "1800s", "years", "era", "period", "time"],
+                    "transformed": ["changed", "altered", "revolutionized", "reshaped", "shifted"],
+                    "society": ["world", "life", "people", "civilization", "culture", "way of life"],
+                    "agrarian": ["farming", "agricultural", "farm", "farms", "rural", "countryside"],
+                    "economies": ["economy", "economic", "work", "jobs", "living", "livelihoods"],
+                    "manufacturing": ["factories", "production", "making", "goods", "products"]
+                }
             },
             {
                 id: 5,
@@ -147,15 +191,58 @@
                     "Break the super-long sentence into 2-3 sentences",
                     "Explain what the findings mean",
                     "Focus on the main point: multilingual = better brain skills"
-                ]
+                ],
+                synonyms: {
+                    "contemporary": ["recent", "modern", "current", "new", "latest"],
+                    "neuroscientific": ["brain", "neuroscience", "neurological", "neural"],
+                    "research": ["studies", "study", "science", "scientists", "findings", "evidence"],
+                    "functional": ["fmri", "scanning", "imaging"],
+                    "magnetic": ["mri", "fmri", "scan", "scans", "scanning"],
+                    "resonance": ["mri", "fmri", "scan", "scans"],
+                    "imaging": ["scans", "scan", "pictures", "images"],
+                    "multilingual": ["bilingual", "languages", "polyglot", "speakers", "speaking"],
+                    "individuals": ["people", "persons", "speakers", "those"],
+                    "enhanced": ["better", "improved", "stronger", "superior", "greater"],
+                    "executive": ["thinking", "decision", "control", "focus", "attention", "mental"],
+                    "control": ["ability", "skills", "regulation", "managing", "controlling"],
+                    "cognitive": ["brain", "mental", "thinking", "mind", "thought"],
+                    "flexibility": ["adaptability", "adapting", "flexible", "versatile", "switching"],
+                    "monolingual": ["one language", "single language", "only speak one"]
+                }
             }
         ];
 
         // Analysis function defined OUTSIDE the component
         // Check if text is topically relevant to the original
-        const checkTopicRelevance = (original, userText) => {
-            const originalLower = original.toLowerCase();
+        const checkTopicRelevance = (original, userText, challenge) => {
             const userLower = userText.toLowerCase();
+            
+            // If challenge has synonyms defined, use synonym-aware matching
+            if (challenge && challenge.synonyms) {
+                let conceptMatches = 0;
+                const totalConcepts = Object.keys(challenge.synonyms).length;
+                
+                // Check each concept (original word + its synonyms)
+                for (const [originalWord, synonymList] of Object.entries(challenge.synonyms)) {
+                    // Check if user text contains the original word or any synonym
+                    const allTerms = [originalWord, ...synonymList];
+                    const found = allTerms.some(term => {
+                        // Check for the term as a whole word or part of a word
+                        const termLower = term.toLowerCase();
+                        // Match whole words or word stems
+                        const regex = new RegExp(`\\b${termLower.replace(/s$/, '')}`, 'i');
+                        return regex.test(userLower) || userLower.includes(termLower);
+                    });
+                    if (found) conceptMatches++;
+                }
+                
+                // Require at least 20% of concepts to be present (more lenient)
+                const relevanceRatio = conceptMatches / Math.max(totalConcepts, 1);
+                return relevanceRatio >= 0.2;
+            }
+            
+            // Fallback to original logic if no synonyms defined
+            const originalLower = original.toLowerCase();
             
             // Extract key content words from original (nouns, verbs - words >4 chars that aren't common)
             const commonWords = ['the', 'and', 'that', 'this', 'with', 'have', 'been', 'from', 'they', 'their', 'which', 'about', 'would', 'there', 'could', 'other', 'than', 'into', 'more', 'some', 'very', 'when', 'what', 'your'];
@@ -229,7 +316,7 @@
             }
             
             // Check topic relevance
-            if (!checkTopicRelevance(original, trimmedText)) {
+            if (!checkTopicRelevance(original, trimmedText, challenge)) {
                 return {
                     score: 0,
                     issues: ['off_topic'],
@@ -371,7 +458,7 @@
                 return (
                     <div className="min-h-screen bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 flex items-center justify-center p-4">
                         <div className="absolute top-4 left-4">
-                            <a href="./" className="bg-white text-orange-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md">
+                            <a href="/" className="bg-white text-orange-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md">
                                 ← Back to Modules
                             </a>
                         </div>
@@ -475,7 +562,7 @@
             return (
                 <div className="min-h-screen bg-gray-100 p-4 py-8">
                     <div className="max-w-4xl mx-auto mb-4">
-                        <a href="./" className="inline-block bg-white text-orange-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md">
+                        <a href="/" className="inline-block bg-white text-orange-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md">
                             ← Back to Modules
                         </a>
                     </div>
