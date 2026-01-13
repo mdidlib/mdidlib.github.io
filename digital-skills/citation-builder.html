@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,7 +37,66 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useRef, useCallback, memo } = React;
+
+        // Stable text input component to prevent re-render issues
+        const StableInput = memo(({ id, initialValue, onValueChange, disabled, resultStatus, placeholder, correctValue }) => {
+            const [value, setValue] = useState(initialValue);
+            const inputRef = useRef(null);
+            
+            const handleChange = (e) => {
+                const newValue = e.target.value;
+                setValue(newValue);
+                onValueChange(id, newValue);
+            };
+            
+            // If this answer was correct, show the correct value and disable
+            const isCorrect = resultStatus === true;
+            const displayValue = isCorrect && correctValue ? correctValue : value;
+            const isDisabled = disabled || isCorrect; // Disable if feedback shown OR if correct
+            
+            return (
+                <input
+                    ref={inputRef}
+                    type="text"
+                    value={displayValue}
+                    onChange={handleChange}
+                    disabled={isDisabled}
+                    className={`border-b-2 bg-white px-2 py-1 text-center min-w-32 focus:outline-none focus:border-blue-500 ${
+                        resultStatus === true ? 'border-green-500 bg-green-50' :
+                        resultStatus === false ? 'border-red-500 bg-red-50' :
+                        'border-gray-300'
+                    }`}
+                    placeholder={placeholder}
+                />
+            );
+        });
+
+        // Stable textarea component to prevent re-render issues
+        const StableTextarea = memo(({ id, initialValue, onValueChange, disabled, resultStatus, placeholder }) => {
+            const [value, setValue] = useState(initialValue);
+            
+            const handleChange = (e) => {
+                const newValue = e.target.value;
+                setValue(newValue);
+                onValueChange(id, newValue);
+            };
+            
+            return (
+                <textarea
+                    value={value}
+                    onChange={handleChange}
+                    disabled={disabled}
+                    rows={2}
+                    className={`w-full border-2 rounded-lg p-3 font-mono text-sm focus:outline-none focus:border-blue-500 ${
+                        resultStatus === true ? 'border-green-500 bg-green-50' :
+                        resultStatus === false ? 'border-red-500 bg-red-50' :
+                        'border-gray-300'
+                    }`}
+                    placeholder={placeholder}
+                />
+            );
+        });
 
         // Icon components
         const BookOpen = ({ className }) => (
@@ -110,12 +170,23 @@
             const [shuffledElements, setShuffledElements] = useState([]);
             const [selectedAnswer, setSelectedAnswer] = useState(null);
             
-            // Final challenge state
-            const [finalChallengePartAInputs, setFinalChallengePartAInputs] = useState(['', '', '', '']);
+            // Final challenge state - using refs to avoid re-render on every keystroke
+            const finalChallengePartAInputsRef = useRef(['', '', '', '']);
             const [finalChallengePartAResults, setFinalChallengePartAResults] = useState([null, null, null, null]);
-            const [finalChallengePartBInputs, setFinalChallengePartBInputs] = useState(['', '', '']);
+            const [finalChallengePartAAttempted, setFinalChallengePartAAttempted] = useState(false);
+            const finalChallengePartBInputsRef = useRef(['', '', '']);
             const [finalChallengePartBResults, setFinalChallengePartBResults] = useState([null, null, null]);
             const [finalChallengeSubPhase, setFinalChallengeSubPhase] = useState('partA'); // 'partA' or 'partB'
+            
+            // Stable callback for Part A input changes (doesn't cause re-render)
+            const handlePartAInputChange = useCallback((id, value) => {
+                finalChallengePartAInputsRef.current[id] = value;
+            }, []);
+            
+            // Stable callback for Part B input changes
+            const handlePartBInputChange = useCallback((id, value) => {
+                finalChallengePartBInputsRef.current[id] = value;
+            }, []);
 
             // MLA Core Elements for reference
             const coreElements = [
@@ -518,21 +589,21 @@
                     title: "Final Challenge Part A: In-Text Citations",
                     instruction: "Read the paragraph below and type the correct in-text citation in each blank. Use the Works Cited entries at the bottom as your reference.",
                     paragraph: [
-                        { type: "text", content: "Climate change poses significant threats to coastal communities worldwide. According to recent research, " },
+                        { type: "text", content: "Climate change poses significant threats to coastal communities worldwide. According to recent research, rising sea levels could displace millions of people by 2050 " },
                         { type: "blank", id: 0, correctAnswer: "Cornwell and Dickens 57" },
-                        { type: "text", content: " rising sea levels could displace millions of people by 2050. Environmental scientists have documented alarming patterns of glacier retreat " },
+                        { type: "text", content: ". Environmental scientists have documented alarming patterns of glacier retreat " },
                         { type: "blank", id: 1, correctAnswer: "Rodriguez" },
-                        { type: "text", content: ". Some reports suggest that " },
+                        { type: "text", content: ". Some reports suggest that the Arctic ice sheet has lost nearly 30% of its volume since 1980 " },
                         { type: "blank", id: 2, correctAnswer: "\"Global Warming\"" },
-                        { type: "text", content: " the Arctic ice sheet has lost nearly 30% of its volume since 1980. Thompson argues that immediate action is essential, noting that \"we have perhaps a decade to make meaningful changes\" " },
+                        { type: "text", content: ". Thompson argues that immediate action is essential, noting that \"we have perhaps a decade to make meaningful changes\" " },
                         { type: "blank", id: 3, correctAnswer: "142" },
                         { type: "text", content: "." }
                     ],
                     worksCited: [
-                        "Cornwell, Patricia, and Charles Dickens. Climate and Coastal Communities: A Comprehensive Study. Oxford UP, 2023.",
+                        "Cornwell, Patricia, and Charles Dickens. \"Climate and Coastal Communities: A Comprehensive Study.\" Environmental Research Quarterly, vol. 28, no. 3, 2023, p. 57.",
                         "\"Global Warming and Ice Loss.\" Environmental Watch, 15 Mar. 2024, www.envwatch.org/ice-loss.",
                         "Rodriguez, Maria. \"Glacier Retreat Patterns in the 21st Century.\" NASA Climate, 8 Jan. 2024, climate.nasa.gov/glaciers.",
-                        "Thompson, James. The Climate Emergency: What We Must Do Now. Penguin, 2023."
+                        "Thompson, James. \"The Climate Emergency: What We Must Do Now.\" Journal of Environmental Policy, vol. 12, no. 2, 2023, p. 142."
                     ],
                     hints: [
                         "Two authors with a page number: Author1 and Author2 Page",
@@ -803,9 +874,10 @@
                 setShowFeedback(false);
                 setAttempts(0);
                 setSelectedAnswer(null);
-                setFinalChallengePartAInputs(['', '', '', '']);
+                finalChallengePartAInputsRef.current = ['', '', '', ''];
                 setFinalChallengePartAResults([null, null, null, null]);
-                setFinalChallengePartBInputs(['', '', '']);
+                setFinalChallengePartAAttempted(false);
+                finalChallengePartBInputsRef.current = ['', '', ''];
                 setFinalChallengePartBResults([null, null, null]);
                 setFinalChallengeSubPhase('partA');
             };
@@ -1563,24 +1635,17 @@
                                                             return (
                                                                 <span key={idx} className="inline-flex items-center mx-1">
                                                                     <span className="text-gray-500">(</span>
-                                                                    <input
-                                                                        type="text"
-                                                                        value={finalChallengePartAInputs[part.id]}
-                                                                        onChange={(e) => {
-                                                                            const newInputs = [...finalChallengePartAInputs];
-                                                                            newInputs[part.id] = e.target.value;
-                                                                            setFinalChallengePartAInputs(newInputs);
-                                                                        }}
-                                                                        disabled={showFeedback}
-                                                                        className={`border-b-2 bg-white px-2 py-1 text-center min-w-32 focus:outline-none focus:border-blue-500 ${
-                                                                            finalChallengePartAResults[part.id] === true ? 'border-green-500 bg-green-50' :
-                                                                            finalChallengePartAResults[part.id] === false ? 'border-red-500 bg-red-50' :
-                                                                            'border-gray-300'
-                                                                        }`}
+                                                                    <StableInput
+                                                                        id={part.id}
+                                                                        initialValue=""
+                                                                        onValueChange={handlePartAInputChange}
+                                                                        disabled={showFeedback && finalChallengePartAResults.every(r => r)}
+                                                                        resultStatus={finalChallengePartAResults[part.id]}
                                                                         placeholder={`Blank ${part.id + 1}`}
+                                                                        correctValue={part.correctAnswer}
                                                                     />
                                                                     <span className="text-gray-500">)</span>
-                                                                    {showFeedback && finalChallengePartAResults[part.id] === false && (
+                                                                    {finalChallengePartAResults[part.id] === false && (
                                                                         <span className="ml-1 text-xs text-red-600">→ {part.correctAnswer}</span>
                                                                     )}
                                                                 </span>
@@ -1590,15 +1655,17 @@
                                                 </p>
                                             </div>
 
-                                            {/* Hints */}
-                                            <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 mb-6">
-                                                <p className="font-semibold text-amber-800 mb-2">💡 Hints for each blank:</p>
-                                                <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
-                                                    {finalChallengeRound.partA.hints.map((hint, idx) => (
-                                                        <li key={idx}>{hint}</li>
-                                                    ))}
-                                                </ol>
-                                            </div>
+                                            {/* Hints - only show after first attempt with wrong answers */}
+                                            {finalChallengePartAAttempted && !finalChallengePartAResults.every(r => r) && (
+                                                <div className="bg-amber-50 border-2 border-amber-200 rounded-lg p-4 mb-6">
+                                                    <p className="font-semibold text-amber-800 mb-2">💡 Hints for each blank:</p>
+                                                    <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
+                                                        {finalChallengeRound.partA.hints.map((hint, idx) => (
+                                                            <li key={idx} className={finalChallengePartAResults[idx] === false ? 'text-red-700 font-medium' : ''}>{hint}</li>
+                                                        ))}
+                                                    </ol>
+                                                </div>
+                                            )}
 
                                             {/* Works Cited Reference */}
                                             <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 mb-6">
@@ -1611,7 +1678,8 @@
                                             </div>
 
                                             {/* Submit Button */}
-                                            {!showFeedback && (
+                                            {/* Submit Button - show if not all correct yet */}
+                                            {!finalChallengePartAResults.every(r => r) && (
                                                 <div className="flex justify-center">
                                                     <button
                                                         onClick={() => {
@@ -1619,42 +1687,46 @@
                                                             const normalize = (str) => str.trim().replace(/[""]/g, '"').replace(/['']/g, "'");
                                                             const results = finalChallengeRound.partA.paragraph
                                                                 .filter(p => p.type === 'blank')
-                                                                .map((blank, idx) => {
-                                                                    const userAnswer = normalize(finalChallengePartAInputs[blank.id]);
+                                                                .map((blank) => {
+                                                                    // Keep previous correct answers
+                                                                    if (finalChallengePartAResults[blank.id] === true) {
+                                                                        return true;
+                                                                    }
+                                                                    const userAnswer = normalize(finalChallengePartAInputsRef.current[blank.id]);
                                                                     const correctAnswer = normalize(blank.correctAnswer);
                                                                     return userAnswer.toLowerCase() === correctAnswer.toLowerCase();
                                                                 });
                                                             setFinalChallengePartAResults(results);
                                                             
-                                                            // Calculate score
-                                                            const correctCount = results.filter(r => r).length;
-                                                            setScore(score + (correctCount * finalChallengeRound.partA.points));
-                                                            setShowFeedback(true);
+                                                            // Only add score on first attempt
+                                                            if (!finalChallengePartAAttempted) {
+                                                                const correctCount = results.filter(r => r).length;
+                                                                setScore(score + (correctCount * finalChallengeRound.partA.points));
+                                                            }
+                                                            setFinalChallengePartAAttempted(true);
+                                                            
+                                                            // Show feedback if all correct
+                                                            if (results.every(r => r)) {
+                                                                setShowFeedback(true);
+                                                            }
                                                         }}
-                                                        disabled={finalChallengePartAInputs.some(input => input.trim() === '')}
-                                                        className="px-8 py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-lg font-bold hover:from-red-600 hover:to-rose-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                                                        className="px-8 py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-lg font-bold hover:from-red-600 hover:to-rose-700 transition-all shadow-md"
                                                     >
-                                                        Check All Answers
+                                                        {finalChallengePartAAttempted ? 'Try Again' : 'Check All Answers'}
                                                     </button>
                                                 </div>
                                             )}
 
-                                            {/* Feedback */}
-                                            {showFeedback && (
+                                            {/* Feedback - only show when all correct */}
+                                            {finalChallengePartAResults.every(r => r) && finalChallengePartAAttempted && (
                                                 <div className="mt-6">
-                                                    <div className={`text-center p-6 rounded-lg ${
-                                                        finalChallengePartAResults.every(r => r) ? 'bg-green-50 border-2 border-green-300' : 'bg-amber-50 border-2 border-amber-300'
-                                                    }`}>
-                                                        <div className="text-5xl mb-3">
-                                                            {finalChallengePartAResults.every(r => r) ? '🎉' : '📝'}
-                                                        </div>
-                                                        <h3 className={`text-2xl font-bold mb-2 ${
-                                                            finalChallengePartAResults.every(r => r) ? 'text-green-700' : 'text-amber-700'
-                                                        }`}>
-                                                            {finalChallengePartAResults.filter(r => r).length} of 4 Correct!
+                                                    <div className="text-center p-6 rounded-lg bg-green-50 border-2 border-green-300">
+                                                        <div className="text-5xl mb-3">🎉</div>
+                                                        <h3 className="text-2xl font-bold mb-2 text-green-700">
+                                                            4 of 4 Correct!
                                                         </h3>
                                                         <p className="text-lg text-gray-700 mb-4">
-                                                            +{finalChallengePartAResults.filter(r => r).length * finalChallengeRound.partA.points} points
+                                                            +{4 * finalChallengeRound.partA.points} points
                                                         </p>
                                                         <button
                                                             onClick={handleNext}
@@ -1690,20 +1762,12 @@
                                                                 ))}
                                                             </div>
                                                         </div>
-                                                        <textarea
-                                                            value={finalChallengePartBInputs[idx]}
-                                                            onChange={(e) => {
-                                                                const newInputs = [...finalChallengePartBInputs];
-                                                                newInputs[idx] = e.target.value;
-                                                                setFinalChallengePartBInputs(newInputs);
-                                                            }}
+                                                        <StableTextarea
+                                                            id={idx}
+                                                            initialValue=""
+                                                            onValueChange={handlePartBInputChange}
                                                             disabled={showFeedback}
-                                                            rows={2}
-                                                            className={`w-full border-2 rounded-lg p-3 font-mono text-sm focus:outline-none focus:border-blue-500 ${
-                                                                finalChallengePartBResults[idx] === true ? 'border-green-500 bg-green-50' :
-                                                                finalChallengePartBResults[idx] === false ? 'border-red-500 bg-red-50' :
-                                                                'border-gray-300'
-                                                            }`}
+                                                            resultStatus={finalChallengePartBResults[idx]}
                                                             placeholder="Type your Works Cited entry here..."
                                                         />
                                                         <p className="text-xs text-gray-500 mt-1">💡 {challenge.hint}</p>
@@ -1734,7 +1798,7 @@
                                                                 .replace(/\s+/g, ' ');
                                                             
                                                             const results = finalChallengeRound.partB.challenges.map((challenge, idx) => {
-                                                                const userAnswer = normalize(finalChallengePartBInputs[idx]);
+                                                                const userAnswer = normalize(finalChallengePartBInputsRef.current[idx]);
                                                                 // Check against all acceptable answers
                                                                 return challenge.acceptableAnswers.some(acceptable => 
                                                                     normalize(acceptable).toLowerCase() === userAnswer.toLowerCase()
@@ -1747,8 +1811,7 @@
                                                             setScore(score + (correctCount * finalChallengeRound.partB.points));
                                                             setShowFeedback(true);
                                                         }}
-                                                        disabled={finalChallengePartBInputs.some(input => input.trim() === '')}
-                                                        className="px-8 py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-lg font-bold hover:from-red-600 hover:to-rose-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                                                        className="px-8 py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-lg font-bold hover:from-red-600 hover:to-rose-700 transition-all shadow-md"
                                                     >
                                                         Check All Entries
                                                     </button>
