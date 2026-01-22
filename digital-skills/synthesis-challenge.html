@@ -189,7 +189,8 @@
                     "Use one source to explain another",
                     "Show progression: problem → cause → effect",
                     "Use transitional phrases: 'while', 'furthermore', 'this means that'"
-                ]
+                ],
+                keywords: ["garcia", "lee", "patterson", "climate", "hurricane", "storm", "ocean", "temperature", "coastal", "flood", "warming"]
             },
             {
                 id: 2,
@@ -206,7 +207,8 @@
                     "Use specific examples to support the general claim",
                     "Show cause and effect relationships",
                     "End with the 'so what?' - why does this matter?"
-                ]
+                ],
+                keywords: ["taylor", "kim", "johnson", "arts", "education", "music", "drama", "academic", "math", "reading", "performance"]
             }
         ];
 
@@ -228,7 +230,8 @@
                     "Use someone to complicate or challenge others",
                     "Add your insight: what does this all mean?",
                     "End with significance: so what?"
-                ]
+                ],
+                keywords: ["rodriguez", "chen", "williams", "thompson", "social media", "algorithm", "echo chamber", "news", "literacy", "bias", "marginalized"]
             }
         ];
 
@@ -280,19 +283,48 @@
                 const answer = userAnswer.toLowerCase();
                 
                 let points = 0;
-                const hasKeywords = challenge.keywords?.some(keyword => 
-                    answer.includes(keyword.toLowerCase())
-                );
                 
-                const isLongEnough = userAnswer.split(' ').length >= 15;
-                const notTooShort = userAnswer.length > 50;
-                
-                if (hasKeywords && isLongEnough && notTooShort) {
-                    points = currentRound === 'beginner' ? 30 : 
-                            currentRound === 'intermediate' ? 50 : 75;
-                    setIsCorrect(true);
+                // For beginner round, check for basic keywords
+                if (currentRound === 'beginner') {
+                    const hasKeywords = challenge.keywords?.some(keyword => 
+                        answer.includes(keyword.toLowerCase())
+                    );
+                    const isLongEnough = userAnswer.split(' ').length >= 15;
+                    const notTooShort = userAnswer.length > 50;
+                    
+                    if (hasKeywords && isLongEnough && notTooShort) {
+                        points = 30;
+                        setIsCorrect(true);
+                    } else {
+                        setIsCorrect(false);
+                    }
                 } else {
-                    setIsCorrect(false);
+                    // For intermediate and advanced rounds, use more sophisticated validation
+                    // Get the author names from the challenge sources
+                    const authorNames = challenge.sources.map(s => s.author.toLowerCase());
+                    
+                    // Count how many authors are mentioned
+                    const authorsMentioned = authorNames.filter(author => answer.includes(author)).length;
+                    
+                    // Check for connecting/synthesis words
+                    const synthesisWords = ['both', 'while', 'however', 'also', 'similarly', 'furthermore', 'together', 'in contrast', 'agrees', 'agree', 'shows', 'explains', 'notes', 'argues', 'suggests', 'confirms', 'extends', 'further', 'additionally', 'moreover'];
+                    const hasSynthesisWords = synthesisWords.some(word => answer.includes(word));
+                    
+                    // Check length requirements
+                    const wordCount = userAnswer.split(/\s+/).filter(w => w.length > 0).length;
+                    const minWords = currentRound === 'intermediate' ? 25 : 40;
+                    const isLongEnough = wordCount >= minWords;
+                    
+                    // For intermediate: need at least 2 authors + synthesis words + length
+                    // For advanced: need at least 3 authors + synthesis words + length
+                    const minAuthors = currentRound === 'intermediate' ? 2 : 3;
+                    
+                    if (authorsMentioned >= minAuthors && hasSynthesisWords && isLongEnough) {
+                        points = currentRound === 'intermediate' ? 50 : 75;
+                        setIsCorrect(true);
+                    } else {
+                        setIsCorrect(false);
+                    }
                 }
                 
                 setShowFeedback(true);
@@ -385,7 +417,7 @@
                         <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 flex items-center justify-center p-4">
                             <div className="absolute top-4 left-4">
                                 <a
-                                    href="./"
+                                    href="/"
                                     className="bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md flex items-center gap-2"
                                 >
                                     ← Back to Modules
@@ -514,7 +546,7 @@
                         {/* Back Button */}
                         <div className="max-w-4xl mx-auto mb-4">
                             <a
-                                href="./"
+                                href="/"
                                 className="inline-block bg-white text-indigo-600 px-4 py-2 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-md"
                             >
                                 ← Back to Modules
